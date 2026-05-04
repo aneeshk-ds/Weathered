@@ -1,42 +1,86 @@
 # Weathered
 
-Weathered is a decision intelligence app that helps users notice how weather, mood, energy, and time affect everyday decisions.
+Weathered is a local-first mobile app for understanding how weather, mood, energy, and time shape everyday decisions.
 
-This repository is scaffolded as a monorepo with:
+The current release is a working prototype focused on:
 
-- `apps/mobile`: Expo React Native client
-- `apps/api`: Express API for logs and insights
-- `packages/shared`: shared TypeScript types and constants
-- `docs`: product goals, scope, and open questions
+- fast personal check-ins
+- local mood and decision logging
+- mocked weather context
+- 7-day summaries
+- editorial infographic-style insight screens
 
-## Current Product Direction
+## Current Version
 
-- Mobile-only for the first usable version
-- Local-first so the app can be tested personally before sync or auth exists
-- Mock weather/context until the UI and flows stabilize
-- Structured to expand into persistence, sync, and smarter insights later
+`1.2`
 
-## Current Mobile State
+Highlights:
 
-- Local entry creation, editing, and deletion
-- 7-day summary view
-- Mock weather context
-- On-device persistence using AsyncStorage
-- `1.2` includes a darker editorial summary mode with richer infographics
+- dark editorial summary mode
+- richer infographic cards and trend panels
+- local create, edit, and delete flows
+- on-device persistence with AsyncStorage
+- rule-based insights with gentle analytical language
 
-## Getting Started
+## Repo Structure
 
-This is an active local prototype scaffold.
+- `apps/mobile`: Expo React Native app
+- `apps/api`: lightweight Express API scaffold
+- `packages/shared`: shared TypeScript types and contracts
+- `docs`: product goals and planning notes
 
-### Planned stack
+## Run Locally
 
-- Mobile: Expo + React Native + TypeScript
-- API: Node.js + Express + TypeScript
-- Database: PostgreSQL
+Requirements:
 
-### Suggested next steps
+- Node.js
+- npm
 
-1. Refine the visual system and dashboard storytelling.
-2. Connect a weather provider.
-3. Add a database-ready repository layer.
-4. Wire sync/API later when local usage feels right.
+Install:
+
+```bash
+npm install
+```
+
+Start mobile:
+
+```bash
+npm run dev:mobile
+```
+
+Start mobile with tunnel:
+
+```bash
+npm run dev:mobile:tunnel
+```
+
+Start API scaffold:
+
+```bash
+npm run dev:api
+```
+
+Typecheck:
+
+```bash
+npm run typecheck
+```
+
+## Product Direction
+
+- mobile-only first
+- local-first before auth or sync
+- mocked weather until the UX stabilizes
+- structured so sync, live weather, and deeper intelligence can be layered in later
+
+## What’s Next
+
+- stronger weather personality across the full app
+- better chart storytelling and pattern depth
+- live weather integration
+- repository/storage abstraction for future sync
+- richer optional notes and reflection
+
+## Notes
+
+This repo is intentionally optimized for rapid product iteration rather than backend completeness at this stage.
