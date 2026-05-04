@@ -1,0 +1,28 @@
+{
+  "name": "@weathered/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@weathered/shared": "0.1.0",
+    "expo": "~53.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-web": "^0.20.0",
+    "typescript": "~5.8.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "typescript": "~5.8.3"
+  }
+}
