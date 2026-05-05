@@ -123,6 +123,7 @@ Each event should capture:
 - Insight cards after submission
 - Weekly summary screen
 - Editorial infographic summary treatment in `1.2`
+- Local decision forecast cards in `1.3`
 
 ### Milestone 4: Persistence
 

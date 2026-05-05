@@ -12,10 +12,12 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.2`
+`1.3`
 
 Highlights:
 
+- local decision forecast layer for next-step guidance
+- next-read cards across logging and weekly summary views
 - dark editorial summary mode
 - richer infographic cards and trend panels
 - local create, edit, and delete flows
@@ -75,9 +77,8 @@ npm run typecheck
 
 ## What’s Next
 
-- stronger weather personality across the full app
-- better chart storytelling and pattern depth
 - live weather integration
+- configurable local forecast inputs
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 

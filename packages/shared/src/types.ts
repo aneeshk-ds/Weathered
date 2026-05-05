@@ -46,6 +46,17 @@ export interface GuidanceCard {
   message: string;
 }
 
+export interface DecisionForecast {
+  id: string;
+  title: string;
+  message: string;
+  actionLabel: string;
+  confidence: InsightConfidence;
+  weatherCondition: WeatherCondition;
+  categoryFocus: DecisionCategory;
+  signalStrength: number;
+}
+
 export interface WeeklySummary {
   totalEntries: number;
   averageMood: number;

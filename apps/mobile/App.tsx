@@ -14,12 +14,14 @@ import {
   DECISION_OPTIONS,
   ENERGY_LEVELS,
   type DecisionCategory,
+  type DecisionForecast,
   type DecisionLogInput,
   type DecisionOption,
   type EnergyLevel,
   type Insight,
   type WeatherSnapshot,
 } from "@weathered/shared";
+import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { loadEntries, saveEntries } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
@@ -262,6 +264,7 @@ export default function App() {
   const styles = createStyles(theme);
   const availableOutcomes = DECISION_OPTIONS[category];
   const summary = buildSummary(entries);
+  const forecast = buildDecisionForecast(entries, mockWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
   const averageHumidity =
     weeklyEntries.length > 0
@@ -423,7 +426,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.2</Text>
+              <Text style={styles.eyebrow}>Weathered 1.3</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -434,8 +437,7 @@ export default function App() {
           </View>
 
           <Text style={styles.subtitle}>
-            Start with quick personal logging now, then expand into weather intelligence, summaries,
-            and predictions later.
+            Start with quick personal logging now, then let local weather patterns shape the next decision.
           </Text>
 
           <View style={styles.weatherVisualRow}>
@@ -448,7 +450,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.2</Text>
+              <Text style={styles.versionValue}>1.3</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -498,6 +500,7 @@ export default function App() {
               summary={summary}
               mockWeather={mockWeather}
               strongestWeather={strongestWeather}
+              forecast={forecast}
               styles={styles}
             />
 
@@ -789,6 +792,7 @@ export default function App() {
               lowMoodCount={lowMoodCount}
               strongestCategory={strongestCategory}
               strongestWeather={strongestWeather}
+              forecast={forecast}
               insights={summary.topInsights}
               styles={styles}
             />
@@ -839,6 +843,7 @@ export default function App() {
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weekly Guidance</Text>
+              <ForecastActionCard forecast={forecast} styles={styles} />
               <MoodWeatherMatrix entries={weeklyEntries} styles={styles} />
               {summary.guidance.slice(0, 2).map((item) => (
                 <View key={item.id} style={styles.guidanceCard}>
@@ -1033,11 +1038,13 @@ function LogWeatherBoard({
   summary,
   mockWeather,
   strongestWeather,
+  forecast,
   styles,
 }: {
   summary: ReturnType<typeof buildSummary>;
   mockWeather: WeatherSnapshot;
   strongestWeather: string;
+  forecast: DecisionForecast;
   styles: ReturnType<typeof createStyles>;
 }) {
   return (
@@ -1061,6 +1068,10 @@ function LogWeatherBoard({
         Today is reading as {mockWeather.condition}. The check-in below works best when you capture the mood before
         overthinking the decision.
       </Text>
+      <View style={styles.forecastStrip}>
+        <Text style={styles.forecastStripTitle}>{forecast.title}</Text>
+        <Text style={styles.forecastStripText}>{forecast.actionLabel}</Text>
+      </View>
     </View>
   );
 }
@@ -1110,6 +1121,7 @@ function DeepWeatherRead({
   lowMoodCount,
   strongestCategory,
   strongestWeather,
+  forecast,
   insights,
   styles,
 }: {
@@ -1118,6 +1130,7 @@ function DeepWeatherRead({
   lowMoodCount: number;
   strongestCategory: DecisionCategory;
   strongestWeather: string;
+  forecast: DecisionForecast;
   insights: Insight[];
   styles: ReturnType<typeof createStyles>;
 }) {
@@ -1144,6 +1157,7 @@ function DeepWeatherRead({
             {strongestCategory} is your most active category, while {lowMoodCount} entries landed in a lower-mood
             range this week.
           </Text>
+          <ForecastActionCard forecast={forecast} styles={styles} inverted />
         </View>
       </View>
 
@@ -1163,6 +1177,30 @@ function DeepWeatherRead({
           ))}
         </View>
       </View>
+    </View>
+  );
+}
+
+function ForecastActionCard({
+  forecast,
+  styles,
+  inverted = false,
+}: {
+  forecast: DecisionForecast;
+  styles: ReturnType<typeof createStyles>;
+  inverted?: boolean;
+}) {
+  return (
+    <View style={inverted ? styles.darkForecastCard : styles.forecastCard}>
+      <View style={styles.forecastHeader}>
+        <Text style={inverted ? styles.darkForecastLabel : styles.forecastLabel}>Next Read</Text>
+        <Text style={inverted ? styles.darkForecastSignal : styles.forecastSignal}>
+          {forecast.signalStrength}% signal
+        </Text>
+      </View>
+      <Text style={inverted ? styles.darkForecastTitle : styles.forecastTitle}>{forecast.title}</Text>
+      <Text style={inverted ? styles.darkForecastText : styles.forecastText}>{forecast.message}</Text>
+      <Text style={inverted ? styles.darkForecastAction : styles.forecastAction}>{forecast.actionLabel}</Text>
     </View>
   );
 }
@@ -2069,6 +2107,24 @@ function createStyles(theme: ThemePalette) {
       color: "#a7b9bf",
       lineHeight: 22,
     },
+    forecastStrip: {
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: "#0d2226",
+      borderWidth: 1,
+      borderColor: "#1b4f4e",
+      gap: 5,
+    },
+    forecastStripTitle: {
+      color: "#18e3b7",
+      fontSize: 15,
+      fontWeight: "800",
+    },
+    forecastStripText: {
+      color: "#d2e4e5",
+      lineHeight: 21,
+      fontWeight: "700",
+    },
     darkIntelPanel: {
       backgroundColor: "#071017",
       borderRadius: 24,
@@ -2137,6 +2193,82 @@ function createStyles(theme: ThemePalette) {
       color: "#93a5ad",
       fontSize: 16,
       lineHeight: 24,
+    },
+    forecastCard: {
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 8,
+    },
+    forecastHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 10,
+      alignItems: "center",
+    },
+    forecastLabel: {
+      color: theme.eyebrow,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+    },
+    forecastSignal: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    forecastTitle: {
+      color: theme.text,
+      fontSize: 18,
+      lineHeight: 23,
+      fontWeight: "800",
+    },
+    forecastText: {
+      color: theme.mutedText,
+      lineHeight: 22,
+    },
+    forecastAction: {
+      color: theme.statusText,
+      fontWeight: "800",
+      lineHeight: 20,
+    },
+    darkForecastCard: {
+      padding: 14,
+      borderRadius: 18,
+      backgroundColor: "#0b161d",
+      borderWidth: 1,
+      borderColor: "#1b4f4e",
+      gap: 8,
+    },
+    darkForecastLabel: {
+      color: "#18e3b7",
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+    },
+    darkForecastSignal: {
+      color: "#8cb3b1",
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    darkForecastTitle: {
+      color: "#f5fbfc",
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: "800",
+    },
+    darkForecastText: {
+      color: "#a6b5ba",
+      lineHeight: 22,
+    },
+    darkForecastAction: {
+      color: "#18e3b7",
+      fontWeight: "800",
+      lineHeight: 20,
     },
     darkIntelBottomRow: {
       flexDirection: "row",
