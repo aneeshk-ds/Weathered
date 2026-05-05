@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.4`
+`1.5`
 
 Highlights:
 
+- persisted local weather source preference
 - selectable local weather sources for daily and seasonal context
 - API weather context can now request a source mode
 - local decision forecast layer for next-step guidance
@@ -81,7 +82,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
-- source persistence and live-provider handoff
+- live-provider handoff behind the saved weather source
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 

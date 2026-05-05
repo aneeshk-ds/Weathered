@@ -24,7 +24,7 @@ import {
 } from "@weathered/shared";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
-import { loadEntries, saveEntries } from "./src/lib/storage";
+import { loadEntries, loadPreferences, saveEntries, savePreferences } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
 import { buildLocalWeatherSnapshot, formatWeatherSource, WEATHER_SOURCE_OPTIONS } from "./src/lib/weather";
 
@@ -293,12 +293,13 @@ export default function App() {
     let isMounted = true;
 
     async function hydrate() {
-      const nextEntries = await loadEntries(seededEntries);
+      const [nextEntries, preferences] = await Promise.all([loadEntries(seededEntries), loadPreferences()]);
       if (!isMounted) {
         return;
       }
 
       setEntries(nextEntries);
+      setWeatherSourceMode(preferences.weatherSourceMode);
       setIsHydrating(false);
     }
 
@@ -321,6 +322,14 @@ export default function App() {
 
     persist();
   }, [entries, isHydrating]);
+
+  useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
+    savePreferences({ weatherSourceMode });
+  }, [weatherSourceMode, isHydrating]);
 
   const handleCategorySelect = (nextCategory: DecisionCategory) => {
     setCategory(nextCategory);
@@ -423,7 +432,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.4</Text>
+              <Text style={styles.eyebrow}>Weathered 1.5</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -447,7 +456,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.4</Text>
+              <Text style={styles.versionValue}>1.5</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>

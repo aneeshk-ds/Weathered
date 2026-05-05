@@ -1,5 +1,20 @@
 # Weathered Releases
 
+## 1.5.0
+
+Weathered 1.5.0 makes the selected weather source a remembered local preference.
+
+- Adds local preference storage with AsyncStorage.
+- Restores the selected weather source when the app hydrates.
+- Persists weather source changes independently from decision entries.
+- Keeps the selectable source model ready for a live weather provider.
+
+Validation:
+
+```bash
+npm run typecheck
+```
+
 ## 1.4.0
 
 Weathered 1.4.0 turns the weather context from a fixed mock into a selectable local source.
