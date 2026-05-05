@@ -2,9 +2,9 @@ node_modules
 .expo
 .expo-shared
 dist
+dist-web
 build
 .DS_Store
 .env
 .env.*
 coverage
-

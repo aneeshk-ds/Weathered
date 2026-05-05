@@ -32,6 +32,7 @@ Highlights:
 - `apps/api`: lightweight Express API scaffold
 - `packages/shared`: shared TypeScript types and contracts
 - `docs`: product goals and planning notes
+- `docs/releases.md`: version history and validation notes
 
 ## Run Locally
 
