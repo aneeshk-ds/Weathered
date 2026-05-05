@@ -124,6 +124,7 @@ Each event should capture:
 - Weekly summary screen
 - Editorial infographic summary treatment in `1.2`
 - Local decision forecast cards in `1.3`
+- Selectable local weather source modes in `1.4`
 
 ### Milestone 4: Persistence
 

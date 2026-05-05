@@ -12,6 +12,7 @@ export type EnergyLevel = (typeof ENERGY_LEVELS)[number];
 export type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
 export type DecisionOption = (typeof DECISION_OPTIONS)[DecisionCategory][number];
 export type WeatherCondition = "sunny" | "cloudy" | "rainy";
+export type WeatherSourceMode = "daily_mock" | "seasonal_mock";
 export type InsightConfidence = "low" | "medium" | "high";
 
 export interface WeatherSnapshot {

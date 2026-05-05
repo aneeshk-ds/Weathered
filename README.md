@@ -12,10 +12,12 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.3`
+`1.4`
 
 Highlights:
 
+- selectable local weather sources for daily and seasonal context
+- API weather context can now request a source mode
 - local decision forecast layer for next-step guidance
 - next-read cards across logging and weekly summary views
 - dark editorial summary mode
@@ -78,7 +80,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
-- configurable local forecast inputs
+- source persistence and live-provider handoff
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 

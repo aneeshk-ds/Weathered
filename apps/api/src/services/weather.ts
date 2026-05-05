@@ -1,8 +1,12 @@
-import type { WeatherSnapshot } from "@weathered/shared";
+import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
 
 const conditions: WeatherSnapshot["condition"][] = ["sunny", "cloudy", "rainy"];
 
-export function mockWeatherSnapshot(): WeatherSnapshot {
+export function mockWeatherSnapshot(mode: WeatherSourceMode = "daily_mock"): WeatherSnapshot {
+  if (mode === "seasonal_mock") {
+    return seasonalWeatherSnapshot();
+  }
+
   const condition = conditions[new Date().getDate() % conditions.length];
 
   return {
@@ -13,3 +17,16 @@ export function mockWeatherSnapshot(): WeatherSnapshot {
   };
 }
 
+function seasonalWeatherSnapshot(): WeatherSnapshot {
+  const month = new Date().getMonth();
+  const isMonsoonLeaning = month >= 5 && month <= 8;
+  const isWarmSeason = month >= 2 && month <= 4;
+  const condition: WeatherSnapshot["condition"] = isMonsoonLeaning ? "rainy" : isWarmSeason ? "sunny" : "cloudy";
+
+  return {
+    condition,
+    temperatureC: isWarmSeason ? 31 : isMonsoonLeaning ? 23 : 26,
+    humidity: isMonsoonLeaning ? 86 : isWarmSeason ? 48 : 66,
+    locationLabel: "Bengaluru",
+  };
+}

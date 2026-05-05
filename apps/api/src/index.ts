@@ -16,8 +16,9 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "weathered-api" });
 });
 
-app.get("/context/weather", (_req, res) => {
-  res.json(mockWeatherSnapshot());
+app.get("/context/weather", (req, res) => {
+  const mode = req.query.mode === "seasonal_mock" ? "seasonal_mock" : "daily_mock";
+  res.json(mockWeatherSnapshot(mode));
 });
 
 app.get("/entries", (_req, res) => {

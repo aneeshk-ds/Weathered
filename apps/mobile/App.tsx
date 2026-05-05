@@ -20,11 +20,13 @@ import {
   type EnergyLevel,
   type Insight,
   type WeatherSnapshot,
+  type WeatherSourceMode,
 } from "@weathered/shared";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { loadEntries, saveEntries } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
+import { buildLocalWeatherSnapshot, formatWeatherSource, WEATHER_SOURCE_OPTIONS } from "./src/lib/weather";
 
 type AppTab = "log" | "history" | "summary";
 type ThemeMode = "light" | "dark";
@@ -239,17 +241,11 @@ const seededEntries: DecisionLogInput[] = [
   },
 ];
 
-const mockWeather = {
-  condition: "rainy" as const,
-  temperatureC: 22,
-  humidity: 81,
-  locationLabel: "Bengaluru",
-};
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>("summary");
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
+  const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
   const [mood, setMood] = useState<number>(6);
   const [energy, setEnergy] = useState<EnergyLevel>("medium");
   const [category, setCategory] = useState<DecisionCategory>("social");
@@ -263,19 +259,20 @@ export default function App() {
   const theme = themeMode === "light" ? lightTheme : darkTheme;
   const styles = createStyles(theme);
   const availableOutcomes = DECISION_OPTIONS[category];
+  const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
   const summary = buildSummary(entries);
-  const forecast = buildDecisionForecast(entries, mockWeather);
+  const forecast = buildDecisionForecast(entries, currentWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
   const averageHumidity =
     weeklyEntries.length > 0
       ? Math.round(weeklyEntries.reduce((sum, item) => sum + item.weather.humidity, 0) / weeklyEntries.length)
-      : mockWeather.humidity;
+      : currentWeather.humidity;
   const averageTemperature =
     weeklyEntries.length > 0
       ? Math.round(
           weeklyEntries.reduce((sum, item) => sum + item.weather.temperatureC, 0) / weeklyEntries.length,
         )
-      : mockWeather.temperatureC;
+      : currentWeather.temperatureC;
   const rainyEntryCount = weeklyEntries.filter((item) => item.weather.condition === "rainy").length;
   const sunnyEntryCount = weeklyEntries.filter((item) => item.weather.condition === "sunny").length;
   const cloudyEntryCount = weeklyEntries.filter((item) => item.weather.condition === "cloudy").length;
@@ -339,7 +336,7 @@ export default function App() {
       decisionCategory: category,
       decisionOutcome: outcome,
       note: note.trim() || undefined,
-      weather: mockWeather,
+      weather: currentWeather,
       timestamp: new Date().toISOString(),
     };
 
@@ -426,7 +423,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.3</Text>
+              <Text style={styles.eyebrow}>Weathered 1.4</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -450,14 +447,14 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.3</Text>
+              <Text style={styles.versionValue}>1.4</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
-              <Text style={styles.weatherMetricLabel}>Mock Weather</Text>
-              <Text style={styles.weatherMetricValue}>{mockWeather.temperatureC}C</Text>
+              <Text style={styles.weatherMetricLabel}>{formatWeatherSource(weatherSourceMode)} Weather</Text>
+              <Text style={styles.weatherMetricValue}>{currentWeather.temperatureC}C</Text>
               <Text style={styles.weatherMetricMeta}>
-                {mockWeather.condition} • {mockWeather.humidity}% humidity
+                {currentWeather.condition} • {currentWeather.humidity}% humidity
               </Text>
             </View>
           </View>
@@ -498,16 +495,31 @@ export default function App() {
 
             <LogWeatherBoard
               summary={summary}
-              mockWeather={mockWeather}
+              currentWeather={currentWeather}
               strongestWeather={strongestWeather}
               forecast={forecast}
               styles={styles}
             />
 
+            <View style={styles.summaryPanel}>
+              <Text style={styles.summaryTitle}>Weather Source</Text>
+              <View style={styles.segmentRow}>
+                {WEATHER_SOURCE_OPTIONS.map((value) => (
+                  <SelectableChip
+                    key={value}
+                    label={formatWeatherSource(value)}
+                    selected={weatherSourceMode === value}
+                    onPress={() => setWeatherSourceMode(value)}
+                    styles={styles}
+                  />
+                ))}
+              </View>
+            </View>
+
             <View style={styles.infographicRow}>
               <MiniMetricCard emoji="🧠" label="Mood Target" value={`${mood}/10`} styles={styles} />
               <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
-              <MiniMetricCard emoji="🌦️" label="Context" value={mockWeather.condition} styles={styles} />
+              <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
             </View>
 
             <View style={styles.summaryPanel}>
@@ -605,10 +617,10 @@ export default function App() {
             <Text style={styles.noteHint}>{note.length}/{NOTE_LIMIT}</Text>
 
             <View style={styles.weatherBox}>
-              <Text style={styles.weatherTitle}>Mocked Context</Text>
+              <Text style={styles.weatherTitle}>{formatWeatherSource(weatherSourceMode)} Context</Text>
               <Text style={styles.weatherText}>
-                {mockWeather.condition} • {mockWeather.temperatureC}C • {mockWeather.humidity}% humidity •{" "}
-                {mockWeather.locationLabel}
+                {currentWeather.condition} • {currentWeather.temperatureC}C • {currentWeather.humidity}% humidity •{" "}
+                {currentWeather.locationLabel}
               </Text>
             </View>
 
@@ -1036,13 +1048,13 @@ function MetricBar({
 
 function LogWeatherBoard({
   summary,
-  mockWeather,
+  currentWeather,
   strongestWeather,
   forecast,
   styles,
 }: {
   summary: ReturnType<typeof buildSummary>;
-  mockWeather: WeatherSnapshot;
+  currentWeather: WeatherSnapshot;
   strongestWeather: string;
   forecast: DecisionForecast;
   styles: ReturnType<typeof createStyles>;
@@ -1052,7 +1064,7 @@ function LogWeatherBoard({
       <Text style={styles.unifiedEyebrow}>Log Console</Text>
       <View style={styles.unifiedTopRow}>
         <View style={styles.unifiedMetricPill}>
-          <Text style={styles.unifiedMetricValue}>{mockWeather.temperatureC}C</Text>
+          <Text style={styles.unifiedMetricValue}>{currentWeather.temperatureC}C</Text>
           <Text style={styles.unifiedMetricLabel}>today</Text>
         </View>
         <View style={styles.unifiedMetricPill}>
@@ -1065,7 +1077,7 @@ function LogWeatherBoard({
         </View>
       </View>
       <Text style={styles.unifiedCommentary}>
-        Today is reading as {mockWeather.condition}. The check-in below works best when you capture the mood before
+        Today is reading as {currentWeather.condition}. The check-in below works best when you capture the mood before
         overthinking the decision.
       </Text>
       <View style={styles.forecastStrip}>
