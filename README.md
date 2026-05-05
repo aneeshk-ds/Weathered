@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.5`
+`1.6`
 
 Highlights:
 
+- weather source readiness panel in the Log flow
 - persisted local weather source preference
 - selectable local weather sources for daily and seasonal context
 - API weather context can now request a source mode
@@ -82,7 +83,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
-- live-provider handoff behind the saved weather source
+- connect a live provider behind the source readiness layer
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 

@@ -1,6 +1,6 @@
 {
   "name": "@weathered/mobile",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~5.0.5",
     "@react-native-async-storage/async-storage": "2.1.2",
-    "@weathered/shared": "1.5.0",
+    "@weathered/shared": "1.6.0",
     "expo": "~53.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",

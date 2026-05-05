@@ -1,5 +1,19 @@
 # Weathered Releases
 
+## 1.6.0
+
+Weathered 1.6.0 adds a visible weather source readiness read before logging.
+
+- Adds source status copy for daily and seasonal local weather modes.
+- Shows whether the current source is prototype stable or live-provider ready.
+- Keeps the source explanation close to the selector in the Log flow.
+
+Validation:
+
+```bash
+npm run typecheck
+```
+
 ## 1.5.0
 
 Weathered 1.5.0 makes the selected weather source a remembered local preference.

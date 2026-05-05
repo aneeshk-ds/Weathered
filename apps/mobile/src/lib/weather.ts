@@ -2,6 +2,13 @@ import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
 
 export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["daily_mock", "seasonal_mock"];
 
+export interface WeatherSourceStatus {
+  label: string;
+  title: string;
+  message: string;
+  readiness: string;
+}
+
 export function buildLocalWeatherSnapshot(
   mode: WeatherSourceMode,
   date: Date = new Date(),
@@ -15,6 +22,24 @@ export function buildLocalWeatherSnapshot(
 
 export function formatWeatherSource(mode: WeatherSourceMode) {
   return mode === "seasonal_mock" ? "seasonal" : "daily";
+}
+
+export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceStatus {
+  if (mode === "seasonal_mock") {
+    return {
+      label: "Local Seasonal",
+      title: "Seasonal context is active",
+      message: "Weathered is using a local Bengaluru seasonal profile to make the check-in feel less static.",
+      readiness: "Live-provider ready",
+    };
+  }
+
+  return {
+    label: "Local Daily",
+    title: "Daily rotating context is active",
+    message: "Weathered is using a date-based local weather cycle so patterns can be tested without network data.",
+    readiness: "Prototype stable",
+  };
 }
 
 function buildDailySnapshot(date: Date): WeatherSnapshot {

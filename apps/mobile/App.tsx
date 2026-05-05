@@ -26,7 +26,13 @@ import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { loadEntries, loadPreferences, saveEntries, savePreferences } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
-import { buildLocalWeatherSnapshot, formatWeatherSource, WEATHER_SOURCE_OPTIONS } from "./src/lib/weather";
+import {
+  buildLocalWeatherSnapshot,
+  describeWeatherSource,
+  formatWeatherSource,
+  type WeatherSourceStatus,
+  WEATHER_SOURCE_OPTIONS,
+} from "./src/lib/weather";
 
 type AppTab = "log" | "history" | "summary";
 type ThemeMode = "light" | "dark";
@@ -260,6 +266,7 @@ export default function App() {
   const styles = createStyles(theme);
   const availableOutcomes = DECISION_OPTIONS[category];
   const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
+  const weatherSourceStatus = describeWeatherSource(weatherSourceMode);
   const summary = buildSummary(entries);
   const forecast = buildDecisionForecast(entries, currentWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
@@ -432,7 +439,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.5</Text>
+              <Text style={styles.eyebrow}>Weathered 1.6</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -456,7 +463,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.5</Text>
+              <Text style={styles.versionValue}>1.6</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -523,6 +530,7 @@ export default function App() {
                   />
                 ))}
               </View>
+              <WeatherSourceStatusCard status={weatherSourceStatus} styles={styles} />
             </View>
 
             <View style={styles.infographicRow}>
@@ -980,6 +988,25 @@ function PulseBadge({
         {value}
         {suffix}
       </Text>
+    </View>
+  );
+}
+
+function WeatherSourceStatusCard({
+  status,
+  styles,
+}: {
+  status: WeatherSourceStatus;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.sourceStatusCard}>
+      <View style={styles.forecastHeader}>
+        <Text style={styles.sourceStatusLabel}>{status.label}</Text>
+        <Text style={styles.sourceStatusReadiness}>{status.readiness}</Text>
+      </View>
+      <Text style={styles.sourceStatusTitle}>{status.title}</Text>
+      <Text style={styles.sourceStatusText}>{status.message}</Text>
     </View>
   );
 }
@@ -2037,6 +2064,36 @@ function createStyles(theme: ThemePalette) {
       borderRadius: 18,
       padding: 16,
       gap: 10,
+    },
+    sourceStatusCard: {
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 7,
+    },
+    sourceStatusLabel: {
+      color: theme.eyebrow,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      letterSpacing: 1,
+    },
+    sourceStatusReadiness: {
+      color: theme.statusText,
+      fontSize: 12,
+      fontWeight: "800",
+    },
+    sourceStatusTitle: {
+      color: theme.text,
+      fontSize: 17,
+      lineHeight: 22,
+      fontWeight: "800",
+    },
+    sourceStatusText: {
+      color: theme.mutedText,
+      lineHeight: 21,
     },
     unifiedDarkPanel: {
       backgroundColor: "#071017",
