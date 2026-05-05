@@ -13,6 +13,8 @@ import {
   DECISION_CATEGORIES,
   DECISION_OPTIONS,
   ENERGY_LEVELS,
+  type BehavioralRead,
+  type BehaviorSignalLevel,
   type DecisionCategory,
   type DecisionForecast,
   type DecisionLogInput,
@@ -22,6 +24,7 @@ import {
   type WeatherSnapshot,
   type WeatherSourceMode,
 } from "@weathered/shared";
+import { buildBehavioralRead } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { loadEntries, loadPreferences, saveEntries, savePreferences } from "./src/lib/storage";
@@ -267,6 +270,7 @@ export default function App() {
   const availableOutcomes = DECISION_OPTIONS[category];
   const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
   const weatherSourceStatus = describeWeatherSource(weatherSourceMode);
+  const behavioralRead = buildBehavioralRead({ mood, energy, weather: currentWeather });
   const summary = buildSummary(entries);
   const forecast = buildDecisionForecast(entries, currentWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
@@ -439,7 +443,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.6</Text>
+              <Text style={styles.eyebrow}>Weathered 1.7</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -463,7 +467,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.6</Text>
+              <Text style={styles.versionValue}>1.7</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -538,6 +542,8 @@ export default function App() {
               <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
               <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
             </View>
+
+            <BehavioralReadCard read={behavioralRead} styles={styles} />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1009,6 +1015,58 @@ function WeatherSourceStatusCard({
       <Text style={styles.sourceStatusText}>{status.message}</Text>
     </View>
   );
+}
+
+function BehavioralReadCard({
+  read,
+  styles,
+}: {
+  read: BehavioralRead;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.behaviorPanel}>
+      <Text style={styles.summaryTitle}>{read.title}</Text>
+      <Text style={styles.behaviorSummary}>{read.summary}</Text>
+      <View style={styles.behaviorSignalGrid}>
+        {read.signals.map((signal) => (
+          <View key={signal.id} style={styles.behaviorSignalCard}>
+            <View style={styles.forecastHeader}>
+              <Text style={styles.behaviorSignalLabel}>{signal.label}</Text>
+              <Text style={[styles.behaviorSignalLevel, behaviorLevelStyle(signal.level, styles)]}>
+                {formatBehaviorLevel(signal.level)}
+              </Text>
+            </View>
+            <Text style={styles.behaviorSignalText}>{signal.message}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function formatBehaviorLevel(level: BehaviorSignalLevel) {
+  if (level === "strong") {
+    return "strong";
+  }
+
+  if (level === "moderate") {
+    return "moderate";
+  }
+
+  return "low";
+}
+
+function behaviorLevelStyle(level: BehaviorSignalLevel, styles: ReturnType<typeof createStyles>) {
+  if (level === "strong") {
+    return styles.behaviorLevelStrong;
+  }
+
+  if (level === "moderate") {
+    return styles.behaviorLevelModerate;
+  }
+
+  return styles.behaviorLevelLow;
 }
 
 function WeatherMixCard({
@@ -2092,6 +2150,52 @@ function createStyles(theme: ThemePalette) {
       fontWeight: "800",
     },
     sourceStatusText: {
+      color: theme.mutedText,
+      lineHeight: 21,
+    },
+    behaviorPanel: {
+      backgroundColor: theme.cardAlt,
+      borderRadius: 18,
+      padding: 16,
+      gap: 12,
+    },
+    behaviorSummary: {
+      color: theme.text,
+      fontSize: 17,
+      lineHeight: 24,
+      fontWeight: "700",
+    },
+    behaviorSignalGrid: {
+      gap: 10,
+    },
+    behaviorSignalCard: {
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 7,
+    },
+    behaviorSignalLabel: {
+      color: theme.text,
+      fontSize: 14,
+      fontWeight: "800",
+    },
+    behaviorSignalLevel: {
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
+    },
+    behaviorLevelStrong: {
+      color: theme.accent,
+    },
+    behaviorLevelModerate: {
+      color: theme.eyebrow,
+    },
+    behaviorLevelLow: {
+      color: theme.mutedText,
+    },
+    behaviorSignalText: {
       color: theme.mutedText,
       lineHeight: 21,
     },

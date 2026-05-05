@@ -1,5 +1,19 @@
 # Weathered Releases
 
+## 1.7.0
+
+Weathered 1.7.0 adds the first behavioral read layer before logging.
+
+- Translates current weather, mood, and energy into focus, social, and decision-risk signals.
+- Shows a practical behavioral read in the Log flow before the user saves an entry.
+- Keeps the language advisory and agency-preserving, setting up future recommendations.
+
+Validation:
+
+```bash
+npm run typecheck
+```
+
 ## 1.6.0
 
 Weathered 1.6.0 adds a visible weather source readiness read before logging.

@@ -14,6 +14,7 @@ export type DecisionOption = (typeof DECISION_OPTIONS)[DecisionCategory][number]
 export type WeatherCondition = "sunny" | "cloudy" | "rainy";
 export type WeatherSourceMode = "daily_mock" | "seasonal_mock";
 export type InsightConfidence = "low" | "medium" | "high";
+export type BehaviorSignalLevel = "low" | "moderate" | "strong";
 
 export interface WeatherSnapshot {
   condition: WeatherCondition;
@@ -56,6 +57,19 @@ export interface DecisionForecast {
   weatherCondition: WeatherCondition;
   categoryFocus: DecisionCategory;
   signalStrength: number;
+}
+
+export interface BehaviorSignal {
+  id: string;
+  label: string;
+  level: BehaviorSignalLevel;
+  message: string;
+}
+
+export interface BehavioralRead {
+  title: string;
+  summary: string;
+  signals: BehaviorSignal[];
 }
 
 export interface WeeklySummary {

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.6`
+`1.7`
 
 Highlights:
 
+- behavioral read cards for focus, social energy, and decision risk
 - weather source readiness panel in the Log flow
 - persisted local weather source preference
 - selectable local weather sources for daily and seasonal context
@@ -83,7 +84,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
-- connect a live provider behind the source readiness layer
+- recommendation nudges powered by behavioral signals
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 
