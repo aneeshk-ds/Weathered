@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.8`
+`1.8.1`
 
 Highlights:
 
+- Expo Go compatibility updated to SDK 55
 - recommendation nudges for do, pause, and reframe choices
 - behavioral read cards for focus, social energy, and decision risk
 - weather source readiness panel in the Log flow

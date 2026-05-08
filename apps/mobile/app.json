@@ -2,7 +2,7 @@
   "expo": {
     "name": "Weathered",
     "slug": "weathered",
-    "version": "1.8.0",
+    "version": "1.8.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [

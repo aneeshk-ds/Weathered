@@ -452,7 +452,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.8</Text>
+              <Text style={styles.eyebrow}>Weathered 1.8.1</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -476,7 +476,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.8</Text>
+              <Text style={styles.versionValue}>1.8.1</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>

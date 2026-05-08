@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.8.1
+
+Weathered 1.8.1 fixes Expo Go compatibility for current devices.
+
+- Upgrades mobile runtime dependencies from Expo SDK 53 to SDK 55.
+- Aligns React Native, React, React DOM, AsyncStorage, Metro runtime, and React Native Web with Expo SDK 55.
+- Keeps the 1.8 recommendation nudge UI intact after the runtime upgrade.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.8.0
 
 Weathered 1.8.0 adds recommendation nudges before logging.

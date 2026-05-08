@@ -1,6 +1,6 @@
 {
   "name": "@weathered/mobile",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -11,18 +11,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~5.0.5",
-    "@react-native-async-storage/async-storage": "2.1.2",
-    "@weathered/shared": "1.8.0",
-    "expo": "~53.0.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.6",
-    "react-native-web": "^0.20.0",
-    "typescript": "~5.8.3"
+    "@expo/metro-runtime": "~55.0.11",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@weathered/shared": "1.8.1",
+    "expo": "~55.0.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.6",
+    "react-native-web": "~0.21.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.2"
   }
 }
