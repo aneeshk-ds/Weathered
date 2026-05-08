@@ -1,5 +1,19 @@
 # Weathered Releases
 
+## 1.8.0
+
+Weathered 1.8.0 adds recommendation nudges before logging.
+
+- Converts behavioral reads into practical do, pause, and reframe nudges.
+- Tunes nudges to the active decision type: social, work, spending, or other.
+- Keeps guidance advisory and reversible, so the app supports judgment rather than taking over.
+
+Validation:
+
+```bash
+npm run typecheck
+```
+
 ## 1.7.0
 
 Weathered 1.7.0 adds the first behavioral read layer before logging.

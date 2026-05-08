@@ -15,6 +15,7 @@ export type WeatherCondition = "sunny" | "cloudy" | "rainy";
 export type WeatherSourceMode = "daily_mock" | "seasonal_mock";
 export type InsightConfidence = "low" | "medium" | "high";
 export type BehaviorSignalLevel = "low" | "moderate" | "strong";
+export type RecommendationTone = "encourage" | "caution" | "reframe";
 
 export interface WeatherSnapshot {
   condition: WeatherCondition;
@@ -70,6 +71,14 @@ export interface BehavioralRead {
   title: string;
   summary: string;
   signals: BehaviorSignal[];
+}
+
+export interface RecommendationNudge {
+  id: string;
+  title: string;
+  message: string;
+  actionLabel: string;
+  tone: RecommendationTone;
 }
 
 export interface WeeklySummary {

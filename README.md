@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.7`
+`1.8`
 
 Highlights:
 
+- recommendation nudges for do, pause, and reframe choices
 - behavioral read cards for focus, social energy, and decision risk
 - weather source readiness panel in the Log flow
 - persisted local weather source preference
@@ -84,7 +85,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
-- recommendation nudges powered by behavioral signals
+- personalized nudge tuning from saved decision patterns
 - repository/storage abstraction for future sync
 - richer optional notes and reflection
 

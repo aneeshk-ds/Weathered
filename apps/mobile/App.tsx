@@ -21,10 +21,12 @@ import {
   type DecisionOption,
   type EnergyLevel,
   type Insight,
+  type RecommendationNudge,
+  type RecommendationTone,
   type WeatherSnapshot,
   type WeatherSourceMode,
 } from "@weathered/shared";
-import { buildBehavioralRead } from "./src/lib/behavior";
+import { buildBehavioralRead, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { loadEntries, loadPreferences, saveEntries, savePreferences } from "./src/lib/storage";
@@ -271,6 +273,13 @@ export default function App() {
   const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
   const weatherSourceStatus = describeWeatherSource(weatherSourceMode);
   const behavioralRead = buildBehavioralRead({ mood, energy, weather: currentWeather });
+  const recommendationNudges = buildRecommendationNudges({
+    read: behavioralRead,
+    category,
+    mood,
+    energy,
+    weather: currentWeather,
+  });
   const summary = buildSummary(entries);
   const forecast = buildDecisionForecast(entries, currentWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
@@ -443,7 +452,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.7</Text>
+              <Text style={styles.eyebrow}>Weathered 1.8</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -467,7 +476,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.7</Text>
+              <Text style={styles.versionValue}>1.8</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -544,6 +553,8 @@ export default function App() {
             </View>
 
             <BehavioralReadCard read={behavioralRead} styles={styles} />
+
+            <RecommendationNudgeCard nudges={recommendationNudges} styles={styles} />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1043,6 +1054,56 @@ function BehavioralReadCard({
       </View>
     </View>
   );
+}
+
+function RecommendationNudgeCard({
+  nudges,
+  styles,
+}: {
+  nudges: RecommendationNudge[];
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.recommendationPanel}>
+      <Text style={styles.summaryTitle}>Recommendation Nudges</Text>
+      <View style={styles.recommendationGrid}>
+        {nudges.map((nudge) => (
+          <View key={nudge.id} style={[styles.recommendationCard, recommendationToneStyle(nudge.tone, styles)]}>
+            <View style={styles.forecastHeader}>
+              <Text style={styles.recommendationTone}>{formatRecommendationTone(nudge.tone)}</Text>
+              <Text style={styles.recommendationAction}>{nudge.actionLabel}</Text>
+            </View>
+            <Text style={styles.recommendationTitle}>{nudge.title}</Text>
+            <Text style={styles.recommendationText}>{nudge.message}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function formatRecommendationTone(tone: RecommendationTone) {
+  if (tone === "caution") {
+    return "pause";
+  }
+
+  if (tone === "reframe") {
+    return "reframe";
+  }
+
+  return "go";
+}
+
+function recommendationToneStyle(tone: RecommendationTone, styles: ReturnType<typeof createStyles>) {
+  if (tone === "caution") {
+    return styles.recommendationCaution;
+  }
+
+  if (tone === "reframe") {
+    return styles.recommendationReframe;
+  }
+
+  return styles.recommendationEncourage;
 }
 
 function formatBehaviorLevel(level: BehaviorSignalLevel) {
@@ -2196,6 +2257,55 @@ function createStyles(theme: ThemePalette) {
       color: theme.mutedText,
     },
     behaviorSignalText: {
+      color: theme.mutedText,
+      lineHeight: 21,
+    },
+    recommendationPanel: {
+      backgroundColor: theme.card,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 12,
+    },
+    recommendationGrid: {
+      gap: 10,
+    },
+    recommendationCard: {
+      padding: 14,
+      borderRadius: 16,
+      borderLeftWidth: 4,
+      backgroundColor: theme.cardAlt,
+      gap: 7,
+    },
+    recommendationEncourage: {
+      borderLeftColor: theme.accent,
+    },
+    recommendationCaution: {
+      borderLeftColor: "#D97706",
+    },
+    recommendationReframe: {
+      borderLeftColor: theme.eyebrow,
+    },
+    recommendationTone: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    recommendationAction: {
+      color: theme.accent,
+      fontSize: 12,
+      fontWeight: "800",
+      flexShrink: 1,
+      textAlign: "right",
+    },
+    recommendationTitle: {
+      color: theme.text,
+      fontSize: 16,
+      fontWeight: "900",
+    },
+    recommendationText: {
       color: theme.mutedText,
       lineHeight: 21,
     },
