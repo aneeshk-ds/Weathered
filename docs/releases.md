@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.13.0
+
+Weathered 1.13.0 adds an in-app 2.0 readiness panel.
+
+- Shows the remaining gates before a major version jump.
+- Keeps live weather API, personalized nudge tuning, and device-tested release flow visible in the Log flow.
+- Makes versioning intentional instead of stretching 1.x indefinitely.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.12.0
 
 Weathered 1.12.0 adds a live-ready weather source path.

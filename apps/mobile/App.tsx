@@ -493,7 +493,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.12</Text>
+              <Text style={styles.eyebrow}>Weathered 1.13</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -517,7 +517,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.12</Text>
+              <Text style={styles.versionValue}>1.13</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -603,6 +603,8 @@ export default function App() {
               onFeedback={handleNudgeFeedback}
               styles={styles}
             />
+
+            <VersionMilestoneCard styles={styles} />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1174,6 +1176,40 @@ function DecisionReadinessCard({
       </View>
       <Text style={styles.recommendationText}>{readiness.message}</Text>
       <Text style={styles.recommendationEvidence}>{readiness.drivers.slice(0, 4).join(" • ")}</Text>
+    </View>
+  );
+}
+
+function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
+  return (
+    <View style={styles.milestonePanel}>
+      <View style={styles.forecastHeader}>
+        <Text style={styles.recommendationTone}>2.0 Readiness</Text>
+        <Text style={styles.milestoneStatus}>3 gates left</Text>
+      </View>
+      <Text style={styles.recommendationTitle}>Next major version needs real-world data confidence.</Text>
+      <View style={styles.milestoneGrid}>
+        <MilestoneItem label="Live weather API" status="next" styles={styles} />
+        <MilestoneItem label="Personalized nudge tuning" status="started" styles={styles} />
+        <MilestoneItem label="Device-tested release flow" status="next" styles={styles} />
+      </View>
+    </View>
+  );
+}
+
+function MilestoneItem({
+  label,
+  status,
+  styles,
+}: {
+  label: string;
+  status: "started" | "next";
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.milestoneItem}>
+      <Text style={styles.milestoneDot}>{status === "started" ? "●" : "○"}</Text>
+      <Text style={styles.milestoneText}>{label}</Text>
     </View>
   );
 }
@@ -2463,6 +2499,38 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
+    },
+    milestonePanel: {
+      backgroundColor: theme.cardAlt,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 12,
+    },
+    milestoneStatus: {
+      color: theme.statusText,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    milestoneGrid: {
+      gap: 8,
+    },
+    milestoneItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    milestoneDot: {
+      color: theme.accent,
+      fontSize: 14,
+      fontWeight: "900",
+    },
+    milestoneText: {
+      color: theme.mutedText,
+      fontWeight: "700",
+      flex: 1,
     },
     nudgeFeedbackRow: {
       flexDirection: "row",

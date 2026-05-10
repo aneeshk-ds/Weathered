@@ -1,6 +1,6 @@
 {
   "name": "@weathered/api",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -8,7 +8,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@weathered/shared": "1.12.0",
+    "@weathered/shared": "1.13.0",
     "express": "^4.21.2",
     "cors": "^2.8.5"
   },

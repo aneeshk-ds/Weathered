@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.12`
+`1.13`
 
 Highlights:
 
+- 2.0 readiness milestone panel
 - live-ready weather source with local fallback
 - decision readiness score for the current choice window
 - local feedback controls for recommendation nudges
