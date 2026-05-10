@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.17.0
+
+Weathered 1.17.0 adds a manual API retry control for Live Ready weather.
+
+- Adds Retry API to the Live Ready weather source card.
+- Lets users re-check API/fallback state without switching source modes.
+- Keeps fallback behavior visible when the API is unavailable.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.16.0
 
 Weathered 1.16.0 connects mobile Live Ready mode to the API route.

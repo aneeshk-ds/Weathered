@@ -396,6 +396,23 @@ export default function App() {
     };
   }, [weatherSourceMode]);
 
+  const handleRefreshLiveWeather = () => {
+    const fallbackWeather = buildLocalWeatherSnapshot("live_ready");
+
+    setCurrentWeather(fallbackWeather);
+    setWeatherSyncState("syncing");
+
+    fetchLiveReadyWeatherSnapshot()
+      .then((snapshot) => {
+        setCurrentWeather(snapshot);
+        setWeatherSyncState(snapshot.locationLabel.includes("fallback") ? "fallback" : "api");
+      })
+      .catch(() => {
+        setCurrentWeather(fallbackWeather);
+        setWeatherSyncState("fallback");
+      });
+  };
+
   useEffect(() => {
     if (isHydrating) {
       return;
@@ -534,7 +551,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.16</Text>
+              <Text style={styles.eyebrow}>Weathered 1.17</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -558,7 +575,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.16</Text>
+              <Text style={styles.versionValue}>1.17</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -625,7 +642,12 @@ export default function App() {
                   />
                 ))}
               </View>
-              <WeatherSourceStatusCard status={weatherSourceStatus} syncState={weatherSyncState} styles={styles} />
+              <WeatherSourceStatusCard
+                status={weatherSourceStatus}
+                syncState={weatherSyncState}
+                onRetry={handleRefreshLiveWeather}
+                styles={styles}
+              />
             </View>
 
             <View style={styles.infographicRow}>
@@ -1103,10 +1125,12 @@ function PulseBadge({
 function WeatherSourceStatusCard({
   status,
   syncState,
+  onRetry,
   styles,
 }: {
   status: WeatherSourceStatus;
   syncState: WeatherSyncState;
+  onRetry: () => void;
   styles: ReturnType<typeof createStyles>;
 }) {
   return (
@@ -1120,6 +1144,14 @@ function WeatherSourceStatusCard({
       <Text style={styles.sourceStatusSync}>{formatWeatherSyncState(syncState)}</Text>
       {status.provider ? (
         <View style={styles.providerChecklist}>
+          <Pressable
+            accessibilityRole="button"
+            disabled={syncState === "syncing"}
+            onPress={onRetry}
+            style={[styles.sourceRetryButton, syncState === "syncing" ? styles.sourceRetryButtonDisabled : null]}
+          >
+            <Text style={styles.sourceRetryText}>{syncState === "syncing" ? "Checking..." : "Retry API"}</Text>
+          </Pressable>
           <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
           <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
@@ -2451,6 +2483,24 @@ function createStyles(theme: ThemePalette) {
     },
     sourceStatusSync: {
       color: theme.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    sourceRetryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: theme.accentSoft,
+      borderColor: theme.accent,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    sourceRetryButtonDisabled: {
+      opacity: 0.58,
+    },
+    sourceRetryText: {
+      color: theme.statusText,
       fontSize: 12,
       fontWeight: "900",
       textTransform: "uppercase",
