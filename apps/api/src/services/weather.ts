@@ -3,6 +3,13 @@ import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
 const conditions: WeatherSnapshot["condition"][] = ["sunny", "cloudy", "rainy"];
 
 export function mockWeatherSnapshot(mode: WeatherSourceMode = "daily_mock"): WeatherSnapshot {
+  if (mode === "live_ready") {
+    return {
+      ...seasonalWeatherSnapshot(),
+      locationLabel: "Bengaluru live-ready fallback",
+    };
+  }
+
   if (mode === "seasonal_mock") {
     return seasonalWeatherSnapshot();
   }

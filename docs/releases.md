@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.12.0
+
+Weathered 1.12.0 adds a live-ready weather source path.
+
+- Adds a Live Ready source option in the Log flow.
+- Keeps the app functional through a local fallback while a provider API key is added.
+- Extends API and mobile weather source handling to accept the live-ready mode.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.11.0
 
 Weathered 1.11.0 adds a Decision Readiness Score before logging.

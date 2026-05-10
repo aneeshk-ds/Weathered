@@ -98,7 +98,7 @@ export async function saveRecommendationFeedback(feedback: RecommendationFeedbac
 }
 
 function isWeatherSourceMode(value: unknown): value is WeatherSourceMode {
-  return value === "daily_mock" || value === "seasonal_mock";
+  return value === "daily_mock" || value === "seasonal_mock" || value === "live_ready";
 }
 
 function isRecommendationFeedback(value: RecommendationFeedback): value is RecommendationFeedback {

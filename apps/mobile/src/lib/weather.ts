@@ -1,6 +1,6 @@
 import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
 
-export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["daily_mock", "seasonal_mock"];
+export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["daily_mock", "seasonal_mock", "live_ready"];
 
 export interface WeatherSourceStatus {
   label: string;
@@ -13,6 +13,10 @@ export function buildLocalWeatherSnapshot(
   mode: WeatherSourceMode,
   date: Date = new Date(),
 ): WeatherSnapshot {
+  if (mode === "live_ready") {
+    return buildLiveReadySnapshot(date);
+  }
+
   if (mode === "seasonal_mock") {
     return buildSeasonalSnapshot(date);
   }
@@ -21,10 +25,23 @@ export function buildLocalWeatherSnapshot(
 }
 
 export function formatWeatherSource(mode: WeatherSourceMode) {
+  if (mode === "live_ready") {
+    return "live ready";
+  }
+
   return mode === "seasonal_mock" ? "seasonal" : "daily";
 }
 
 export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceStatus {
+  if (mode === "live_ready") {
+    return {
+      label: "Live Ready",
+      title: "Provider handoff is prepared",
+      message: "Weathered is using the local fallback shape while the live weather API key and provider endpoint are wired in.",
+      readiness: "Needs API key",
+    };
+  }
+
   if (mode === "seasonal_mock") {
     return {
       label: "Local Seasonal",
@@ -39,6 +56,13 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
     title: "Daily rotating context is active",
     message: "Weathered is using a date-based local weather cycle so patterns can be tested without network data.",
     readiness: "Prototype stable",
+  };
+}
+
+function buildLiveReadySnapshot(date: Date): WeatherSnapshot {
+  return {
+    ...buildSeasonalSnapshot(date),
+    locationLabel: "Bengaluru live-ready fallback",
   };
 }
 

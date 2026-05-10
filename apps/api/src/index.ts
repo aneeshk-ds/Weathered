@@ -17,7 +17,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/context/weather", (req, res) => {
-  const mode = req.query.mode === "seasonal_mock" ? "seasonal_mock" : "daily_mock";
+  const mode =
+    req.query.mode === "live_ready" ? "live_ready" : req.query.mode === "seasonal_mock" ? "seasonal_mock" : "daily_mock";
   res.json(mockWeatherSnapshot(mode));
 });
 
