@@ -16,6 +16,7 @@ export type WeatherSourceMode = "daily_mock" | "seasonal_mock";
 export type InsightConfidence = "low" | "medium" | "high";
 export type BehaviorSignalLevel = "low" | "moderate" | "strong";
 export type RecommendationTone = "encourage" | "caution" | "reframe";
+export type RecommendationFeedbackValue = "helpful" | "not_now";
 
 export interface WeatherSnapshot {
   condition: WeatherCondition;
@@ -80,6 +81,12 @@ export interface RecommendationNudge {
   actionLabel: string;
   tone: RecommendationTone;
   evidenceLabel?: string;
+}
+
+export interface RecommendationFeedback {
+  nudgeId: string;
+  value: RecommendationFeedbackValue;
+  timestamp: string;
 }
 
 export interface WeeklySummary {

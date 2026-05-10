@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { DecisionLogInput, WeatherSourceMode } from "@weathered/shared";
+import type { DecisionLogInput, RecommendationFeedback, WeatherSourceMode } from "@weathered/shared";
 
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
+const NUDGE_FEEDBACK_KEY = "weathered.local.nudge-feedback.v1";
 
 export interface LocalPreferences {
   weatherSourceMode: WeatherSourceMode;
@@ -73,6 +74,37 @@ export async function savePreferences(preferences: LocalPreferences): Promise<bo
   }
 }
 
+export async function loadRecommendationFeedback(): Promise<RecommendationFeedback[]> {
+  try {
+    const raw = await AsyncStorage.getItem(NUDGE_FEEDBACK_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw) as RecommendationFeedback[];
+    return Array.isArray(parsed) ? parsed.filter(isRecommendationFeedback) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveRecommendationFeedback(feedback: RecommendationFeedback[]): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem(NUDGE_FEEDBACK_KEY, JSON.stringify(feedback));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isWeatherSourceMode(value: unknown): value is WeatherSourceMode {
   return value === "daily_mock" || value === "seasonal_mock";
+}
+
+function isRecommendationFeedback(value: RecommendationFeedback): value is RecommendationFeedback {
+  return (
+    typeof value?.nudgeId === "string" &&
+    (value.value === "helpful" || value.value === "not_now") &&
+    typeof value.timestamp === "string"
+  );
 }

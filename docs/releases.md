@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.10.0
+
+Weathered 1.10.0 adds local feedback controls to recommendation nudges.
+
+- Lets users mark each nudge as Helpful or Not now.
+- Persists nudge feedback locally with AsyncStorage.
+- Clears nudge feedback when local entries are cleared, keeping the prototype state coherent.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.9.0
 
 Weathered 1.9.0 makes recommendation nudges history-aware.

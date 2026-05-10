@@ -21,6 +21,8 @@ import {
   type DecisionOption,
   type EnergyLevel,
   type Insight,
+  type RecommendationFeedback,
+  type RecommendationFeedbackValue,
   type RecommendationNudge,
   type RecommendationTone,
   type WeatherSnapshot,
@@ -29,7 +31,14 @@ import {
 import { buildBehavioralRead, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
-import { loadEntries, loadPreferences, saveEntries, savePreferences } from "./src/lib/storage";
+import {
+  loadEntries,
+  loadPreferences,
+  loadRecommendationFeedback,
+  saveEntries,
+  savePreferences,
+  saveRecommendationFeedback,
+} from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
 import {
   buildLocalWeatherSnapshot,
@@ -263,6 +272,7 @@ export default function App() {
   const [outcome, setOutcome] = useState<DecisionOption>("go_out");
   const [note, setNote] = useState("");
   const [latestInsight, setLatestInsight] = useState<Insight | null>(null);
+  const [nudgeFeedback, setNudgeFeedback] = useState<RecommendationFeedback[]>([]);
   const [editor, setEditor] = useState<EntryEditorState>(null);
   const [isHydrating, setIsHydrating] = useState(true);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
@@ -314,13 +324,18 @@ export default function App() {
     let isMounted = true;
 
     async function hydrate() {
-      const [nextEntries, preferences] = await Promise.all([loadEntries(seededEntries), loadPreferences()]);
+      const [nextEntries, preferences, nextNudgeFeedback] = await Promise.all([
+        loadEntries(seededEntries),
+        loadPreferences(),
+        loadRecommendationFeedback(),
+      ]);
       if (!isMounted) {
         return;
       }
 
       setEntries(nextEntries);
       setWeatherSourceMode(preferences.weatherSourceMode);
+      setNudgeFeedback(nextNudgeFeedback);
       setIsHydrating(false);
     }
 
@@ -351,6 +366,14 @@ export default function App() {
 
     savePreferences({ weatherSourceMode });
   }, [weatherSourceMode, isHydrating]);
+
+  useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
+    saveRecommendationFeedback(nudgeFeedback);
+  }, [nudgeFeedback, isHydrating]);
 
   const handleCategorySelect = (nextCategory: DecisionCategory) => {
     setCategory(nextCategory);
@@ -387,9 +410,17 @@ export default function App() {
 
   const handleClearEntries = () => {
     setEntries([]);
+    setNudgeFeedback([]);
     setLatestInsight(null);
     setEditor(null);
     setSaveState("idle");
+  };
+
+  const handleNudgeFeedback = (nudgeId: string, value: RecommendationFeedbackValue) => {
+    setNudgeFeedback((current) => [
+      { nudgeId, value, timestamp: new Date().toISOString() },
+      ...current.filter((item) => item.nudgeId !== nudgeId),
+    ]);
   };
 
   const handleDeleteEntry = (id: string) => {
@@ -453,7 +484,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.9</Text>
+              <Text style={styles.eyebrow}>Weathered 1.10</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -477,7 +508,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.9</Text>
+              <Text style={styles.versionValue}>1.10</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -555,7 +586,12 @@ export default function App() {
 
             <BehavioralReadCard read={behavioralRead} styles={styles} />
 
-            <RecommendationNudgeCard nudges={recommendationNudges} styles={styles} />
+            <RecommendationNudgeCard
+              feedback={nudgeFeedback}
+              nudges={recommendationNudges}
+              onFeedback={handleNudgeFeedback}
+              styles={styles}
+            />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1058,29 +1094,69 @@ function BehavioralReadCard({
 }
 
 function RecommendationNudgeCard({
+  feedback,
   nudges,
+  onFeedback,
   styles,
 }: {
+  feedback: RecommendationFeedback[];
   nudges: RecommendationNudge[];
+  onFeedback: (nudgeId: string, value: RecommendationFeedbackValue) => void;
   styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.recommendationPanel}>
       <Text style={styles.summaryTitle}>Recommendation Nudges</Text>
       <View style={styles.recommendationGrid}>
-        {nudges.map((nudge) => (
-          <View key={nudge.id} style={[styles.recommendationCard, recommendationToneStyle(nudge.tone, styles)]}>
-            <View style={styles.forecastHeader}>
-              <Text style={styles.recommendationTone}>{formatRecommendationTone(nudge.tone)}</Text>
-              <Text style={styles.recommendationAction}>{nudge.actionLabel}</Text>
+        {nudges.map((nudge) => {
+          const selectedFeedback = feedback.find((item) => item.nudgeId === nudge.id)?.value;
+
+          return (
+            <View key={nudge.id} style={[styles.recommendationCard, recommendationToneStyle(nudge.tone, styles)]}>
+              <View style={styles.forecastHeader}>
+                <Text style={styles.recommendationTone}>{formatRecommendationTone(nudge.tone)}</Text>
+                <Text style={styles.recommendationAction}>{nudge.actionLabel}</Text>
+              </View>
+              <Text style={styles.recommendationTitle}>{nudge.title}</Text>
+              <Text style={styles.recommendationText}>{nudge.message}</Text>
+              {nudge.evidenceLabel ? <Text style={styles.recommendationEvidence}>{nudge.evidenceLabel}</Text> : null}
+              <View style={styles.nudgeFeedbackRow}>
+                <NudgeFeedbackButton
+                  label="Helpful"
+                  selected={selectedFeedback === "helpful"}
+                  onPress={() => onFeedback(nudge.id, "helpful")}
+                  styles={styles}
+                />
+                <NudgeFeedbackButton
+                  label="Not now"
+                  selected={selectedFeedback === "not_now"}
+                  onPress={() => onFeedback(nudge.id, "not_now")}
+                  styles={styles}
+                />
+              </View>
             </View>
-            <Text style={styles.recommendationTitle}>{nudge.title}</Text>
-            <Text style={styles.recommendationText}>{nudge.message}</Text>
-            {nudge.evidenceLabel ? <Text style={styles.recommendationEvidence}>{nudge.evidenceLabel}</Text> : null}
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
+  );
+}
+
+function NudgeFeedbackButton({
+  label,
+  selected,
+  onPress,
+  styles,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <Pressable style={[styles.nudgeFeedbackButton, selected && styles.nudgeFeedbackButtonSelected]} onPress={onPress}>
+      <Text style={[styles.nudgeFeedbackText, selected && styles.nudgeFeedbackTextSelected]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -2316,6 +2392,32 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
+    },
+    nudgeFeedbackRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      paddingTop: 4,
+    },
+    nudgeFeedbackButton: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    nudgeFeedbackButtonSelected: {
+      backgroundColor: theme.accentSoft,
+      borderColor: theme.accent,
+    },
+    nudgeFeedbackText: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "800",
+    },
+    nudgeFeedbackTextSelected: {
+      color: theme.statusText,
     },
     unifiedDarkPanel: {
       backgroundColor: "#071017",
