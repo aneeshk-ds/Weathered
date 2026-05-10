@@ -1,6 +1,6 @@
 # Live Weather Setup
 
-Weathered is live-ready in the mobile app and has an API-side Open-Meteo adapter for no-key prototyping. The mobile app still uses local fallback until it is pointed at the API.
+Weathered is live-ready in the mobile app and has an API-side Open-Meteo adapter for no-key prototyping. The mobile app calls the API when `live_ready` is selected, then falls back locally if the API is unavailable.
 
 ## Target Provider
 
@@ -15,6 +15,7 @@ Expected public mobile key:
 
 ```bash
 EXPO_PUBLIC_WEATHER_API_KEY=
+EXPO_PUBLIC_WEATHER_API_URL=http://localhost:4000
 ```
 
 Server-side key, if the API owns provider calls later:
@@ -47,7 +48,8 @@ GET /context/weather?mode=live_ready
 Expected behavior:
 
 - If Open-Meteo succeeds, return a normalized `WeatherSnapshot`.
-- If Open-Meteo fails, return the existing local fallback.
+- If Open-Meteo fails, return the existing API fallback.
+- If the API is unavailable, mobile returns its local fallback.
 - Never block logging because weather lookup failed.
 
 ## 2.0 Gate

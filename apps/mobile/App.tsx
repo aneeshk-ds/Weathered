@@ -44,6 +44,7 @@ import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
 import {
   buildLocalWeatherSnapshot,
   describeWeatherSource,
+  fetchLiveReadyWeatherSnapshot,
   formatWeatherSource,
   type WeatherSourceStatus,
   WEATHER_SOURCE_OPTIONS,
@@ -51,6 +52,7 @@ import {
 
 type AppTab = "log" | "history" | "summary";
 type ThemeMode = "light" | "dark";
+type WeatherSyncState = "local" | "syncing" | "api" | "fallback";
 type EntryEditorState = {
   id: string;
   mood: number;
@@ -267,6 +269,8 @@ export default function App() {
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
+  const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("daily_mock"));
+  const [weatherSyncState, setWeatherSyncState] = useState<WeatherSyncState>("local");
   const [mood, setMood] = useState<number>(6);
   const [energy, setEnergy] = useState<EnergyLevel>("medium");
   const [category, setCategory] = useState<DecisionCategory>("social");
@@ -281,7 +285,6 @@ export default function App() {
   const theme = themeMode === "light" ? lightTheme : darkTheme;
   const styles = createStyles(theme);
   const availableOutcomes = DECISION_OPTIONS[category];
-  const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
   const weatherSourceStatus = describeWeatherSource(weatherSourceMode);
   const behavioralRead = buildBehavioralRead({ mood, energy, weather: currentWeather });
   const decisionReadiness = buildDecisionReadiness({
@@ -354,6 +357,44 @@ export default function App() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fallbackWeather = buildLocalWeatherSnapshot(weatherSourceMode);
+
+    if (weatherSourceMode !== "live_ready") {
+      setCurrentWeather(fallbackWeather);
+      setWeatherSyncState("local");
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    setCurrentWeather(fallbackWeather);
+    setWeatherSyncState("syncing");
+
+    fetchLiveReadyWeatherSnapshot()
+      .then((snapshot) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setCurrentWeather(snapshot);
+        setWeatherSyncState(snapshot.locationLabel.includes("fallback") ? "fallback" : "api");
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setCurrentWeather(fallbackWeather);
+        setWeatherSyncState("fallback");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [weatherSourceMode]);
 
   useEffect(() => {
     if (isHydrating) {
@@ -493,7 +534,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.14</Text>
+              <Text style={styles.eyebrow}>Weathered 1.16</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -517,7 +558,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.14</Text>
+              <Text style={styles.versionValue}>1.16</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -584,7 +625,7 @@ export default function App() {
                   />
                 ))}
               </View>
-              <WeatherSourceStatusCard status={weatherSourceStatus} styles={styles} />
+              <WeatherSourceStatusCard status={weatherSourceStatus} syncState={weatherSyncState} styles={styles} />
             </View>
 
             <View style={styles.infographicRow}>
@@ -1061,9 +1102,11 @@ function PulseBadge({
 
 function WeatherSourceStatusCard({
   status,
+  syncState,
   styles,
 }: {
   status: WeatherSourceStatus;
+  syncState: WeatherSyncState;
   styles: ReturnType<typeof createStyles>;
 }) {
   return (
@@ -1074,6 +1117,7 @@ function WeatherSourceStatusCard({
       </View>
       <Text style={styles.sourceStatusTitle}>{status.title}</Text>
       <Text style={styles.sourceStatusText}>{status.message}</Text>
+      <Text style={styles.sourceStatusSync}>{formatWeatherSyncState(syncState)}</Text>
       {status.provider ? (
         <View style={styles.providerChecklist}>
           <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
@@ -1084,6 +1128,22 @@ function WeatherSourceStatusCard({
       ) : null}
     </View>
   );
+}
+
+function formatWeatherSyncState(syncState: WeatherSyncState) {
+  if (syncState === "syncing") {
+    return "Checking API route";
+  }
+
+  if (syncState === "api") {
+    return "API weather connected";
+  }
+
+  if (syncState === "fallback") {
+    return "Local fallback active";
+  }
+
+  return "Local source active";
 }
 
 function ProviderChecklistRow({
@@ -2388,6 +2448,12 @@ function createStyles(theme: ThemePalette) {
     sourceStatusText: {
       color: theme.mutedText,
       lineHeight: 21,
+    },
+    sourceStatusSync: {
+      color: theme.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
     },
     providerChecklist: {
       gap: 6,

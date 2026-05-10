@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.15`
+`1.16`
 
 Highlights:
 
+- mobile Live Ready API fetch with fallback
 - API-side Open-Meteo adapter for live-ready weather
 - provider handoff checklist for live weather
 - 2.0 readiness milestone panel

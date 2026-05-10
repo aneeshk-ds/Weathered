@@ -1,6 +1,13 @@
 import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
 
+declare const process: {
+  env?: {
+    EXPO_PUBLIC_WEATHER_API_URL?: string;
+  };
+};
+
 export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["daily_mock", "seasonal_mock", "live_ready"];
+const defaultWeatherApiBaseUrl = "http://localhost:4000";
 
 export interface WeatherSourceStatus {
   label: string;
@@ -67,11 +74,46 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
   };
 }
 
+export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> {
+  const apiBaseUrl = process.env?.EXPO_PUBLIC_WEATHER_API_URL || defaultWeatherApiBaseUrl;
+  const response = await fetch(`${apiBaseUrl}/context/weather?mode=live_ready`);
+
+  if (!response.ok) {
+    throw new Error(`Weather API request failed: ${response.status}`);
+  }
+
+  return normalizeWeatherSnapshot(await response.json());
+}
+
 function buildLiveReadySnapshot(date: Date): WeatherSnapshot {
   return {
     ...buildSeasonalSnapshot(date),
     locationLabel: "Bengaluru live-ready fallback",
   };
+}
+
+function normalizeWeatherSnapshot(value: unknown): WeatherSnapshot {
+  const snapshot = value as Partial<WeatherSnapshot>;
+
+  if (
+    !isWeatherCondition(snapshot.condition) ||
+    typeof snapshot.temperatureC !== "number" ||
+    typeof snapshot.humidity !== "number" ||
+    typeof snapshot.locationLabel !== "string"
+  ) {
+    throw new Error("Weather API returned an invalid snapshot");
+  }
+
+  return {
+    condition: snapshot.condition,
+    temperatureC: Math.round(snapshot.temperatureC),
+    humidity: Math.round(snapshot.humidity),
+    locationLabel: snapshot.locationLabel,
+  };
+}
+
+function isWeatherCondition(value: unknown): value is WeatherSnapshot["condition"] {
+  return value === "sunny" || value === "cloudy" || value === "rainy";
 }
 
 function buildDailySnapshot(date: Date): WeatherSnapshot {

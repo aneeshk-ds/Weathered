@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.16.0
+
+Weathered 1.16.0 connects mobile Live Ready mode to the API route.
+
+- Fetches `/context/weather?mode=live_ready` when Live Ready is selected.
+- Falls back to the local live-ready weather profile if the API is unavailable.
+- Shows the weather sync state inside the Weather Source card.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.15.0
 
 Weathered 1.15.0 adds the first API-side live weather adapter.
