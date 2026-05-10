@@ -3,6 +3,7 @@ import type {
   BehaviorSignal,
   DecisionCategory,
   DecisionLogInput,
+  DecisionReadiness,
   EnergyLevel,
   RecommendationNudge,
   WeatherSnapshot,
@@ -133,6 +134,95 @@ export function buildRecommendationNudges({
   ].slice(0, 3);
 }
 
+export function buildDecisionReadiness({
+  read,
+  category,
+  mood,
+  energy,
+  weather,
+  entries = [],
+}: {
+  read: BehavioralRead;
+  category: DecisionCategory;
+  mood: number;
+  energy: EnergyLevel;
+  weather: WeatherSnapshot;
+  entries?: DecisionLogInput[];
+}): DecisionReadiness {
+  const riskSignal = read.signals.find((signal) => signal.label === "Decision Risk");
+  const focusSignal = read.signals.find((signal) => signal.label === "Focus");
+  const patternSample = getPatternSample(entries, category, weather);
+  const patternMood = patternSample.length >= 2 ? getAverageMood(patternSample) : null;
+  const drivers = [`Mood ${mood}/10`, `${formatEnergyLabel(energy)} energy`, `${weather.condition} context`];
+  let score = 50 + (mood - 5) * 5;
+
+  if (energy === "high") {
+    score += 12;
+  } else if (energy === "low") {
+    score -= 12;
+  }
+
+  if (focusSignal?.level === "strong") {
+    score += 10;
+  } else if (focusSignal?.level === "low") {
+    score -= 10;
+  }
+
+  if (riskSignal?.level === "strong") {
+    score -= 24;
+    drivers.push("strong pause signal");
+  } else if (riskSignal?.level === "moderate") {
+    score -= 10;
+    drivers.push("moderate risk signal");
+  }
+
+  if (weather.temperatureC >= 30) {
+    score -= 8;
+    drivers.push("heat load");
+  }
+
+  if (patternMood !== null) {
+    score += (patternMood - 6) * 4;
+    drivers.push(`pattern mood ${patternMood.toFixed(1)}`);
+  }
+
+  const normalizedScore = clampScore(Math.round(score));
+
+  if (normalizedScore >= 75) {
+    return {
+      score: normalizedScore,
+      label: "Ready",
+      message: "Good window for a clear next step; keep it reversible if stakes are high.",
+      drivers,
+    };
+  }
+
+  if (normalizedScore >= 55) {
+    return {
+      score: normalizedScore,
+      label: "Steady",
+      message: "Proceed with one check: scope, timing, or reversibility.",
+      drivers,
+    };
+  }
+
+  return {
+    score: normalizedScore,
+    label: "Pause",
+    message: "Better moment for a smaller decision or one more data point.",
+    drivers,
+  };
+}
+
+function getPatternSample(entries: DecisionLogInput[], category: DecisionCategory, weather: WeatherSnapshot) {
+  const recentEntries = entries.slice(0, 20);
+  const exactMatches = recentEntries.filter(
+    (entry) => entry.decisionCategory === category && entry.weather.condition === weather.condition,
+  );
+
+  return exactMatches.length >= 2 ? exactMatches : recentEntries.filter((entry) => entry.decisionCategory === category);
+}
+
 function buildPatternNudge({
   entries,
   category,
@@ -146,8 +236,7 @@ function buildPatternNudge({
   const exactMatches = recentEntries.filter(
     (entry) => entry.decisionCategory === category && entry.weather.condition === weather.condition,
   );
-  const categoryMatches = recentEntries.filter((entry) => entry.decisionCategory === category);
-  const sample = exactMatches.length >= 2 ? exactMatches : categoryMatches;
+  const sample = getPatternSample(entries, category, weather);
 
   if (sample.length < 2) {
     return null;
@@ -335,4 +424,12 @@ function buildSummary(signals: BehaviorSignal[]) {
 
 function getAverageMood(entries: DecisionLogInput[]) {
   return entries.reduce((sum, entry) => sum + entry.mood, 0) / entries.length;
+}
+
+function clampScore(score: number) {
+  return Math.max(0, Math.min(100, score));
+}
+
+function formatEnergyLabel(energy: EnergyLevel) {
+  return energy.charAt(0).toUpperCase() + energy.slice(1);
 }

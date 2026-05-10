@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.11.0
+
+Weathered 1.11.0 adds a Decision Readiness Score before logging.
+
+- Condenses mood, energy, weather, risk, and local history into a 0-100 readiness score.
+- Shows a Ready, Steady, or Pause label with the main drivers behind the score.
+- Keeps the score advisory and reversible, matching the nudge model.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.10.0
 
 Weathered 1.10.0 adds local feedback controls to recommendation nudges.

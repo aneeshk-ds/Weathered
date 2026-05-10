@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.10`
+`1.11`
 
 Highlights:
 
+- decision readiness score for the current choice window
 - local feedback controls for recommendation nudges
 - personalized recommendation evidence from saved local history
 - Expo Go compatibility updated to SDK 55

@@ -19,6 +19,7 @@ import {
   type DecisionForecast,
   type DecisionLogInput,
   type DecisionOption,
+  type DecisionReadiness,
   type EnergyLevel,
   type Insight,
   type RecommendationFeedback,
@@ -28,7 +29,7 @@ import {
   type WeatherSnapshot,
   type WeatherSourceMode,
 } from "@weathered/shared";
-import { buildBehavioralRead, buildRecommendationNudges } from "./src/lib/behavior";
+import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import {
@@ -283,6 +284,14 @@ export default function App() {
   const currentWeather = buildLocalWeatherSnapshot(weatherSourceMode);
   const weatherSourceStatus = describeWeatherSource(weatherSourceMode);
   const behavioralRead = buildBehavioralRead({ mood, energy, weather: currentWeather });
+  const decisionReadiness = buildDecisionReadiness({
+    read: behavioralRead,
+    category,
+    mood,
+    energy,
+    weather: currentWeather,
+    entries,
+  });
   const recommendationNudges = buildRecommendationNudges({
     read: behavioralRead,
     category,
@@ -484,7 +493,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.10</Text>
+              <Text style={styles.eyebrow}>Weathered 1.11</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -508,7 +517,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.10</Text>
+              <Text style={styles.versionValue}>1.11</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -583,6 +592,8 @@ export default function App() {
               <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
               <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
             </View>
+
+            <DecisionReadinessCard readiness={decisionReadiness} styles={styles} />
 
             <BehavioralReadCard read={behavioralRead} styles={styles} />
 
@@ -1138,6 +1149,31 @@ function RecommendationNudgeCard({
           );
         })}
       </View>
+    </View>
+  );
+}
+
+function DecisionReadinessCard({
+  readiness,
+  styles,
+}: {
+  readiness: DecisionReadiness;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.readinessPanel}>
+      <View style={styles.readinessTopRow}>
+        <View>
+          <Text style={styles.recommendationTone}>Decision Readiness</Text>
+          <Text style={styles.readinessLabel}>{readiness.label}</Text>
+        </View>
+        <Text style={styles.readinessScore}>{readiness.score}</Text>
+      </View>
+      <View style={styles.readinessTrack}>
+        <View style={[styles.readinessFill, { width: `${readiness.score}%` }]} />
+      </View>
+      <Text style={styles.recommendationText}>{readiness.message}</Text>
+      <Text style={styles.recommendationEvidence}>{readiness.drivers.slice(0, 4).join(" • ")}</Text>
     </View>
   );
 }
@@ -2337,6 +2373,41 @@ function createStyles(theme: ThemePalette) {
     behaviorSignalText: {
       color: theme.mutedText,
       lineHeight: 21,
+    },
+    readinessPanel: {
+      backgroundColor: theme.card,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 12,
+    },
+    readinessTopRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 12,
+    },
+    readinessLabel: {
+      color: theme.text,
+      fontSize: 24,
+      fontWeight: "900",
+    },
+    readinessScore: {
+      color: theme.accent,
+      fontSize: 42,
+      fontWeight: "900",
+    },
+    readinessTrack: {
+      height: 10,
+      borderRadius: 999,
+      backgroundColor: theme.summaryTrack,
+      overflow: "hidden",
+    },
+    readinessFill: {
+      height: "100%",
+      borderRadius: 999,
+      backgroundColor: theme.accent,
     },
     recommendationPanel: {
       backgroundColor: theme.card,

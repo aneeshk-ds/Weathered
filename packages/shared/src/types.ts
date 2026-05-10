@@ -74,6 +74,13 @@ export interface BehavioralRead {
   signals: BehaviorSignal[];
 }
 
+export interface DecisionReadiness {
+  score: number;
+  label: string;
+  message: string;
+  drivers: string[];
+}
+
 export interface RecommendationNudge {
   id: string;
   title: string;
