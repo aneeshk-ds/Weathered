@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.14.0
+
+Weathered 1.14.0 makes the live weather handoff explicit.
+
+- Shows provider, environment key, API route, and fallback details in the Live Ready source state.
+- Keeps local fallback behavior visible so users understand why live weather is not active yet.
+- Preserves Expo Go compatibility and offline web preview behavior.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.13.0
 
 Weathered 1.13.0 adds an in-app 2.0 readiness panel.

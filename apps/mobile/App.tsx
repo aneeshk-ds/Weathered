@@ -493,7 +493,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.13</Text>
+              <Text style={styles.eyebrow}>Weathered 1.14</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -517,7 +517,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.13</Text>
+              <Text style={styles.versionValue}>1.14</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1074,6 +1074,31 @@ function WeatherSourceStatusCard({
       </View>
       <Text style={styles.sourceStatusTitle}>{status.title}</Text>
       <Text style={styles.sourceStatusText}>{status.message}</Text>
+      {status.provider ? (
+        <View style={styles.providerChecklist}>
+          <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
+          <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
+          <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
+          <ProviderChecklistRow label="Fallback" value={status.fallback || "Local mock"} styles={styles} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function ProviderChecklistRow({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.providerChecklistRow}>
+      <Text style={styles.providerChecklistLabel}>{label}</Text>
+      <Text style={styles.providerChecklistValue}>{value}</Text>
     </View>
   );
 }
@@ -2363,6 +2388,32 @@ function createStyles(theme: ThemePalette) {
     sourceStatusText: {
       color: theme.mutedText,
       lineHeight: 21,
+    },
+    providerChecklist: {
+      gap: 6,
+      paddingTop: 4,
+    },
+    providerChecklistRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 12,
+      paddingVertical: 6,
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+    },
+    providerChecklistLabel: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      minWidth: 72,
+    },
+    providerChecklistValue: {
+      color: theme.text,
+      fontSize: 12,
+      fontWeight: "800",
+      textAlign: "right",
+      flex: 1,
     },
     behaviorPanel: {
       backgroundColor: theme.cardAlt,
