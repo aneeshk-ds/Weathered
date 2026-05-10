@@ -279,6 +279,7 @@ export default function App() {
     mood,
     energy,
     weather: currentWeather,
+    entries,
   });
   const summary = buildSummary(entries);
   const forecast = buildDecisionForecast(entries, currentWeather);
@@ -452,7 +453,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.8.1</Text>
+              <Text style={styles.eyebrow}>Weathered 1.9</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -476,7 +477,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.8.1</Text>
+              <Text style={styles.versionValue}>1.9</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1075,6 +1076,7 @@ function RecommendationNudgeCard({
             </View>
             <Text style={styles.recommendationTitle}>{nudge.title}</Text>
             <Text style={styles.recommendationText}>{nudge.message}</Text>
+            {nudge.evidenceLabel ? <Text style={styles.recommendationEvidence}>{nudge.evidenceLabel}</Text> : null}
           </View>
         ))}
       </View>
@@ -2308,6 +2310,12 @@ function createStyles(theme: ThemePalette) {
     recommendationText: {
       color: theme.mutedText,
       lineHeight: 21,
+    },
+    recommendationEvidence: {
+      color: theme.eyebrow,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase",
     },
     unifiedDarkPanel: {
       backgroundColor: "#071017",

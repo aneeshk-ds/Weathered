@@ -79,6 +79,7 @@ export interface RecommendationNudge {
   message: string;
   actionLabel: string;
   tone: RecommendationTone;
+  evidenceLabel?: string;
 }
 
 export interface WeeklySummary {

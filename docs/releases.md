@@ -1,5 +1,20 @@
 # Weathered Releases
 
+## 1.9.0
+
+Weathered 1.9.0 makes recommendation nudges history-aware.
+
+- Uses recent saved entries to add pattern-based recommendation evidence.
+- Prioritizes matching weather and decision category when enough local data exists.
+- Shows concise evidence labels directly inside Recommendation Nudges.
+
+Validation:
+
+```bash
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.8.1
 
 Weathered 1.8.1 fixes Expo Go compatibility for current devices.

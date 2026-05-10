@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.8.1`
+`1.9`
 
 Highlights:
 
+- personalized recommendation evidence from saved local history
 - Expo Go compatibility updated to SDK 55
 - recommendation nudges for do, pause, and reframe choices
 - behavioral read cards for focus, social energy, and decision risk
