@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.18`
+`1.19`
 
 Highlights:
 
+- recommendation nudge learning summary
 - visible Live Ready last-checked status
 - manual Live Ready API retry control
 - mobile Live Ready API fetch with fallback

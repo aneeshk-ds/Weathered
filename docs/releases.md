@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.19.0
+
+Weathered 1.19.0 makes recommendation feedback visible as a learning signal.
+
+- Adds a compact nudge learning summary to the Recommendation Nudges panel.
+- Shows total feedback, helpful responses, and paused recommendations.
+- Keeps the existing local feedback storage model unchanged.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.18.0
 
 Weathered 1.18.0 makes Live Ready retry results easier to verify.

@@ -559,7 +559,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.18</Text>
+              <Text style={styles.eyebrow}>Weathered 1.19</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -583,7 +583,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.18</Text>
+              <Text style={styles.versionValue}>1.19</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1258,9 +1258,25 @@ function RecommendationNudgeCard({
   onFeedback: (nudgeId: string, value: RecommendationFeedbackValue) => void;
   styles: ReturnType<typeof createStyles>;
 }) {
+  const learningSummary = buildNudgeLearningSummary(feedback);
+
   return (
     <View style={styles.recommendationPanel}>
       <Text style={styles.summaryTitle}>Recommendation Nudges</Text>
+      <View style={styles.nudgeLearningStrip}>
+        <View style={styles.nudgeLearningMetric}>
+          <Text style={styles.nudgeLearningValue}>{learningSummary.total}</Text>
+          <Text style={styles.nudgeLearningLabel}>responses</Text>
+        </View>
+        <View style={styles.nudgeLearningMetric}>
+          <Text style={styles.nudgeLearningValue}>{learningSummary.helpful}</Text>
+          <Text style={styles.nudgeLearningLabel}>helpful</Text>
+        </View>
+        <View style={styles.nudgeLearningMetric}>
+          <Text style={styles.nudgeLearningValue}>{learningSummary.notNow}</Text>
+          <Text style={styles.nudgeLearningLabel}>paused</Text>
+        </View>
+      </View>
       <View style={styles.recommendationGrid}>
         {nudges.map((nudge) => {
           const selectedFeedback = feedback.find((item) => item.nudgeId === nudge.id)?.value;
@@ -1353,6 +1369,14 @@ function MilestoneItem({
       <Text style={styles.milestoneText}>{label}</Text>
     </View>
   );
+}
+
+function buildNudgeLearningSummary(feedback: RecommendationFeedback[]) {
+  return {
+    total: feedback.length,
+    helpful: feedback.filter((item) => item.value === "helpful").length,
+    notNow: feedback.filter((item) => item.value === "not_now").length,
+  };
 }
 
 function NudgeFeedbackButton({
@@ -2727,6 +2751,30 @@ function createStyles(theme: ThemePalette) {
       color: theme.mutedText,
       fontWeight: "700",
       flex: 1,
+    },
+    nudgeLearningStrip: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    nudgeLearningMetric: {
+      flex: 1,
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      padding: 10,
+      gap: 2,
+    },
+    nudgeLearningValue: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: "900",
+    },
+    nudgeLearningLabel: {
+      color: theme.mutedText,
+      fontSize: 11,
+      fontWeight: "800",
+      textTransform: "uppercase",
     },
     nudgeFeedbackRow: {
       flexDirection: "row",
