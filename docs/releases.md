@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.21.0
+
+Weathered 1.21.0 makes the remaining 2.0 readiness gates actionable.
+
+- Adds short status details to each 2.0 readiness gate.
+- Calls out the live provider key as the remaining live-weather blocker.
+- Calls out a clean device QR run as the remaining release-flow blocker.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.20.0
 
 Weathered 1.20.0 uses feedback to tune recommendation order.

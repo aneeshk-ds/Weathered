@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.20</Text>
+              <Text style={styles.eyebrow}>Weathered 1.21</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.20</Text>
+              <Text style={styles.versionValue}>1.21</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1349,19 +1349,36 @@ function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyl
       </View>
       <Text style={styles.recommendationTitle}>Next major version needs real-world data confidence.</Text>
       <View style={styles.milestoneGrid}>
-        <MilestoneItem label="Live weather API" status="next" styles={styles} />
-        <MilestoneItem label="Personalized nudge tuning" status="done" styles={styles} />
-        <MilestoneItem label="Device-tested release flow" status="next" styles={styles} />
+        <MilestoneItem
+          label="Live weather API"
+          detail="Provider route works with fallback; final gate is a live provider key."
+          status="next"
+          styles={styles}
+        />
+        <MilestoneItem
+          label="Personalized nudge tuning"
+          detail="Feedback now changes recommendation ordering locally."
+          status="done"
+          styles={styles}
+        />
+        <MilestoneItem
+          label="Device-tested release flow"
+          detail="Web export is stable; final gate is a clean device QR run."
+          status="next"
+          styles={styles}
+        />
       </View>
     </View>
   );
 }
 
 function MilestoneItem({
+  detail,
   label,
   status,
   styles,
 }: {
+  detail: string;
   label: string;
   status: "done" | "started" | "next";
   styles: ReturnType<typeof createStyles>;
@@ -1369,7 +1386,10 @@ function MilestoneItem({
   return (
     <View style={styles.milestoneItem}>
       <Text style={styles.milestoneDot}>{status === "next" ? "○" : "●"}</Text>
-      <Text style={styles.milestoneText}>{label}</Text>
+      <View style={styles.milestoneCopy}>
+        <Text style={styles.milestoneText}>{label}</Text>
+        <Text style={styles.milestoneDetail}>{detail}</Text>
+      </View>
     </View>
   );
 }
@@ -2765,7 +2785,7 @@ function createStyles(theme: ThemePalette) {
     },
     milestoneItem: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: 8,
     },
     milestoneDot: {
@@ -2773,10 +2793,19 @@ function createStyles(theme: ThemePalette) {
       fontSize: 14,
       fontWeight: "900",
     },
-    milestoneText: {
-      color: theme.mutedText,
-      fontWeight: "700",
+    milestoneCopy: {
       flex: 1,
+      gap: 3,
+    },
+    milestoneText: {
+      color: theme.text,
+      fontWeight: "900",
+    },
+    milestoneDetail: {
+      color: theme.mutedText,
+      fontSize: 12,
+      lineHeight: 17,
+      fontWeight: "700",
     },
     nudgeLearningStrip: {
       flexDirection: "row",

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.20`
+`1.21`
 
 Highlights:
 
+- actionable 2.0 readiness gate details
 - feedback-tuned recommendation ordering
 - recommendation nudge learning summary
 - visible Live Ready last-checked status
