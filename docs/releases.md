@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.18.0
+
+Weathered 1.18.0 makes Live Ready retry results easier to verify.
+
+- Adds a last-checked timestamp to the Live Ready weather source card.
+- Resets the timestamp while a retry is in progress.
+- Keeps API, fallback, and timing state together for browser QA.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.17.0
 
 Weathered 1.17.0 adds a manual API retry control for Live Ready weather.

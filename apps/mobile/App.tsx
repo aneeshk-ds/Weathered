@@ -271,6 +271,7 @@ export default function App() {
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("daily_mock"));
   const [weatherSyncState, setWeatherSyncState] = useState<WeatherSyncState>("local");
+  const [weatherCheckedAt, setWeatherCheckedAt] = useState<string | null>(null);
   const [mood, setMood] = useState<number>(6);
   const [energy, setEnergy] = useState<EnergyLevel>("medium");
   const [category, setCategory] = useState<DecisionCategory>("social");
@@ -365,6 +366,7 @@ export default function App() {
     if (weatherSourceMode !== "live_ready") {
       setCurrentWeather(fallbackWeather);
       setWeatherSyncState("local");
+      setWeatherCheckedAt(null);
       return () => {
         isMounted = false;
       };
@@ -372,6 +374,7 @@ export default function App() {
 
     setCurrentWeather(fallbackWeather);
     setWeatherSyncState("syncing");
+    setWeatherCheckedAt(null);
 
     fetchLiveReadyWeatherSnapshot()
       .then((snapshot) => {
@@ -381,6 +384,7 @@ export default function App() {
 
         setCurrentWeather(snapshot);
         setWeatherSyncState(snapshot.locationLabel.includes("fallback") ? "fallback" : "api");
+        setWeatherCheckedAt(formatWeatherCheckedAt());
       })
       .catch(() => {
         if (!isMounted) {
@@ -389,6 +393,7 @@ export default function App() {
 
         setCurrentWeather(fallbackWeather);
         setWeatherSyncState("fallback");
+        setWeatherCheckedAt(formatWeatherCheckedAt());
       });
 
     return () => {
@@ -401,15 +406,18 @@ export default function App() {
 
     setCurrentWeather(fallbackWeather);
     setWeatherSyncState("syncing");
+    setWeatherCheckedAt(null);
 
     fetchLiveReadyWeatherSnapshot()
       .then((snapshot) => {
         setCurrentWeather(snapshot);
         setWeatherSyncState(snapshot.locationLabel.includes("fallback") ? "fallback" : "api");
+        setWeatherCheckedAt(formatWeatherCheckedAt());
       })
       .catch(() => {
         setCurrentWeather(fallbackWeather);
         setWeatherSyncState("fallback");
+        setWeatherCheckedAt(formatWeatherCheckedAt());
       });
   };
 
@@ -551,7 +559,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.17</Text>
+              <Text style={styles.eyebrow}>Weathered 1.18</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -575,7 +583,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.17</Text>
+              <Text style={styles.versionValue}>1.18</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -645,6 +653,7 @@ export default function App() {
               <WeatherSourceStatusCard
                 status={weatherSourceStatus}
                 syncState={weatherSyncState}
+                checkedAt={weatherCheckedAt}
                 onRetry={handleRefreshLiveWeather}
                 styles={styles}
               />
@@ -1125,11 +1134,13 @@ function PulseBadge({
 function WeatherSourceStatusCard({
   status,
   syncState,
+  checkedAt,
   onRetry,
   styles,
 }: {
   status: WeatherSourceStatus;
   syncState: WeatherSyncState;
+  checkedAt: string | null;
   onRetry: () => void;
   styles: ReturnType<typeof createStyles>;
 }) {
@@ -1152,6 +1163,7 @@ function WeatherSourceStatusCard({
           >
             <Text style={styles.sourceRetryText}>{syncState === "syncing" ? "Checking..." : "Retry API"}</Text>
           </Pressable>
+          <Text style={styles.sourceCheckedAt}>{formatWeatherCheckedAtLabel(syncState, checkedAt)}</Text>
           <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
           <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
@@ -1176,6 +1188,18 @@ function formatWeatherSyncState(syncState: WeatherSyncState) {
   }
 
   return "Local source active";
+}
+
+function formatWeatherCheckedAt() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatWeatherCheckedAtLabel(syncState: WeatherSyncState, checkedAt: string | null) {
+  if (syncState === "syncing") {
+    return "Last checked: checking now";
+  }
+
+  return `Last checked: ${checkedAt || "not yet"}`;
 }
 
 function ProviderChecklistRow({
@@ -2504,6 +2528,11 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "900",
       textTransform: "uppercase",
+    },
+    sourceCheckedAt: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "700",
     },
     providerChecklist: {
       gap: 6,
