@@ -44,6 +44,7 @@ Highlights:
 - `packages/shared`: shared TypeScript types and contracts
 - `docs`: product goals and planning notes
 - `docs/releases.md`: version history and validation notes
+- `docs/live-weather-setup.md`: live weather provider handoff contract
 
 ## Run Locally
 
@@ -92,6 +93,7 @@ npm run typecheck
 ## What’s Next
 
 - live weather integration
+- connect provider from `docs/live-weather-setup.md`
 - personalized nudge tuning from saved decision patterns
 - repository/storage abstraction for future sync
 - richer optional notes and reflection

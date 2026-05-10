@@ -1,5 +1,20 @@
 # Weathered Releases
 
+## 1.14.1
+
+Weathered 1.14.1 documents the live weather provider handoff.
+
+- Adds `docs/live-weather-setup.md`.
+- Captures provider options, environment keys, response contract, API route, fallback behavior, and 2.0 gate.
+- Links the setup doc from the README.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+```
+
 ## 1.14.0
 
 Weathered 1.14.0 makes the live weather handoff explicit.
