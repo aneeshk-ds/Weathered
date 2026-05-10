@@ -296,14 +296,17 @@ export default function App() {
     weather: currentWeather,
     entries,
   });
-  const recommendationNudges = buildRecommendationNudges({
-    read: behavioralRead,
-    category,
-    mood,
-    energy,
-    weather: currentWeather,
-    entries,
-  });
+  const recommendationNudges = personalizeRecommendationNudges(
+    buildRecommendationNudges({
+      read: behavioralRead,
+      category,
+      mood,
+      energy,
+      weather: currentWeather,
+      entries,
+    }),
+    nudgeFeedback,
+  );
   const summary = buildSummary(entries);
   const forecast = buildDecisionForecast(entries, currentWeather);
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
@@ -559,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.19</Text>
+              <Text style={styles.eyebrow}>Weathered 1.20</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -583,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.19</Text>
+              <Text style={styles.versionValue}>1.20</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1342,12 +1345,12 @@ function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyl
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>2.0 Readiness</Text>
-        <Text style={styles.milestoneStatus}>3 gates left</Text>
+        <Text style={styles.milestoneStatus}>2 gates left</Text>
       </View>
       <Text style={styles.recommendationTitle}>Next major version needs real-world data confidence.</Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem label="Live weather API" status="next" styles={styles} />
-        <MilestoneItem label="Personalized nudge tuning" status="started" styles={styles} />
+        <MilestoneItem label="Personalized nudge tuning" status="done" styles={styles} />
         <MilestoneItem label="Device-tested release flow" status="next" styles={styles} />
       </View>
     </View>
@@ -1360,15 +1363,38 @@ function MilestoneItem({
   styles,
 }: {
   label: string;
-  status: "started" | "next";
+  status: "done" | "started" | "next";
   styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.milestoneItem}>
-      <Text style={styles.milestoneDot}>{status === "started" ? "●" : "○"}</Text>
+      <Text style={styles.milestoneDot}>{status === "next" ? "○" : "●"}</Text>
       <Text style={styles.milestoneText}>{label}</Text>
     </View>
   );
+}
+
+function personalizeRecommendationNudges(nudges: RecommendationNudge[], feedback: RecommendationFeedback[]) {
+  const feedbackByNudge = new Map(feedback.map((item) => [item.nudgeId, item.value]));
+
+  return [...nudges].sort((left, right) => {
+    const leftScore = getNudgeFeedbackScore(feedbackByNudge.get(left.id));
+    const rightScore = getNudgeFeedbackScore(feedbackByNudge.get(right.id));
+
+    return rightScore - leftScore;
+  });
+}
+
+function getNudgeFeedbackScore(value: RecommendationFeedbackValue | undefined) {
+  if (value === "helpful") {
+    return 1;
+  }
+
+  if (value === "not_now") {
+    return -1;
+  }
+
+  return 0;
 }
 
 function buildNudgeLearningSummary(feedback: RecommendationFeedback[]) {

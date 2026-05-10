@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.20.0
+
+Weathered 1.20.0 uses feedback to tune recommendation order.
+
+- Moves helpful nudges upward in the Recommendation Nudges panel.
+- Moves "Not now" nudges lower without deleting the signal.
+- Marks personalized nudge tuning as complete in the 2.0 readiness panel.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.19.0
 
 Weathered 1.19.0 makes recommendation feedback visible as a learning signal.
