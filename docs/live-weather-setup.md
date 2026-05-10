@@ -1,6 +1,6 @@
 # Live Weather Setup
 
-Weathered is currently live-ready, not live-connected. The app can select `live_ready`, show provider requirements, and fall back safely to local Bengaluru context.
+Weathered is live-ready in the mobile app and has an API-side Open-Meteo adapter for no-key prototyping. The mobile app still uses local fallback until it is pointed at the API.
 
 ## Target Provider
 
@@ -46,8 +46,8 @@ GET /context/weather?mode=live_ready
 
 Expected behavior:
 
-- If live provider succeeds, return a normalized `WeatherSnapshot`.
-- If provider fails, return the existing local fallback.
+- If Open-Meteo succeeds, return a normalized `WeatherSnapshot`.
+- If Open-Meteo fails, return the existing local fallback.
 - Never block logging because weather lookup failed.
 
 ## 2.0 Gate

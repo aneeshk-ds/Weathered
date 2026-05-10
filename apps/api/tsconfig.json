@@ -1,11 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "src",
     "outDir": "dist",
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@weathered/shared": [
+        "../../packages/shared/dist"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"
   ]
 }
-

@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import { buildInsightFromEntry, buildWeeklySummary } from "./services/insights";
-import { mockWeatherSnapshot } from "./services/weather";
+import { mockWeatherSnapshot, weatherSnapshot } from "./services/weather";
 import type { DecisionLogInput, WeeklySummary } from "@weathered/shared";
 
 const app = express();
@@ -16,10 +16,10 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "weathered-api" });
 });
 
-app.get("/context/weather", (req, res) => {
+app.get("/context/weather", async (req, res) => {
   const mode =
     req.query.mode === "live_ready" ? "live_ready" : req.query.mode === "seasonal_mock" ? "seasonal_mock" : "daily_mock";
-  res.json(mockWeatherSnapshot(mode));
+  res.json(await weatherSnapshot(mode));
 });
 
 app.get("/entries", (_req, res) => {

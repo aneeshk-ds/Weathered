@@ -1,5 +1,20 @@
 # Weathered Releases
 
+## 1.15.0
+
+Weathered 1.15.0 adds the first API-side live weather adapter.
+
+- Adds an Open-Meteo request path for `GET /context/weather?mode=live_ready`.
+- Normalizes Open-Meteo current weather into the shared `WeatherSnapshot` shape.
+- Falls back to the local live-ready weather profile if provider fetch fails.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+```
+
 ## 1.14.1
 
 Weathered 1.14.1 documents the live weather provider handoff.
