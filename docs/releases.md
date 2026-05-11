@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.25.0
+
+Weathered 1.25.0 adds a same-Wi-Fi Expo Go start path.
+
+- Adds `npm run dev:mobile:device` at the repo root.
+- Adds `start:device` to the mobile workspace with Expo LAN mode on port 8081.
+- Documents the `EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000` device test command.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.24.0
 
 Weathered 1.24.0 adds device guidance for live weather API testing.

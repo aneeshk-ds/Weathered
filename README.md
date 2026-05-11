@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.24`
+`1.25`
 
 Highlights:
 
+- Expo Go LAN start command
 - Expo Go API URL device hint
 - visible live weather API base URL
 - in-app device release checklist
@@ -80,6 +81,14 @@ Start mobile with tunnel:
 ```bash
 npm run dev:mobile:tunnel
 ```
+
+Start mobile for a same-Wi-Fi Expo Go test:
+
+```bash
+EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000 npm run dev:mobile:device
+```
+
+Use your Mac's Wi-Fi IP address in place of `YOUR_MAC_LAN_IP`, then scan the Expo QR from the same network.
 
 Start API scaffold:
 
