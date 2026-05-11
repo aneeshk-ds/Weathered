@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.27</Text>
+              <Text style={styles.eyebrow}>Weathered 1.28</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.27</Text>
+              <Text style={styles.versionValue}>1.28</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1357,9 +1357,14 @@ function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof crea
         <Text style={styles.deviceCommandText}>
           npm run dev:mobile:device:auto
         </Text>
+        <Text style={styles.deviceCommandLabel}>Preflight</Text>
+        <Text style={styles.deviceCommandText}>
+          npm run dev:mobile:device:auto -- --check
+        </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.27 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.28 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="API preflight" detail="Run the check command before scanning the QR." status="next" styles={styles} />
         <ReleaseCheckItem label="Expo Go QR" detail="Run on phone and confirm SDK compatibility." status="next" styles={styles} />
         <ReleaseCheckItem label="Core flows" detail="Log, feedback, retry, and history should work on device." status="next" styles={styles} />
       </View>

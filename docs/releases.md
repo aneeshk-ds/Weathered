@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.28.0
+
+Weathered 1.28.0 adds an API preflight for Expo Go device testing.
+
+- Adds `npm run dev:mobile:device:auto -- --check`.
+- Checks the detected LAN `/health` endpoint before QR testing.
+- Shows the preflight command in the Device Release Check panel.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.27.0
 
 Weathered 1.27.0 adds an auto-LAN Expo Go launch command.

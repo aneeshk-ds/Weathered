@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.27`
+`1.28`
 
 Highlights:
 
+- API preflight for Expo Go device testing
 - auto-LAN Expo Go device command
 - in-app Expo Go device command
 - Expo Go LAN start command
@@ -88,6 +89,12 @@ Start mobile for a same-Wi-Fi Expo Go test:
 
 ```bash
 npm run dev:mobile:device:auto
+```
+
+Check API reachability first:
+
+```bash
+npm run dev:mobile:device:auto -- --check
 ```
 
 Manual fallback:
