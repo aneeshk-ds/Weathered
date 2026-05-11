@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.32.0
+
+Weathered 1.32.0 adds an in-app phone pass result tracker.
+
+- Adds a persistent phone-test result to the Device Release Check panel.
+- Lets the user mark the Expo Go QR/core-flow pass after testing on device.
+- Shows the pass timestamp and allows reset if another device test is needed.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.31.0
 
 Weathered 1.31.0 documents the final Expo Go validation pass.

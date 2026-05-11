@@ -34,11 +34,14 @@ import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import {
   loadEntries,
+  loadDeviceTestResult,
   loadPreferences,
   loadRecommendationFeedback,
+  saveDeviceTestResult,
   saveEntries,
   savePreferences,
   saveRecommendationFeedback,
+  type DeviceTestResult,
 } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
 import {
@@ -279,6 +282,7 @@ export default function App() {
   const [note, setNote] = useState("");
   const [latestInsight, setLatestInsight] = useState<Insight | null>(null);
   const [nudgeFeedback, setNudgeFeedback] = useState<RecommendationFeedback[]>([]);
+  const [deviceTestResult, setDeviceTestResult] = useState<DeviceTestResult>({ status: "pending" });
   const [editor, setEditor] = useState<EntryEditorState>(null);
   const [isHydrating, setIsHydrating] = useState(true);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
@@ -340,10 +344,11 @@ export default function App() {
     let isMounted = true;
 
     async function hydrate() {
-      const [nextEntries, preferences, nextNudgeFeedback] = await Promise.all([
+      const [nextEntries, preferences, nextNudgeFeedback, nextDeviceTestResult] = await Promise.all([
         loadEntries(seededEntries),
         loadPreferences(),
         loadRecommendationFeedback(),
+        loadDeviceTestResult(),
       ]);
       if (!isMounted) {
         return;
@@ -352,6 +357,7 @@ export default function App() {
       setEntries(nextEntries);
       setWeatherSourceMode(preferences.weatherSourceMode);
       setNudgeFeedback(nextNudgeFeedback);
+      setDeviceTestResult(nextDeviceTestResult);
       setIsHydrating(false);
     }
 
@@ -453,6 +459,14 @@ export default function App() {
     saveRecommendationFeedback(nudgeFeedback);
   }, [nudgeFeedback, isHydrating]);
 
+  useEffect(() => {
+    if (isHydrating) {
+      return;
+    }
+
+    saveDeviceTestResult(deviceTestResult);
+  }, [deviceTestResult, isHydrating]);
+
   const handleCategorySelect = (nextCategory: DecisionCategory) => {
     setCategory(nextCategory);
     setOutcome(DECISION_OPTIONS[nextCategory][0]);
@@ -499,6 +513,14 @@ export default function App() {
       { nudgeId, value, timestamp: new Date().toISOString() },
       ...current.filter((item) => item.nudgeId !== nudgeId),
     ]);
+  };
+
+  const handleMarkDevicePass = () => {
+    setDeviceTestResult({ status: "passed", timestamp: new Date().toISOString() });
+  };
+
+  const handleResetDevicePass = () => {
+    setDeviceTestResult({ status: "pending" });
   };
 
   const handleDeleteEntry = (id: string) => {
@@ -562,7 +584,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.31</Text>
+              <Text style={styles.eyebrow}>Weathered 1.32</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +608,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.31</Text>
+              <Text style={styles.versionValue}>1.32</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -681,7 +703,12 @@ export default function App() {
 
             <VersionMilestoneCard styles={styles} />
 
-            <DeviceReleaseChecklistCard styles={styles} />
+            <DeviceReleaseChecklistCard
+              result={deviceTestResult}
+              onMarkPass={handleMarkDevicePass}
+              onReset={handleResetDevicePass}
+              styles={styles}
+            />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1344,14 +1371,28 @@ function DecisionReadinessCard({
   );
 }
 
-function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
+function DeviceReleaseChecklistCard({
+  result,
+  onMarkPass,
+  onReset,
+  styles,
+}: {
+  result: DeviceTestResult;
+  onMarkPass: () => void;
+  onReset: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const hasPassed = result.status === "passed";
+
   return (
     <View style={styles.deviceChecklistPanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>Device Release Check</Text>
-        <Text style={styles.milestoneStatus}>Ready for QR test</Text>
+        <Text style={styles.milestoneStatus}>{hasPassed ? "Phone pass recorded" : "Ready for QR test"}</Text>
       </View>
-      <Text style={styles.recommendationTitle}>Run the stack, scan the QR, then confirm the core flows on phone.</Text>
+      <Text style={styles.recommendationTitle}>
+        {hasPassed ? "Device gate can be marked complete." : "Run the stack, scan the QR, then confirm the core flows on phone."}
+      </Text>
       <View style={styles.deviceCommandBox}>
         <Text style={styles.deviceCommandLabel}>Device command</Text>
         <Text style={styles.deviceCommandText}>
@@ -1363,13 +1404,44 @@ function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof crea
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.31 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.32 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
-        <ReleaseCheckItem label="Expo Go QR" detail="Run on phone and confirm SDK compatibility." status="next" styles={styles} />
-        <ReleaseCheckItem label="Core flows" detail="Log, feedback, retry, and history should work on device." status="next" styles={styles} />
+        <ReleaseCheckItem
+          label="Expo Go QR"
+          detail="Run on phone and confirm SDK compatibility."
+          status={hasPassed ? "done" : "next"}
+          styles={styles}
+        />
+        <ReleaseCheckItem
+          label="Core flows"
+          detail="Log, feedback, retry, and history should work on device."
+          status={hasPassed ? "done" : "next"}
+          styles={styles}
+        />
+      </View>
+      <View style={styles.deviceResultBox}>
+        <Text style={styles.deviceResultText}>
+          {hasPassed ? `Passed ${formatDevicePassTimestamp(result.timestamp)}` : "Phone result not recorded yet."}
+        </Text>
+        <Pressable style={styles.deviceResultButton} onPress={hasPassed ? onReset : onMarkPass}>
+          <Text style={styles.deviceResultButtonText}>{hasPassed ? "Reset" : "Mark phone pass"}</Text>
+        </Pressable>
       </View>
     </View>
   );
+}
+
+function formatDevicePassTimestamp(timestamp?: string) {
+  if (!timestamp) {
+    return "on device";
+  }
+
+  return new Date(timestamp).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function ReleaseCheckItem({
@@ -2861,6 +2933,34 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "800",
       lineHeight: 18,
+    },
+    deviceResultBox: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12,
+    },
+    deviceResultText: {
+      color: theme.text,
+      fontSize: 13,
+      fontWeight: "800",
+    },
+    deviceResultButton: {
+      alignSelf: "flex-start",
+      backgroundColor: theme.accentSoft,
+      borderColor: theme.accent,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    deviceResultButtonText: {
+      color: theme.statusText,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
     },
     milestoneStatus: {
       color: theme.statusText,

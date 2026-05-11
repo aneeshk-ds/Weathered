@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.31`
+`1.32`
 
 Highlights:
 
+- in-app phone pass result tracker
 - device test checklist document
 - QR-ready device release checklist
 - one-command API plus Expo device stack

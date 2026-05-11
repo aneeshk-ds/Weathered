@@ -4,9 +4,15 @@ import type { DecisionLogInput, RecommendationFeedback, WeatherSourceMode } from
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
 const NUDGE_FEEDBACK_KEY = "weathered.local.nudge-feedback.v1";
+const DEVICE_TEST_RESULT_KEY = "weathered.local.device-test-result.v1";
 
 export interface LocalPreferences {
   weatherSourceMode: WeatherSourceMode;
+}
+
+export interface DeviceTestResult {
+  status: "pending" | "passed";
+  timestamp?: string;
 }
 
 const defaultPreferences: LocalPreferences = {
@@ -91,6 +97,32 @@ export async function loadRecommendationFeedback(): Promise<RecommendationFeedba
 export async function saveRecommendationFeedback(feedback: RecommendationFeedback[]): Promise<boolean> {
   try {
     await AsyncStorage.setItem(NUDGE_FEEDBACK_KEY, JSON.stringify(feedback));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function loadDeviceTestResult(): Promise<DeviceTestResult> {
+  try {
+    const raw = await AsyncStorage.getItem(DEVICE_TEST_RESULT_KEY);
+
+    if (!raw) {
+      return { status: "pending" };
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DeviceTestResult>;
+    return parsed.status === "passed"
+      ? { status: "passed", timestamp: typeof parsed.timestamp === "string" ? parsed.timestamp : undefined }
+      : { status: "pending" };
+  } catch {
+    return { status: "pending" };
+  }
+}
+
+export async function saveDeviceTestResult(result: DeviceTestResult): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem(DEVICE_TEST_RESULT_KEY, JSON.stringify(result));
     return true;
   } catch {
     return false;
