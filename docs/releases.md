@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.31.0
+
+Weathered 1.31.0 documents the final Expo Go validation pass.
+
+- Adds `docs/device-test-checklist.md`.
+- Captures start commands, API preflight, and phone pass criteria.
+- Links the checklist from the README repo structure.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.30.0
 
 Weathered 1.30.0 marks the device release flow as ready for QR testing.

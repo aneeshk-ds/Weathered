@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.30`
+`1.31`
 
 Highlights:
 
+- device test checklist document
 - QR-ready device release checklist
 - one-command API plus Expo device stack
 - API preflight for Expo Go device testing
@@ -61,6 +62,7 @@ Highlights:
 - `docs`: product goals and planning notes
 - `docs/releases.md`: version history and validation notes
 - `docs/live-weather-setup.md`: live weather provider handoff contract
+- `docs/device-test-checklist.md`: Expo Go validation checklist
 
 ## Run Locally
 
