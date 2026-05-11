@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.22.0
+
+Weathered 1.22.0 adds an in-app device release checklist.
+
+- Adds a Device Release Check panel below 2.0 Readiness.
+- Tracks web preview, Expo Go QR, and core phone-flow validation.
+- Keeps the remaining release gate visible in the Log flow.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.21.0
 
 Weathered 1.21.0 makes the remaining 2.0 readiness gates actionable.

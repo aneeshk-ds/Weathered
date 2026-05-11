@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.21`
+`1.22`
 
 Highlights:
 
+- in-app device release checklist
 - actionable 2.0 readiness gate details
 - feedback-tuned recommendation ordering
 - recommendation nudge learning summary

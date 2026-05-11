@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.21</Text>
+              <Text style={styles.eyebrow}>Weathered 1.22</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.21</Text>
+              <Text style={styles.versionValue}>1.22</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -680,6 +680,8 @@ export default function App() {
             />
 
             <VersionMilestoneCard styles={styles} />
+
+            <DeviceReleaseChecklistCard styles={styles} />
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
@@ -1336,6 +1338,45 @@ function DecisionReadinessCard({
       </View>
       <Text style={styles.recommendationText}>{readiness.message}</Text>
       <Text style={styles.recommendationEvidence}>{readiness.drivers.slice(0, 4).join(" • ")}</Text>
+    </View>
+  );
+}
+
+function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
+  return (
+    <View style={styles.deviceChecklistPanel}>
+      <View style={styles.forecastHeader}>
+        <Text style={styles.recommendationTone}>Device Release Check</Text>
+        <Text style={styles.milestoneStatus}>Pending QR run</Text>
+      </View>
+      <Text style={styles.recommendationTitle}>Final confidence needs one clean phone session.</Text>
+      <View style={styles.milestoneGrid}>
+        <ReleaseCheckItem label="Web preview" detail="1.22 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Expo Go QR" detail="Run on phone and confirm SDK compatibility." status="next" styles={styles} />
+        <ReleaseCheckItem label="Core flows" detail="Log, feedback, retry, and history should work on device." status="next" styles={styles} />
+      </View>
+    </View>
+  );
+}
+
+function ReleaseCheckItem({
+  detail,
+  label,
+  status,
+  styles,
+}: {
+  detail: string;
+  label: string;
+  status: "done" | "next";
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.releaseCheckItem}>
+      <Text style={styles.releaseCheckDot}>{status === "done" ? "●" : "○"}</Text>
+      <View style={styles.milestoneCopy}>
+        <Text style={styles.milestoneText}>{label}</Text>
+        <Text style={styles.milestoneDetail}>{detail}</Text>
+      </View>
     </View>
   );
 }
@@ -2774,6 +2815,14 @@ function createStyles(theme: ThemePalette) {
       borderColor: theme.border,
       gap: 12,
     },
+    deviceChecklistPanel: {
+      backgroundColor: theme.cardAlt,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 12,
+    },
     milestoneStatus: {
       color: theme.statusText,
       fontSize: 12,
@@ -2806,6 +2855,16 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       lineHeight: 17,
       fontWeight: "700",
+    },
+    releaseCheckItem: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+    },
+    releaseCheckDot: {
+      color: theme.accent,
+      fontSize: 14,
+      fontWeight: "900",
     },
     nudgeLearningStrip: {
       flexDirection: "row",
