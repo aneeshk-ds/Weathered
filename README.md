@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.22`
+`1.23`
 
 Highlights:
 
+- visible live weather API base URL
 - in-app device release checklist
 - actionable 2.0 readiness gate details
 - feedback-tuned recommendation ordering

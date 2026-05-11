@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.22</Text>
+              <Text style={styles.eyebrow}>Weathered 1.23</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.22</Text>
+              <Text style={styles.versionValue}>1.23</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1170,6 +1170,7 @@ function WeatherSourceStatusCard({
           </Pressable>
           <Text style={styles.sourceCheckedAt}>{formatWeatherCheckedAtLabel(syncState, checkedAt)}</Text>
           <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
+          <ProviderChecklistRow label="API base" value={status.apiBaseUrl || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Fallback" value={status.fallback || "Local mock"} styles={styles} />
@@ -1392,7 +1393,7 @@ function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyl
       <View style={styles.milestoneGrid}>
         <MilestoneItem
           label="Live weather API"
-          detail="Provider route works with fallback; final gate is a live provider key."
+          detail="Provider route works with fallback; final gate is a reachable API base URL on device."
           status="next"
           styles={styles}
         />

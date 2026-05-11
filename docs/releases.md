@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.23.0
+
+Weathered 1.23.0 makes the live weather blocker visible in-app.
+
+- Shows the configured API base URL in the Live Ready weather source card.
+- Updates the Live Ready copy to reflect Open-Meteo as the current provider.
+- Reframes the remaining live-weather gate around device API reachability.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.22.0
 
 Weathered 1.22.0 adds an in-app device release checklist.

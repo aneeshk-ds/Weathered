@@ -15,6 +15,7 @@ export interface WeatherSourceStatus {
   message: string;
   readiness: string;
   provider?: string;
+  apiBaseUrl?: string;
   envKey?: string;
   endpoint?: string;
   fallback?: string;
@@ -48,10 +49,11 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
     return {
       label: "Live Ready",
       title: "Provider handoff is prepared",
-      message: "Weathered is using the local fallback shape while the live weather API key and provider endpoint are wired in.",
-      readiness: "Needs API key",
-      provider: "Open-Meteo or Tomorrow.io",
-      envKey: "EXPO_PUBLIC_WEATHER_API_KEY",
+      message: "Weathered calls the API route for Open-Meteo weather, then falls back locally if the device cannot reach it.",
+      readiness: "Needs reachable API",
+      provider: "Open-Meteo",
+      apiBaseUrl: getWeatherApiBaseUrl(),
+      envKey: "EXPO_PUBLIC_WEATHER_API_URL",
       endpoint: "/context/weather?mode=live_ready",
       fallback: "Seasonal Bengaluru profile",
     };
@@ -75,7 +77,7 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
 }
 
 export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> {
-  const apiBaseUrl = process.env?.EXPO_PUBLIC_WEATHER_API_URL || defaultWeatherApiBaseUrl;
+  const apiBaseUrl = getWeatherApiBaseUrl();
   const response = await fetch(`${apiBaseUrl}/context/weather?mode=live_ready`);
 
   if (!response.ok) {
@@ -83,6 +85,10 @@ export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> 
   }
 
   return normalizeWeatherSnapshot(await response.json());
+}
+
+export function getWeatherApiBaseUrl() {
+  return process.env?.EXPO_PUBLIC_WEATHER_API_URL || defaultWeatherApiBaseUrl;
 }
 
 function buildLiveReadySnapshot(date: Date): WeatherSnapshot {
