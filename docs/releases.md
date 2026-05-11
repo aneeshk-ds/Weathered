@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.27.0
+
+Weathered 1.27.0 adds an auto-LAN Expo Go launch command.
+
+- Adds `npm run dev:mobile:device:auto`.
+- Detects the Mac LAN IP and sets `EXPO_PUBLIC_WEATHER_API_URL` automatically.
+- Updates the Device Release Check panel to show the auto command.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.26.0
 
 Weathered 1.26.0 surfaces the Expo Go device command in-app.

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.26`
+`1.27`
 
 Highlights:
 
+- auto-LAN Expo Go device command
 - in-app Expo Go device command
 - Expo Go LAN start command
 - Expo Go API URL device hint
@@ -86,10 +87,16 @@ npm run dev:mobile:tunnel
 Start mobile for a same-Wi-Fi Expo Go test:
 
 ```bash
+npm run dev:mobile:device:auto
+```
+
+Manual fallback:
+
+```bash
 EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000 npm run dev:mobile:device
 ```
 
-Use your Mac's Wi-Fi IP address in place of `YOUR_MAC_LAN_IP`, then scan the Expo QR from the same network.
+The auto command detects your Mac LAN IP and sets `EXPO_PUBLIC_WEATHER_API_URL` before opening Expo in LAN mode. Use the manual fallback only if the detected IP is wrong.
 
 Start API scaffold:
 
