@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.30.0
+
+Weathered 1.30.0 marks the device release flow as ready for QR testing.
+
+- Updates Device Release Check to "Ready for QR test".
+- Marks the API preflight row as prepared.
+- Clarifies that the final remaining device gate is a clean phone QR run.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.29.0
 
 Weathered 1.29.0 adds a one-command device test stack.

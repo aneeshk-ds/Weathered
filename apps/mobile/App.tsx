@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.29</Text>
+              <Text style={styles.eyebrow}>Weathered 1.30</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.29</Text>
+              <Text style={styles.versionValue}>1.30</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1349,9 +1349,9 @@ function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof crea
     <View style={styles.deviceChecklistPanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>Device Release Check</Text>
-        <Text style={styles.milestoneStatus}>Pending QR run</Text>
+        <Text style={styles.milestoneStatus}>Ready for QR test</Text>
       </View>
-      <Text style={styles.recommendationTitle}>Final confidence needs one clean phone session.</Text>
+      <Text style={styles.recommendationTitle}>Run the stack, scan the QR, then confirm the core flows on phone.</Text>
       <View style={styles.deviceCommandBox}>
         <Text style={styles.deviceCommandLabel}>Device command</Text>
         <Text style={styles.deviceCommandText}>
@@ -1363,8 +1363,8 @@ function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof crea
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.29 export loads in browser." status="done" styles={styles} />
-        <ReleaseCheckItem label="API preflight" detail="Run the check command before scanning the QR." status="next" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.30 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem label="Expo Go QR" detail="Run on phone and confirm SDK compatibility." status="next" styles={styles} />
         <ReleaseCheckItem label="Core flows" detail="Log, feedback, retry, and history should work on device." status="next" styles={styles} />
       </View>
@@ -1417,7 +1417,7 @@ function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyl
         />
         <MilestoneItem
           label="Device-tested release flow"
-          detail="Web export is stable; final gate is a clean device QR run."
+          detail="Stack command and preflight are ready; final gate is a clean phone QR run."
           status="next"
           styles={styles}
         />

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.29`
+`1.30`
 
 Highlights:
 
+- QR-ready device release checklist
 - one-command API plus Expo device stack
 - API preflight for Expo Go device testing
 - auto-LAN Expo Go device command
