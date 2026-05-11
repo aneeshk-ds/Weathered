@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.29.0
+
+Weathered 1.29.0 adds a one-command device test stack.
+
+- Adds `npm run dev:device:stack`.
+- Starts the API and the auto-LAN Expo command together.
+- Updates the Device Release Check panel to make the stack command the primary path.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.28.0
 
 Weathered 1.28.0 adds an API preflight for Expo Go device testing.

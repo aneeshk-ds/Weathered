@@ -1,7 +1,7 @@
 {
   "name": "weathered",
   "private": true,
-  "version": "1.28.0",
+  "version": "1.29.0",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -10,6 +10,7 @@
     "dev:mobile": "npm --workspace apps/mobile start",
     "dev:mobile:device": "npm --workspace apps/mobile run start:device",
     "dev:mobile:device:auto": "node scripts/start-mobile-device.mjs",
+    "dev:device:stack": "node scripts/start-device-stack.mjs",
     "dev:api": "npm --workspace apps/api run dev",
     "typecheck": "npm --workspace packages/shared run build && npm --workspace apps/api run build && npm --workspace apps/mobile run typecheck",
     "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081"
