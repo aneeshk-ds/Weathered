@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.25`
+`1.26`
 
 Highlights:
 
+- in-app Expo Go device command
 - Expo Go LAN start command
 - Expo Go API URL device hint
 - visible live weather API base URL

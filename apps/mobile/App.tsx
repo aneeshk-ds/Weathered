@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.25</Text>
+              <Text style={styles.eyebrow}>Weathered 1.26</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.25</Text>
+              <Text style={styles.versionValue}>1.26</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1352,8 +1352,14 @@ function DeviceReleaseChecklistCard({ styles }: { styles: ReturnType<typeof crea
         <Text style={styles.milestoneStatus}>Pending QR run</Text>
       </View>
       <Text style={styles.recommendationTitle}>Final confidence needs one clean phone session.</Text>
+      <View style={styles.deviceCommandBox}>
+        <Text style={styles.deviceCommandLabel}>Device command</Text>
+        <Text style={styles.deviceCommandText}>
+          EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000 npm run dev:mobile:device
+        </Text>
+      </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.22 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.26 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="Expo Go QR" detail="Run on phone and confirm SDK compatibility." status="next" styles={styles} />
         <ReleaseCheckItem label="Core flows" detail="Log, feedback, retry, and history should work on device." status="next" styles={styles} />
       </View>
@@ -2830,6 +2836,26 @@ function createStyles(theme: ThemePalette) {
       borderWidth: 1,
       borderColor: theme.border,
       gap: 12,
+    },
+    deviceCommandBox: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      gap: 5,
+      padding: 12,
+    },
+    deviceCommandLabel: {
+      color: theme.mutedText,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    deviceCommandText: {
+      color: theme.statusText,
+      fontSize: 12,
+      fontWeight: "800",
+      lineHeight: 18,
     },
     milestoneStatus: {
       color: theme.statusText,

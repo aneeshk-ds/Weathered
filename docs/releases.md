@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.26.0
+
+Weathered 1.26.0 surfaces the Expo Go device command in-app.
+
+- Adds the same-Wi-Fi device command to the Device Release Check panel.
+- Updates the web preview checklist row to the current export version.
+- Keeps the QR validation workflow visible where the remaining release gate lives.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.25.0
 
 Weathered 1.25.0 adds a same-Wi-Fi Expo Go start path.
