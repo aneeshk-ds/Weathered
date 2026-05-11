@@ -562,7 +562,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.23</Text>
+              <Text style={styles.eyebrow}>Weathered 1.24</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -586,7 +586,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.23</Text>
+              <Text style={styles.versionValue}>1.24</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1171,6 +1171,7 @@ function WeatherSourceStatusCard({
           <Text style={styles.sourceCheckedAt}>{formatWeatherCheckedAtLabel(syncState, checkedAt)}</Text>
           <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
           <ProviderChecklistRow label="API base" value={status.apiBaseUrl || "Not set"} styles={styles} />
+          {status.deviceHint ? <Text style={styles.sourceDeviceHint}>{status.deviceHint}</Text> : null}
           <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
           <ProviderChecklistRow label="Fallback" value={status.fallback || "Local mock"} styles={styles} />
@@ -2645,6 +2646,12 @@ function createStyles(theme: ThemePalette) {
       color: theme.mutedText,
       fontSize: 12,
       fontWeight: "700",
+    },
+    sourceDeviceHint: {
+      color: theme.eyebrow,
+      fontSize: 12,
+      fontWeight: "800",
+      lineHeight: 17,
     },
     providerChecklist: {
       gap: 6,

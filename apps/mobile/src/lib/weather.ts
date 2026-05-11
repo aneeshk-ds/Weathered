@@ -16,6 +16,7 @@ export interface WeatherSourceStatus {
   readiness: string;
   provider?: string;
   apiBaseUrl?: string;
+  deviceHint?: string;
   envKey?: string;
   endpoint?: string;
   fallback?: string;
@@ -53,6 +54,7 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
       readiness: "Needs reachable API",
       provider: "Open-Meteo",
       apiBaseUrl: getWeatherApiBaseUrl(),
+      deviceHint: getWeatherApiDeviceHint(),
       envKey: "EXPO_PUBLIC_WEATHER_API_URL",
       endpoint: "/context/weather?mode=live_ready",
       fallback: "Seasonal Bengaluru profile",
@@ -89,6 +91,16 @@ export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> 
 
 export function getWeatherApiBaseUrl() {
   return process.env?.EXPO_PUBLIC_WEATHER_API_URL || defaultWeatherApiBaseUrl;
+}
+
+function getWeatherApiDeviceHint() {
+  const apiBaseUrl = getWeatherApiBaseUrl();
+
+  if (apiBaseUrl.includes("localhost") || apiBaseUrl.includes("127.0.0.1")) {
+    return "Expo Go needs your Mac LAN URL, for example http://192.168.x.x:4000.";
+  }
+
+  return "Device URL is configured for network testing.";
 }
 
 function buildLiveReadySnapshot(date: Date): WeatherSnapshot {

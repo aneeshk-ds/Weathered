@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.24.0
+
+Weathered 1.24.0 adds device guidance for live weather API testing.
+
+- Shows an Expo Go hint when the API base URL is still localhost.
+- Explains that phone testing needs the Mac LAN URL.
+- Keeps the hint inside the Live Ready weather source card.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.23.0
 
 Weathered 1.23.0 makes the live weather blocker visible in-app.

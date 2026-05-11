@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.23`
+`1.24`
 
 Highlights:
 
+- Expo Go API URL device hint
 - visible live weather API base URL
 - in-app device release checklist
 - actionable 2.0 readiness gate details
