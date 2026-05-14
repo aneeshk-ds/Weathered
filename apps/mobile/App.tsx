@@ -1229,6 +1229,10 @@ function WeatherSourceStatusCard({
       <Text style={styles.sourceStatusTitle}>{status.title}</Text>
       <Text style={styles.sourceStatusText}>{status.message}</Text>
       <Text style={styles.sourceStatusSync}>{formatWeatherSyncState(syncState)}</Text>
+      <View style={styles.weatherResilienceBox}>
+        <Text style={styles.weatherResilienceTitle}>Resilience note</Text>
+        <Text style={styles.weatherResilienceText}>{formatWeatherResilienceNote(syncState)}</Text>
+      </View>
       {status.provider ? (
         <View style={styles.providerChecklist}>
           <Pressable
@@ -1278,6 +1282,22 @@ function formatWeatherCheckedAtLabel(syncState: WeatherSyncState, checkedAt: str
   }
 
   return `Last checked: ${checkedAt || "not yet"}`;
+}
+
+function formatWeatherResilienceNote(syncState: WeatherSyncState) {
+  if (syncState === "api") {
+    return "Live weather is feeding the current read. If the provider drops later, Weathered keeps the flow usable with local fallback.";
+  }
+
+  if (syncState === "fallback") {
+    return "The app is still usable. Weathered is protecting the check-in flow with local weather until the API responds again.";
+  }
+
+  if (syncState === "syncing") {
+    return "Weathered is checking the API now and will keep the local snapshot active until live data is ready.";
+  }
+
+  return "Local weather is active. Switch to Live Ready when you want to test provider reachability.";
 }
 
 function ProviderChecklistRow({
@@ -2813,6 +2833,26 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "900",
       textTransform: "uppercase",
+    },
+    weatherResilienceBox: {
+      backgroundColor: theme.accentSoft,
+      borderColor: theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      gap: 4,
+      padding: 12,
+    },
+    weatherResilienceTitle: {
+      color: theme.statusText,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    weatherResilienceText: {
+      color: theme.statusText,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19,
     },
     sourceRetryButton: {
       alignSelf: "flex-start",

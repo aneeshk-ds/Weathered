@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.42.0
+
+Weathered 1.42.0 adds a live-weather resilience note.
+
+- Explains whether Weathered is using live API weather, checking the API, or protecting the flow with fallback.
+- Places the note inside the Weather Source card where trust in live data is decided.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.41.0
 
 Weathered 1.41.0 makes the release checklist less developer-facing.
