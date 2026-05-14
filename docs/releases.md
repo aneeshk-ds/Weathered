@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.34.0
+
+Weathered 1.34.0 aligns Expo with the version expected by Expo Go.
+
+- Updates `expo` to `~55.0.24`.
+- Keeps the device QR flow on the expected SDK patch version.
+- Preserves the phone pass readiness behavior from 1.33.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.33.0
 
 Weathered 1.33.0 makes the 2.0 device gate respond to the phone pass result.
