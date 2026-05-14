@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.46.0
+
+Weathered 1.46.0 adds a Summary overview row.
+
+- Shows 7-day log count, strongest weather, and average temperature before deeper weekly analysis.
+- Makes the Summary tab easier to scan at the top.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.45.0
 
 Weathered 1.45.0 adds a History overview band.

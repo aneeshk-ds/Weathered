@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.45`
+`1.46`
 
 Highlights:
 
+- Summary overview row
 - History overview band
 - Check-in progress strip
 - Signals overview row

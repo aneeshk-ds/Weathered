@@ -1050,6 +1050,15 @@ export default function App() {
             <Text style={styles.sectionTitle}>Weekly Summary</Text>
             <Text style={styles.sectionCopy}>A darker editorial read of the last 7 days.</Text>
 
+            <View style={styles.summaryPanel}>
+              <Text style={styles.summaryTitle}>Summary Overview</Text>
+              <View style={styles.infographicRow}>
+                <MiniMetricCard emoji="🗓️" label="7-Day Logs" value={String(weeklyEntries.length)} styles={styles} />
+                <MiniMetricCard emoji="🌦️" label="Top Weather" value={strongestWeather} styles={styles} />
+                <MiniMetricCard emoji="🌡️" label="Avg Temp" value={`${averageTemperature}C`} styles={styles} />
+              </View>
+            </View>
+
             <View style={styles.visualForecastCard}>
               <Text style={styles.summaryTitle}>Weather Pulse</Text>
               <View style={styles.pulseRow}>
