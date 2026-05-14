@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.42`
+`1.43`
 
 Highlights:
 
+- Signals overview row
 - live-weather resilience note
 - product-facing release checklist
 - homepage version badge removed

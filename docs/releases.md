@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.43.0
+
+Weathered 1.43.0 adds a compact Signals overview row.
+
+- Shows weather source, decision readiness score, and active nudge count before the deeper Signals cards.
+- Makes the divided Signals section easier to scan.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.42.0
 
 Weathered 1.42.0 adds a live-weather resilience note.

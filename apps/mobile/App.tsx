@@ -686,25 +686,36 @@ export default function App() {
 
             {logSection === "signals" ? (
               <View style={styles.summaryPanel}>
-              <Text style={styles.summaryTitle}>Weather Source</Text>
-              <View style={styles.segmentRow}>
-                {WEATHER_SOURCE_OPTIONS.map((value) => (
-                  <SelectableChip
-                    key={value}
-                    label={formatWeatherSource(value)}
-                    selected={weatherSourceMode === value}
-                    onPress={() => setWeatherSourceMode(value)}
-                    styles={styles}
-                  />
-                ))}
+                <Text style={styles.summaryTitle}>Signals Overview</Text>
+                <View style={styles.infographicRow}>
+                  <MiniMetricCard emoji="🌦️" label="Source" value={formatWeatherSource(weatherSourceMode)} styles={styles} />
+                  <MiniMetricCard emoji="🎯" label="Readiness" value={`${decisionReadiness.score}`} styles={styles} />
+                  <MiniMetricCard emoji="↗" label="Nudges" value={String(recommendationNudges.length)} styles={styles} />
+                </View>
               </View>
-              <WeatherSourceStatusCard
-                status={weatherSourceStatus}
-                syncState={weatherSyncState}
-                checkedAt={weatherCheckedAt}
-                onRetry={handleRefreshLiveWeather}
-                styles={styles}
-              />
+            ) : null}
+
+            {logSection === "signals" ? (
+              <View style={styles.summaryPanel}>
+                <Text style={styles.summaryTitle}>Weather Source</Text>
+                <View style={styles.segmentRow}>
+                  {WEATHER_SOURCE_OPTIONS.map((value) => (
+                    <SelectableChip
+                      key={value}
+                      label={formatWeatherSource(value)}
+                      selected={weatherSourceMode === value}
+                      onPress={() => setWeatherSourceMode(value)}
+                      styles={styles}
+                    />
+                  ))}
+                </View>
+                <WeatherSourceStatusCard
+                  status={weatherSourceStatus}
+                  syncState={weatherSyncState}
+                  checkedAt={weatherCheckedAt}
+                  onRetry={handleRefreshLiveWeather}
+                  styles={styles}
+                />
               </View>
             ) : null}
 
