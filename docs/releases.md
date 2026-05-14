@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.33.0
+
+Weathered 1.33.0 makes the 2.0 device gate respond to the phone pass result.
+
+- Passes the recorded phone test state into the 2.0 readiness panel.
+- Marks the device-tested release flow complete when the in-app phone pass is recorded.
+- Reduces remaining readiness gates from two to one after the phone pass.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.32.0
 
 Weathered 1.32.0 adds an in-app phone pass result tracker.

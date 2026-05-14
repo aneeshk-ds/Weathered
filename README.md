@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.32`
+`1.33`
 
 Highlights:
 
+- dynamic 2.0 device gate status
 - in-app phone pass result tracker
 - device test checklist document
 - QR-ready device release checklist

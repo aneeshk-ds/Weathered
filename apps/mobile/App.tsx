@@ -584,7 +584,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.32</Text>
+              <Text style={styles.eyebrow}>Weathered 1.33</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -608,7 +608,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.32</Text>
+              <Text style={styles.versionValue}>1.33</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -701,7 +701,7 @@ export default function App() {
               styles={styles}
             />
 
-            <VersionMilestoneCard styles={styles} />
+            <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
 
             <DeviceReleaseChecklistCard
               result={deviceTestResult}
@@ -1404,7 +1404,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.32 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.33 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
@@ -1466,14 +1466,24 @@ function ReleaseCheckItem({
   );
 }
 
-function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
+function VersionMilestoneCard({
+  deviceTestPassed,
+  styles,
+}: {
+  deviceTestPassed: boolean;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const remainingGates = deviceTestPassed ? 1 : 2;
+
   return (
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>2.0 Readiness</Text>
-        <Text style={styles.milestoneStatus}>2 gates left</Text>
+        <Text style={styles.milestoneStatus}>{remainingGates} gate{remainingGates === 1 ? "" : "s"} left</Text>
       </View>
-      <Text style={styles.recommendationTitle}>Next major version needs real-world data confidence.</Text>
+      <Text style={styles.recommendationTitle}>
+        {deviceTestPassed ? "Device confidence is recorded; live weather reachability is the final gate." : "Next major version needs real-world data confidence."}
+      </Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
           label="Live weather API"
@@ -1489,8 +1499,8 @@ function VersionMilestoneCard({ styles }: { styles: ReturnType<typeof createStyl
         />
         <MilestoneItem
           label="Device-tested release flow"
-          detail="Stack command and preflight are ready; final gate is a clean phone QR run."
-          status="next"
+          detail={deviceTestPassed ? "Phone QR pass recorded in-app." : "Stack command and preflight are ready; final gate is a clean phone QR run."}
+          status={deviceTestPassed ? "done" : "next"}
           styles={styles}
         />
       </View>
