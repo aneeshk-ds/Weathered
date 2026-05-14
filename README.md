@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.37`
+`1.38`
 
 Highlights:
 
+- divided Log screen sections
 - production hardening tracker
 - 2.0 prototype readiness panel
 - verified Expo Go device pass

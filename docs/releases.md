@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.38.0
+
+Weathered 1.38.0 divides the long Log page into focused sections.
+
+- Adds Check-in, Signals, and Release sub-sections inside the Log tab.
+- Keeps the entry form separate from behavioral reads and release checks.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.37.0
 
 Weathered 1.37.0 adds a visible production-hardening tracker.

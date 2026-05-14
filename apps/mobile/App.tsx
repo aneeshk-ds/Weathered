@@ -54,6 +54,7 @@ import {
 } from "./src/lib/weather";
 
 type AppTab = "log" | "history" | "summary";
+type LogSection = "checkin" | "signals" | "release";
 type ThemeMode = "light" | "dark";
 type WeatherSyncState = "local" | "syncing" | "api" | "fallback";
 type EntryEditorState = {
@@ -269,6 +270,7 @@ const seededEntries: DecisionLogInput[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>("summary");
+  const [logSection, setLogSection] = useState<LogSection>("checkin");
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
@@ -584,7 +586,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.37</Text>
+              <Text style={styles.eyebrow}>Weathered 1.38</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -608,7 +610,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.37</Text>
+              <Text style={styles.versionValue}>1.38</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -654,15 +656,39 @@ export default function App() {
             <Text style={styles.sectionTitle}>Daily Check-In</Text>
             <Text style={styles.sectionCopy}>Capture one mood, one decision, and let context do the rest.</Text>
 
-            <LogWeatherBoard
-              summary={summary}
-              currentWeather={currentWeather}
-              strongestWeather={strongestWeather}
-              forecast={forecast}
-              styles={styles}
-            />
+            <View style={styles.segmentRow}>
+              <SelectableChip
+                label="Check-in"
+                selected={logSection === "checkin"}
+                onPress={() => setLogSection("checkin")}
+                styles={styles}
+              />
+              <SelectableChip
+                label="Signals"
+                selected={logSection === "signals"}
+                onPress={() => setLogSection("signals")}
+                styles={styles}
+              />
+              <SelectableChip
+                label="Release"
+                selected={logSection === "release"}
+                onPress={() => setLogSection("release")}
+                styles={styles}
+              />
+            </View>
 
-            <View style={styles.summaryPanel}>
+            {logSection === "checkin" ? (
+              <LogWeatherBoard
+                summary={summary}
+                currentWeather={currentWeather}
+                strongestWeather={strongestWeather}
+                forecast={forecast}
+                styles={styles}
+              />
+            ) : null}
+
+            {logSection === "signals" ? (
+              <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Source</Text>
               <View style={styles.segmentRow}>
                 {WEATHER_SOURCE_OPTIONS.map((value) => (
@@ -682,37 +708,49 @@ export default function App() {
                 onRetry={handleRefreshLiveWeather}
                 styles={styles}
               />
-            </View>
+              </View>
+            ) : null}
 
-            <View style={styles.infographicRow}>
+            {logSection === "checkin" ? (
+              <View style={styles.infographicRow}>
               <MiniMetricCard emoji="🧠" label="Mood Target" value={`${mood}/10`} styles={styles} />
               <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
               <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
-            </View>
+              </View>
+            ) : null}
 
-            <DecisionReadinessCard readiness={decisionReadiness} styles={styles} />
+            {logSection === "signals" ? (
+              <>
+                <DecisionReadinessCard readiness={decisionReadiness} styles={styles} />
 
-            <BehavioralReadCard read={behavioralRead} styles={styles} />
+                <BehavioralReadCard read={behavioralRead} styles={styles} />
 
-            <RecommendationNudgeCard
-              feedback={nudgeFeedback}
-              nudges={recommendationNudges}
-              onFeedback={handleNudgeFeedback}
-              styles={styles}
-            />
+                <RecommendationNudgeCard
+                  feedback={nudgeFeedback}
+                  nudges={recommendationNudges}
+                  onFeedback={handleNudgeFeedback}
+                  styles={styles}
+                />
+              </>
+            ) : null}
 
-            <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
+            {logSection === "release" ? (
+              <>
+                <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
 
-            <ProductionHardeningCard styles={styles} />
+                <ProductionHardeningCard styles={styles} />
 
-            <DeviceReleaseChecklistCard
-              result={deviceTestResult}
-              onMarkPass={handleMarkDevicePass}
-              onReset={handleResetDevicePass}
-              styles={styles}
-            />
+                <DeviceReleaseChecklistCard
+                  result={deviceTestResult}
+                  onMarkPass={handleMarkDevicePass}
+                  onReset={handleResetDevicePass}
+                  styles={styles}
+                />
+              </>
+            ) : null}
 
-            <View style={styles.summaryPanel}>
+            {logSection === "signals" ? (
+              <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
               <View style={styles.weatherMixRow}>
                 <WeatherMixCard
@@ -737,15 +775,20 @@ export default function App() {
                   styles={styles}
                 />
               </View>
-            </View>
+              </View>
+            ) : null}
 
-            <View style={styles.summaryPanel}>
+            {logSection === "signals" ? (
+              <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Mood Line Preview</Text>
               <MoodSparkline entries={weeklyEntries} styles={styles} />
-            </View>
+              </View>
+            ) : null}
 
-            <Text style={styles.fieldLabel}>Mood</Text>
-            <View style={styles.chipGrid}>
+            {logSection === "checkin" ? (
+              <>
+                <Text style={styles.fieldLabel}>Mood</Text>
+                <View style={styles.chipGrid}>
               {moodScale.map((value) => (
                 <SelectableChip
                   key={value}
@@ -755,10 +798,10 @@ export default function App() {
                   styles={styles}
                 />
               ))}
-            </View>
+                </View>
 
-            <Text style={styles.fieldLabel}>Energy</Text>
-            <View style={styles.segmentRow}>
+                <Text style={styles.fieldLabel}>Energy</Text>
+                <View style={styles.segmentRow}>
               {ENERGY_LEVELS.map((value) => (
                 <SelectableChip
                   key={value}
@@ -768,10 +811,10 @@ export default function App() {
                   styles={styles}
                 />
               ))}
-            </View>
+                </View>
 
-            <Text style={styles.fieldLabel}>Decision Type</Text>
-            <View style={styles.segmentRow}>
+                <Text style={styles.fieldLabel}>Decision Type</Text>
+                <View style={styles.segmentRow}>
               {DECISION_CATEGORIES.map((value) => (
                 <SelectableChip
                   key={value}
@@ -781,10 +824,10 @@ export default function App() {
                   styles={styles}
                 />
               ))}
-            </View>
+                </View>
 
-            <Text style={styles.fieldLabel}>Outcome</Text>
-            <View style={styles.segmentRow}>
+                <Text style={styles.fieldLabel}>Outcome</Text>
+                <View style={styles.segmentRow}>
               {availableOutcomes.map((value) => (
                 <SelectableChip
                   key={value}
@@ -794,29 +837,31 @@ export default function App() {
                   styles={styles}
                 />
               ))}
-            </View>
+                </View>
 
-            <Text style={styles.fieldLabel}>Note</Text>
-            <TextInput
-              placeholder="Short context, if needed"
-              placeholderTextColor={theme.mutedText}
-              style={styles.input}
-              value={note}
-              onChangeText={(value) => setNote(value.slice(0, NOTE_LIMIT))}
-            />
-            <Text style={styles.noteHint}>{note.length}/{NOTE_LIMIT}</Text>
+                <Text style={styles.fieldLabel}>Note</Text>
+                <TextInput
+                  placeholder="Short context, if needed"
+                  placeholderTextColor={theme.mutedText}
+                  style={styles.input}
+                  value={note}
+                  onChangeText={(value) => setNote(value.slice(0, NOTE_LIMIT))}
+                />
+                <Text style={styles.noteHint}>{note.length}/{NOTE_LIMIT}</Text>
 
-            <View style={styles.weatherBox}>
+                <View style={styles.weatherBox}>
               <Text style={styles.weatherTitle}>{formatWeatherSource(weatherSourceMode)} Context</Text>
               <Text style={styles.weatherText}>
                 {currentWeather.condition} • {currentWeather.temperatureC}C • {currentWeather.humidity}% humidity •{" "}
                 {currentWeather.locationLabel}
               </Text>
-            </View>
+                </View>
 
-            <Pressable style={styles.primaryButton} onPress={handleSubmit}>
-              <Text style={styles.primaryButtonText}>Save local entry</Text>
-            </Pressable>
+                <Pressable style={styles.primaryButton} onPress={handleSubmit}>
+                  <Text style={styles.primaryButtonText}>Save local entry</Text>
+                </Pressable>
+              </>
+            ) : null}
           </View>
         ) : null}
 
@@ -1406,7 +1451,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.37 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.38 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
