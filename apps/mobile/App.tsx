@@ -586,7 +586,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.39</Text>
+              <Text style={styles.eyebrow}>Weathered</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -606,11 +606,6 @@ export default function App() {
               <View style={styles.cloudShapeLarge} />
               <View style={styles.cloudShapeSmall} />
               <Text style={styles.rainEmoji}>🌧️</Text>
-            </View>
-
-            <View style={styles.versionBadge}>
-              <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.39</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1484,7 +1479,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.39 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.40 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
@@ -2352,28 +2347,6 @@ function createStyles(theme: ThemePalette) {
     rainEmoji: {
       fontSize: 32,
       alignSelf: "flex-start",
-    },
-    versionBadge: {
-      width: 110,
-      borderRadius: 22,
-      padding: 16,
-      backgroundColor: theme.cardAlt,
-      borderWidth: 1,
-      borderColor: theme.border,
-      justifyContent: "center",
-      gap: 6,
-    },
-    versionLabel: {
-      color: theme.mutedText,
-      fontSize: 12,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      fontWeight: "700",
-    },
-    versionValue: {
-      color: theme.text,
-      fontSize: 28,
-      fontWeight: "700",
     },
     weatherMetricCard: {
       flex: 1,

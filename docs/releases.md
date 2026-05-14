@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.40.0
+
+Weathered 1.40.0 removes version branding from the homepage UI.
+
+- Changes the hero eyebrow from a versioned label to the product name.
+- Removes the visible version badge from the hero weather row.
+- Keeps version tracking in package metadata, README, and release notes.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.39.0
 
 Weathered 1.39.0 adds section intro panels to the divided Log flow.

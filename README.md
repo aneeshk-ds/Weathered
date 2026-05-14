@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.39`
+`1.40`
 
 Highlights:
 
+- homepage version badge removed
 - Log section intro panels
 - divided Log screen sections
 - production hardening tracker
