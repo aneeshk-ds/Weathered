@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.40`
+`1.41`
 
 Highlights:
 
+- product-facing release checklist
 - homepage version badge removed
 - Log section intro panels
 - divided Log screen sections

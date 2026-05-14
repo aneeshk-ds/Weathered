@@ -1466,30 +1466,26 @@ function DeviceReleaseChecklistCard({
         <Text style={styles.milestoneStatus}>{hasPassed ? "Phone pass recorded" : "Ready for QR test"}</Text>
       </View>
       <Text style={styles.recommendationTitle}>
-        {hasPassed ? "Device gate can be marked complete." : "Run the stack, scan the QR, then confirm the core flows on phone."}
+        {hasPassed ? "Phone testing is recorded for this release." : "Open the QR build, then confirm the app's core flows on phone."}
       </Text>
       <View style={styles.deviceCommandBox}>
-        <Text style={styles.deviceCommandLabel}>Device command</Text>
-        <Text style={styles.deviceCommandText}>
-          npm run dev:device:stack
-        </Text>
-        <Text style={styles.deviceCommandLabel}>Preflight</Text>
-        <Text style={styles.deviceCommandText}>
-          npm run dev:mobile:device:auto -- --check
-        </Text>
+        <Text style={styles.deviceCommandLabel}>Release path</Text>
+        <Text style={styles.deviceCommandText}>Mac preview, LAN API check, Expo Go phone pass.</Text>
+        <Text style={styles.deviceCommandLabel}>Developer commands</Text>
+        <Text style={styles.deviceCommandText}>Tracked in README and release notes.</Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.40 export loads in browser." status="done" styles={styles} />
-        <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
+        <ReleaseCheckItem label="Browser preview" detail="Latest exported build loads locally." status="done" styles={styles} />
+        <ReleaseCheckItem label="API reachability" detail="LAN health check passes before phone testing." status="done" styles={styles} />
         <ReleaseCheckItem
-          label="Expo Go QR"
-          detail="Run on phone and confirm SDK compatibility."
+          label="Phone launch"
+          detail="Expo Go opens the QR build on the current SDK."
           status={hasPassed ? "done" : "next"}
           styles={styles}
         />
         <ReleaseCheckItem
           label="Core flows"
-          detail="Log, feedback, retry, and history should work on device."
+          detail="Check-in, signals, history, and release views behave on device."
           status={hasPassed ? "done" : "next"}
           styles={styles}
         />

@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.41.0
+
+Weathered 1.41.0 makes the release checklist less developer-facing.
+
+- Replaces visible terminal-command copy with product-facing release steps.
+- Keeps browser preview, API reachability, phone launch, and core flows as the release checks.
+- Keeps developer commands in docs instead of the app UI.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.40.0
 
 Weathered 1.40.0 removes version branding from the homepage UI.
