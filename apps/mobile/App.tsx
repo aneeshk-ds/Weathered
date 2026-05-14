@@ -1574,6 +1574,10 @@ function DeviceReleaseChecklistCard({
           styles={styles}
         />
       </View>
+      <View style={styles.deviceCommandBox}>
+        <Text style={styles.deviceCommandLabel}>Phone flow checklist</Text>
+        <Text style={styles.deviceCommandText}>Check-in saves, Signals refreshes, History edits, Summary scans, Release records pass.</Text>
+      </View>
       <View style={styles.deviceResultBox}>
         <Text style={styles.deviceResultText}>
           {hasPassed ? `Passed ${formatDevicePassTimestamp(result.timestamp)}` : "Phone result not recorded yet."}

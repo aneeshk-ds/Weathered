@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.49.0
+
+Weathered 1.49.0 adds a current-UI phone pass checklist.
+
+- Adds a concise phone-flow checklist to the Release section.
+- Covers Check-in save, Signals refresh, History edit, Summary scan, and Release pass recording.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.48.0
 
 Weathered 1.48.0 removes remaining developer-facing app copy.
