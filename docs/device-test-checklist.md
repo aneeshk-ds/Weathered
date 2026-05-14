@@ -33,4 +33,4 @@ npm run dev:mobile:device:auto -- --check
 
 ## Result
 
-Record the device, network, and result in the project notes before marking the device release gate complete.
+2026-05-14: Expo Go device test passed after installing an Expo Go build compatible with SDK 55. The app opened from the LAN QR flow and the device release gate can be marked complete in-app.

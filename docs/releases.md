@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 1.35.0
+
+Weathered 1.35.0 records the successful Expo Go device pass.
+
+- Records the 2026-05-14 device pass in `docs/device-test-checklist.md`.
+- Confirms the LAN QR flow works with an SDK 55-compatible Expo Go build.
+- Keeps the in-app phone pass tracker as the local device-level proof point.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+npx expo export --platform web --output-dir dist-web
+```
+
 ## 1.34.0
 
 Weathered 1.34.0 aligns Expo with the version expected by Expo Go.

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.34`
+`1.35`
 
 Highlights:
 
+- verified Expo Go device pass
 - Expo Go SDK patch alignment
 - dynamic 2.0 device gate status
 - in-app phone pass result tracker
