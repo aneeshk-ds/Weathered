@@ -888,6 +888,15 @@ export default function App() {
             <Text style={styles.sectionTitle}>Recent Entries</Text>
             <Text style={styles.sectionCopy}>This is local prototype data only. Nothing is synced yet.</Text>
 
+            <View style={styles.summaryPanel}>
+              <Text style={styles.summaryTitle}>History Overview</Text>
+              <View style={styles.infographicRow}>
+                <MiniMetricCard emoji="🗂️" label="Saved" value={String(entries.length)} styles={styles} />
+                <MiniMetricCard emoji="🧭" label="Lead Type" value={strongestCategory} styles={styles} />
+                <MiniMetricCard emoji="🌧️" label="Rain Context" value={String(rainyEntryCount)} styles={styles} />
+              </View>
+            </View>
+
             <HistoryReadPanel
               entries={entries}
               strongestCategory={strongestCategory}

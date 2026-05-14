@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.45.0
+
+Weathered 1.45.0 adds a History overview band.
+
+- Shows saved entries, leading decision type, and rainy-context count before the entry list.
+- Makes the History tab easier to scan before reviewing individual records.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.44.0
 
 Weathered 1.44.0 adds a Check-in progress strip.

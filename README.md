@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.44`
+`1.45`
 
 Highlights:
 
+- History overview band
 - Check-in progress strip
 - Signals overview row
 - live-weather resilience note
