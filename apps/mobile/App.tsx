@@ -584,7 +584,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.36</Text>
+              <Text style={styles.eyebrow}>Weathered 1.37</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -608,7 +608,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.36</Text>
+              <Text style={styles.versionValue}>1.37</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -702,6 +702,8 @@ export default function App() {
             />
 
             <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
+
+            <ProductionHardeningCard styles={styles} />
 
             <DeviceReleaseChecklistCard
               result={deviceTestResult}
@@ -1404,7 +1406,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.36 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.37 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
@@ -1508,6 +1510,38 @@ function VersionMilestoneCard({
         <MilestoneItem
           label="Production hardening"
           detail="Next step is polish, edge cases, and live-weather reliability before a public 2.0."
+          status="started"
+          styles={styles}
+        />
+      </View>
+    </View>
+  );
+}
+
+function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
+  return (
+    <View style={styles.milestonePanel}>
+      <View style={styles.forecastHeader}>
+        <Text style={styles.recommendationTone}>Production Hardening</Text>
+        <Text style={styles.milestoneStatus}>3 lanes</Text>
+      </View>
+      <Text style={styles.recommendationTitle}>The prototype is ready; these are the public-release checks we harden next.</Text>
+      <View style={styles.milestoneGrid}>
+        <MilestoneItem
+          label="Live weather reliability"
+          detail="Keep retry, fallback, and last-checked behavior clear when the API or network fails."
+          status="started"
+          styles={styles}
+        />
+        <MilestoneItem
+          label="Local state durability"
+          detail="Protect logs, feedback, preferences, and device-test state across restarts."
+          status="started"
+          styles={styles}
+        />
+        <MilestoneItem
+          label="Release validation"
+          detail="Run Expo compatibility, typecheck, export, browser preview, and phone checks before each push."
           status="started"
           styles={styles}
         />

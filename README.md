@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.36`
+`1.37`
 
 Highlights:
 
+- production hardening tracker
 - 2.0 prototype readiness panel
 - verified Expo Go device pass
 - Expo Go SDK patch alignment

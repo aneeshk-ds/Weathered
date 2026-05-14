@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.37.0
+
+Weathered 1.37.0 adds a visible production-hardening tracker.
+
+- Adds a Production Hardening panel to the Log flow.
+- Shows the three remaining hardening lanes: live-weather reliability, local state durability, and release validation.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.36.0
 
 Weathered 1.36.0 makes the near-2.0 status visible in-app.
