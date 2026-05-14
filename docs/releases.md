@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.36.0
+
+Weathered 1.36.0 makes the near-2.0 status visible in-app.
+
+- Updates the readiness card to show prototype gates as complete after the device pass and LAN API preflight.
+- Separates prototype readiness from the remaining production-hardening work.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.35.0
 
 Weathered 1.35.0 records the successful Expo Go device pass.

@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.35`
+`1.36`
 
 Highlights:
 
+- 2.0 prototype readiness panel
 - verified Expo Go device pass
 - Expo Go SDK patch alignment
 - dynamic 2.0 device gate status
@@ -129,6 +130,12 @@ Typecheck:
 
 ```bash
 npm run typecheck
+```
+
+Export web preview:
+
+```bash
+npm run export:web
 ```
 
 ## Product Direction

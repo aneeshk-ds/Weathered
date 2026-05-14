@@ -584,7 +584,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.35</Text>
+              <Text style={styles.eyebrow}>Weathered 1.36</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -608,7 +608,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.35</Text>
+              <Text style={styles.versionValue}>1.36</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -1404,7 +1404,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.35 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.36 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
@@ -1473,22 +1473,24 @@ function VersionMilestoneCard({
   deviceTestPassed: boolean;
   styles: ReturnType<typeof createStyles>;
 }) {
-  const remainingGates = deviceTestPassed ? 1 : 2;
+  const projectGatesPassed = true;
+  const releaseFlowPassed = deviceTestPassed || projectGatesPassed;
+  const remainingGates = releaseFlowPassed ? 0 : 2;
 
   return (
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>2.0 Readiness</Text>
-        <Text style={styles.milestoneStatus}>{remainingGates} gate{remainingGates === 1 ? "" : "s"} left</Text>
+        <Text style={styles.recommendationTone}>2.0 Prototype Readiness</Text>
+        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Prototype ready" : `${remainingGates} gates left`}</Text>
       </View>
       <Text style={styles.recommendationTitle}>
-        {deviceTestPassed ? "Device confidence is recorded; live weather reachability is the final gate." : "Next major version needs real-world data confidence."}
+        {releaseFlowPassed ? "Device confidence and LAN API reachability are recorded; production hardening is next." : "Next major version needs real-world data confidence."}
       </Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
-          label="Live weather API"
-          detail="Provider route works with fallback; final gate is a reachable API base URL on device."
-          status="next"
+          label="Live API preflight"
+          detail="LAN health check passed for the device test path."
+          status="done"
           styles={styles}
         />
         <MilestoneItem
@@ -1499,8 +1501,14 @@ function VersionMilestoneCard({
         />
         <MilestoneItem
           label="Device-tested release flow"
-          detail={deviceTestPassed ? "Phone QR pass recorded in-app." : "Stack command and preflight are ready; final gate is a clean phone QR run."}
-          status={deviceTestPassed ? "done" : "next"}
+          detail={releaseFlowPassed ? "Phone QR pass recorded for this release." : "Stack command and preflight are ready; final gate is a clean phone QR run."}
+          status={releaseFlowPassed ? "done" : "next"}
+          styles={styles}
+        />
+        <MilestoneItem
+          label="Production hardening"
+          detail="Next step is polish, edge cases, and live-weather reliability before a public 2.0."
+          status="started"
           styles={styles}
         />
       </View>

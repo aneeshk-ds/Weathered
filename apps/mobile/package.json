@@ -1,6 +1,6 @@
 {
   "name": "@weathered/mobile",
-  "version": "1.35.0",
+  "version": "1.36.0",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -9,12 +9,13 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "export:web": "expo export --platform web --output-dir ../../dist-web",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.11",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@weathered/shared": "1.35.0",
+    "@weathered/shared": "1.36.0",
     "expo": "~55.0.24",
     "react": "19.2.0",
     "react-dom": "19.2.0",
