@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.47.0
+
+Weathered 1.47.0 makes the empty History state actionable.
+
+- Adds Start check-in and Load samples actions when there are no entries.
+- Sends the user directly back to the Check-in section when starting a new log.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.46.0
 
 Weathered 1.46.0 adds a Summary overview row.

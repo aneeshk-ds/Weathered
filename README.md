@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.46`
+`1.47`
 
 Highlights:
 
+- actionable empty History state
 - Summary overview row
 - History overview band
 - Check-in progress strip

@@ -930,7 +930,23 @@ export default function App() {
             {entries.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyTitle}>No entries yet</Text>
-                <Text style={styles.emptyCopy}>Your check-ins will show up here once you start logging.</Text>
+                <Text style={styles.emptyCopy}>
+                  Start with one Check-in to build your first weather-behavior signal, or reload sample data for a quick tour.
+                </Text>
+                <View style={styles.emptyActions}>
+                  <Pressable
+                    style={styles.primaryButtonWide}
+                    onPress={() => {
+                      setActiveTab("log");
+                      setLogSection("checkin");
+                    }}
+                  >
+                    <Text style={styles.primaryButtonText}>Start check-in</Text>
+                  </Pressable>
+                  <Pressable style={styles.secondaryButtonWide} onPress={handleResetSampleData}>
+                    <Text style={styles.secondaryButtonText}>Load samples</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : null}
 
@@ -2633,6 +2649,12 @@ function createStyles(theme: ThemePalette) {
     emptyCopy: {
       color: theme.mutedText,
       lineHeight: 22,
+    },
+    emptyActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 8,
     },
     entryCard: {
       padding: 14,
