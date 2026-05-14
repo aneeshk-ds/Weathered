@@ -721,9 +721,9 @@ export default function App() {
 
             {logSection === "checkin" ? (
               <View style={styles.infographicRow}>
-              <MiniMetricCard emoji="🧠" label="Mood Target" value={`${mood}/10`} styles={styles} />
-              <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
-              <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
+                <MiniMetricCard emoji="🧠" label="Mood Target" value={`${mood}/10`} styles={styles} />
+                <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
+                <MiniMetricCard emoji="🌦️" label="Context" value={currentWeather.condition} styles={styles} />
               </View>
             ) : null}
 
@@ -795,6 +795,16 @@ export default function App() {
 
             {logSection === "checkin" ? (
               <>
+                <View style={styles.summaryPanel}>
+                  <Text style={styles.summaryTitle}>Check-in Progress</Text>
+                  <View style={styles.checkinProgressRow}>
+                    <CheckinStep label="Mood" value={`${mood}/10`} styles={styles} />
+                    <CheckinStep label="Energy" value={energy} styles={styles} />
+                    <CheckinStep label="Decision" value={category} styles={styles} />
+                    <CheckinStep label="Context" value={currentWeather.condition} styles={styles} />
+                  </View>
+                </View>
+
                 <Text style={styles.fieldLabel}>Mood</Text>
                 <View style={styles.chipGrid}>
               {moodScale.map((value) => (
@@ -1189,6 +1199,23 @@ function MiniMetricCard({
       <Text style={styles.miniMetricEmoji}>{emoji}</Text>
       <Text style={styles.miniMetricLabel}>{label}</Text>
       <Text style={styles.miniMetricValue}>{value}</Text>
+    </View>
+  );
+}
+
+function CheckinStep({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.checkinStep}>
+      <Text style={styles.checkinStepLabel}>{label}</Text>
+      <Text style={styles.checkinStepValue}>{value}</Text>
     </View>
   );
 }
@@ -2761,6 +2788,33 @@ function createStyles(theme: ThemePalette) {
     weatherMixMeta: {
       color: theme.mutedText,
       fontSize: 12,
+    },
+    checkinProgressRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    checkinStep: {
+      flex: 1,
+      minWidth: 120,
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      gap: 3,
+      padding: 10,
+    },
+    checkinStepLabel: {
+      color: theme.mutedText,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase",
+    },
+    checkinStepValue: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "900",
+      textTransform: "capitalize",
     },
     trendGrid: {
       flexDirection: "row",

@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.44.0
+
+Weathered 1.44.0 adds a Check-in progress strip.
+
+- Shows mood, energy, decision type, and weather context as the active check-in steps.
+- Makes the Check-in section feel guided without adding another form step.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.43.0
 
 Weathered 1.43.0 adds a compact Signals overview row.
