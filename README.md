@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.47`
+`1.48`
 
 Highlights:
 
+- final user-facing release polish
 - actionable empty History state
 - Summary overview row
 - History overview band

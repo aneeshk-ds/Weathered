@@ -886,7 +886,7 @@ export default function App() {
         {activeTab === "history" ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Recent Entries</Text>
-            <Text style={styles.sectionCopy}>This is local prototype data only. Nothing is synced yet.</Text>
+            <Text style={styles.sectionCopy}>Your saved check-ins stay on this device until sync is added.</Text>
 
             <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>History Overview</Text>
@@ -1316,12 +1316,7 @@ function WeatherSourceStatusCard({
             <Text style={styles.sourceRetryText}>{syncState === "syncing" ? "Checking..." : "Retry API"}</Text>
           </Pressable>
           <Text style={styles.sourceCheckedAt}>{formatWeatherCheckedAtLabel(syncState, checkedAt)}</Text>
-          <ProviderChecklistRow label="Provider" value={status.provider} styles={styles} />
-          <ProviderChecklistRow label="API base" value={status.apiBaseUrl || "Not set"} styles={styles} />
-          {status.deviceHint ? <Text style={styles.sourceDeviceHint}>{status.deviceHint}</Text> : null}
-          <ProviderChecklistRow label="Env key" value={status.envKey || "Not set"} styles={styles} />
-          <ProviderChecklistRow label="Route" value={status.endpoint || "Not set"} styles={styles} />
-          <ProviderChecklistRow label="Fallback" value={status.fallback || "Local mock"} styles={styles} />
+          <Text style={styles.sourceCheckedAt}>{formatWeatherProviderLabel(syncState, status.provider)}</Text>
         </View>
       ) : null}
     </View>
@@ -1356,6 +1351,22 @@ function formatWeatherCheckedAtLabel(syncState: WeatherSyncState, checkedAt: str
   return `Last checked: ${checkedAt || "not yet"}`;
 }
 
+function formatWeatherProviderLabel(syncState: WeatherSyncState, provider?: string) {
+  if (syncState === "api" && provider) {
+    return `${provider} is supplying live weather.`;
+  }
+
+  if (syncState === "fallback") {
+    return "Local fallback is protecting the experience.";
+  }
+
+  if (syncState === "syncing") {
+    return "Weathered is checking the live provider.";
+  }
+
+  return "Local weather is powering this view.";
+}
+
 function formatWeatherResilienceNote(syncState: WeatherSyncState) {
   if (syncState === "api") {
     return "Live weather is feeding the current read. If the provider drops later, Weathered keeps the flow usable with local fallback.";
@@ -1370,23 +1381,6 @@ function formatWeatherResilienceNote(syncState: WeatherSyncState) {
   }
 
   return "Local weather is active. Switch to Live Ready when you want to test provider reachability.";
-}
-
-function ProviderChecklistRow({
-  label,
-  value,
-  styles,
-}: {
-  label: string;
-  value: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.providerChecklistRow}>
-      <Text style={styles.providerChecklistLabel}>{label}</Text>
-      <Text style={styles.providerChecklistValue}>{value}</Text>
-    </View>
-  );
 }
 
 function BehavioralReadCard({
@@ -1496,8 +1490,8 @@ function LogSectionIntro({ section, styles }: { section: LogSection; styles: Ret
     },
     release: {
       title: "Release readiness",
-      message: "Track device confidence, production hardening, and the Expo Go release checklist in one focused space.",
-      meta: "Build status",
+      message: "Track phone confidence, final hardening, and release readiness in one focused space.",
+      meta: "Release status",
     },
   }[section];
 
@@ -1554,24 +1548,22 @@ function DeviceReleaseChecklistCard({
   return (
     <View style={styles.deviceChecklistPanel}>
       <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>Device Release Check</Text>
-        <Text style={styles.milestoneStatus}>{hasPassed ? "Phone pass recorded" : "Ready for QR test"}</Text>
+        <Text style={styles.recommendationTone}>Release Check</Text>
+        <Text style={styles.milestoneStatus}>{hasPassed ? "Phone pass recorded" : "Phone check ready"}</Text>
       </View>
       <Text style={styles.recommendationTitle}>
-        {hasPassed ? "Phone testing is recorded for this release." : "Open the QR build, then confirm the app's core flows on phone."}
+        {hasPassed ? "Phone testing is recorded for this release." : "Open the phone build, then confirm the app's core flows."}
       </Text>
       <View style={styles.deviceCommandBox}>
         <Text style={styles.deviceCommandLabel}>Release path</Text>
-        <Text style={styles.deviceCommandText}>Mac preview, LAN API check, Expo Go phone pass.</Text>
-        <Text style={styles.deviceCommandLabel}>Developer commands</Text>
-        <Text style={styles.deviceCommandText}>Tracked in README and release notes.</Text>
+        <Text style={styles.deviceCommandText}>Browser preview, live-weather reachability, phone pass.</Text>
       </View>
       <View style={styles.milestoneGrid}>
         <ReleaseCheckItem label="Browser preview" detail="Latest exported build loads locally." status="done" styles={styles} />
         <ReleaseCheckItem label="API reachability" detail="LAN health check passes before phone testing." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Phone launch"
-          detail="Expo Go opens the QR build on the current SDK."
+          detail="The phone build opens and matches the current app experience."
           status={hasPassed ? "done" : "next"}
           styles={styles}
         />
@@ -1643,16 +1635,16 @@ function VersionMilestoneCard({
   return (
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>2.0 Prototype Readiness</Text>
-        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Prototype ready" : `${remainingGates} gates left`}</Text>
+        <Text style={styles.recommendationTone}>2.0 Readiness</Text>
+        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Ready for final pass" : `${remainingGates} gates left`}</Text>
       </View>
       <Text style={styles.recommendationTitle}>
-        {releaseFlowPassed ? "Device confidence and LAN API reachability are recorded; production hardening is next." : "Next major version needs real-world data confidence."}
+        {releaseFlowPassed ? "Device confidence and weather reachability are recorded; final hardening is next." : "Next major version needs real-world data confidence."}
       </Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
-          label="Live API preflight"
-          detail="LAN health check passed for the device test path."
+          label="Live weather reachability"
+          detail="Weather service reachability is confirmed for the test path."
           status="done"
           styles={styles}
         />
@@ -1663,8 +1655,8 @@ function VersionMilestoneCard({
           styles={styles}
         />
         <MilestoneItem
-          label="Device-tested release flow"
-          detail={releaseFlowPassed ? "Phone QR pass recorded for this release." : "Stack command and preflight are ready; final gate is a clean phone QR run."}
+          label="Phone-tested release flow"
+          detail={releaseFlowPassed ? "Phone pass recorded for this release." : "Final gate is a clean phone run."}
           status={releaseFlowPassed ? "done" : "next"}
           styles={styles}
         />
@@ -1686,7 +1678,7 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
         <Text style={styles.recommendationTone}>Production Hardening</Text>
         <Text style={styles.milestoneStatus}>3 lanes</Text>
       </View>
-      <Text style={styles.recommendationTitle}>The prototype is ready; these are the public-release checks we harden next.</Text>
+      <Text style={styles.recommendationTitle}>The core app is ready; these are the public-release checks we harden next.</Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
           label="Live weather reliability"
@@ -1702,7 +1694,7 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
         />
         <MilestoneItem
           label="Release validation"
-          detail="Run Expo compatibility, typecheck, export, browser preview, and phone checks before each push."
+          detail="Run compatibility, browser preview, and phone checks before each release."
           status="started"
           styles={styles}
         />
@@ -2982,37 +2974,9 @@ function createStyles(theme: ThemePalette) {
       fontSize: 12,
       fontWeight: "700",
     },
-    sourceDeviceHint: {
-      color: theme.eyebrow,
-      fontSize: 12,
-      fontWeight: "800",
-      lineHeight: 17,
-    },
     providerChecklist: {
       gap: 6,
       paddingTop: 4,
-    },
-    providerChecklistRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      gap: 12,
-      paddingVertical: 6,
-      borderTopWidth: 1,
-      borderTopColor: theme.border,
-    },
-    providerChecklistLabel: {
-      color: theme.mutedText,
-      fontSize: 12,
-      fontWeight: "800",
-      textTransform: "uppercase",
-      minWidth: 72,
-    },
-    providerChecklistValue: {
-      color: theme.text,
-      fontSize: 12,
-      fontWeight: "800",
-      textAlign: "right",
-      flex: 1,
     },
     behaviorPanel: {
       backgroundColor: theme.cardAlt,

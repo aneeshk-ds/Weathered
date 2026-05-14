@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.48.0
+
+Weathered 1.48.0 removes remaining developer-facing app copy.
+
+- Replaces prototype/build language in History, Release, and 2.0 readiness areas.
+- Hides raw API/env/route details from Weather Source while preserving provider status.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.47.0
 
 Weathered 1.47.0 makes the empty History state actionable.
