@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.38`
+`1.39`
 
 Highlights:
 
+- Log section intro panels
 - divided Log screen sections
 - production hardening tracker
 - 2.0 prototype readiness panel

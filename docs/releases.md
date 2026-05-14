@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.39.0
+
+Weathered 1.39.0 adds section intro panels to the divided Log flow.
+
+- Adds contextual intro cards for Check-in, Signals, and Release.
+- Clarifies what each section is for before the user reaches the controls.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.38.0
 
 Weathered 1.38.0 divides the long Log page into focused sections.

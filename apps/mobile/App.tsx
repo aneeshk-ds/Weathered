@@ -586,7 +586,7 @@ export default function App() {
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
-              <Text style={styles.eyebrow}>Weathered 1.38</Text>
+              <Text style={styles.eyebrow}>Weathered 1.39</Text>
               <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
             </View>
 
@@ -610,7 +610,7 @@ export default function App() {
 
             <View style={styles.versionBadge}>
               <Text style={styles.versionLabel}>Version</Text>
-              <Text style={styles.versionValue}>1.38</Text>
+              <Text style={styles.versionValue}>1.39</Text>
             </View>
 
             <View style={styles.weatherMetricCard}>
@@ -676,6 +676,8 @@ export default function App() {
                 styles={styles}
               />
             </View>
+
+            <LogSectionIntro section={logSection} styles={styles} />
 
             {logSection === "checkin" ? (
               <LogWeatherBoard
@@ -1393,6 +1395,37 @@ function RecommendationNudgeCard({
   );
 }
 
+function LogSectionIntro({ section, styles }: { section: LogSection; styles: ReturnType<typeof createStyles> }) {
+  const copy = {
+    checkin: {
+      title: "Check-in workspace",
+      message: "Log the current mood, energy, decision type, and weather context without the analysis panels in the way.",
+      meta: "Entry first",
+    },
+    signals: {
+      title: "Behavior signals",
+      message: "Read the decision score, weather-behavior interpretation, recommendation nudges, and recent pattern charts.",
+      meta: "Insight layer",
+    },
+    release: {
+      title: "Release readiness",
+      message: "Track device confidence, production hardening, and the Expo Go release checklist in one focused space.",
+      meta: "Build status",
+    },
+  }[section];
+
+  return (
+    <View style={styles.sectionIntroPanel}>
+      <View style={styles.forecastHeader}>
+        <Text style={styles.recommendationTone}>{copy.meta}</Text>
+        <Text style={styles.milestoneStatus}>{section}</Text>
+      </View>
+      <Text style={styles.recommendationTitle}>{copy.title}</Text>
+      <Text style={styles.recommendationText}>{copy.message}</Text>
+    </View>
+  );
+}
+
 function DecisionReadinessCard({
   readiness,
   styles,
@@ -1451,7 +1484,7 @@ function DeviceReleaseChecklistCard({
         </Text>
       </View>
       <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Web preview" detail="1.38 export loads in browser." status="done" styles={styles} />
+        <ReleaseCheckItem label="Web preview" detail="1.39 export loads in browser." status="done" styles={styles} />
         <ReleaseCheckItem label="API preflight" detail="Preflight command is ready before scanning the QR." status="done" styles={styles} />
         <ReleaseCheckItem
           label="Expo Go QR"
@@ -2767,6 +2800,14 @@ function createStyles(theme: ThemePalette) {
       borderRadius: 18,
       padding: 16,
       gap: 10,
+    },
+    sectionIntroPanel: {
+      backgroundColor: theme.accentSoft,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      gap: 8,
+      padding: 16,
     },
     sourceStatusCard: {
       padding: 14,
