@@ -1666,8 +1666,8 @@ function VersionMilestoneCard({
         />
         <MilestoneItem
           label="Production hardening"
-          detail="Next step is polish, edge cases, and live-weather reliability before a public 2.0."
-          status="started"
+          detail="Ready for 2.0 once the current UI passes on phone."
+          status="done"
           styles={styles}
         />
       </View>
@@ -1680,9 +1680,9 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>Production Hardening</Text>
-        <Text style={styles.milestoneStatus}>3 lanes</Text>
+        <Text style={styles.milestoneStatus}>Final phone pass</Text>
       </View>
-      <Text style={styles.recommendationTitle}>The core app is ready; these are the public-release checks we harden next.</Text>
+      <Text style={styles.recommendationTitle}>The core app is ready for the 2.0 jump after the current UI passes on phone.</Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
           label="Live weather reliability"
@@ -1698,7 +1698,7 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
         />
         <MilestoneItem
           label="Release validation"
-          detail="Run compatibility, browser preview, and phone checks before each release."
+          detail="Compatibility, browser preview, and reachability checks are passing; final phone flow remains."
           status="started"
           styles={styles}
         />

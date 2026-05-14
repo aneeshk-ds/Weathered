@@ -12,10 +12,11 @@ The current release is a working prototype focused on:
 
 ## Current Version
 
-`1.49`
+`1.50`
 
 Highlights:
 
+- 2.0 final phone-pass marker
 - current-UI phone checklist
 - final user-facing release polish
 - actionable empty History state

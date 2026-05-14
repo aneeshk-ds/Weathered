@@ -1,5 +1,22 @@
 # Weathered Releases
 
+## 1.50.0
+
+Weathered 1.50.0 marks the app ready for the final 2.0 phone pass.
+
+- Updates Release readiness copy to show the current UI phone pass as the last remaining gate.
+- Marks production hardening complete for the current scope once the phone flow is confirmed.
+- Keeps the visible app version, docs, and package versions aligned.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.49.0
 
 Weathered 1.49.0 adds a current-UI phone pass checklist.
