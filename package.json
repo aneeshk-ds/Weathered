@@ -1,7 +1,7 @@
 {
   "name": "weathered",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -14,7 +14,8 @@
     "dev:api": "npm --workspace apps/api run dev",
     "export:web": "npm --workspace apps/mobile run export:web",
     "typecheck": "npm --workspace packages/shared run build && npm --workspace apps/api run build && npm --workspace apps/mobile run typecheck",
-    "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081"
+    "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081",
+    "build:android:apk": "cd apps/mobile && npx eas-cli build --platform android --profile preview-apk"
   },
   "devDependencies": {
     "@expo/ngrok": "^4.1.3"

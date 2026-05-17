@@ -1,5 +1,21 @@
 # Weathered Releases
 
+## 2.0.1
+
+Weathered 2.0.1 prepares Android APK testing.
+
+- Adds an Android package identifier and version code for installable builds.
+- Adds an EAS preview APK profile for direct Android testing.
+- Documents what works offline in the APK and what still needs network access.
+- Confirms the APK build path needs Expo authentication before the cloud build can start.
+
+Validation:
+
+```bash
+npx expo install --check
+npm run typecheck
+```
+
 ## 2.0.0
 
 Weathered 2.0.0 marks the app production-ready for the current 2.0 scope.

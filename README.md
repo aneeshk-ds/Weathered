@@ -19,7 +19,7 @@ Built as a personal tool: no accounts, no cloud sync. All data stays on the devi
 
 ## Current Version
 
-`2.0.0` — production-ready app shell
+`2.0.1` — Android APK-ready production app shell
 
 Highlights:
 
@@ -27,6 +27,7 @@ Highlights:
 - app-style screen segregation with a calmer wellness-inspired flow
 - audience navigation hides dev-only Release checks by default
 - production-ready 2.0 release state across app, docs, and package versions
+- Android APK preview build profile for direct device testing
 - Expo Go SDK 55 compatibility checked
 
 ---
@@ -48,6 +49,7 @@ Highlights:
 npm install
 npm run dev:mobile        # iOS/Android simulator
 npm run dev:mobile:device # On a connected device
+npm run build:android:apk # Android APK preview build
 ```
 
 Requires Node 18+, Expo CLI, and either an iOS simulator or Android emulator.
