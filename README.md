@@ -2,23 +2,32 @@
 
 A local-first mobile app for understanding how weather, mood, energy, and time shape everyday decisions.
 
-Built as a personal tool — no accounts, no cloud sync. All data stays on the device.
+Built as a personal tool: no accounts, no cloud sync. All data stays on the device.
 
 ---
 
-## What it does
+## What It Does
 
-- Fast personal check-ins: mood, energy, focus, and decision quality
-- Local logging with mocked weather context
-- 7-day summaries with editorial infographic-style insight screens
-- Signals overview — spot patterns across mood, energy, and conditions
-- History band and check-in progress strip
+- Fast personal check-ins for mood, energy, weather context, and decision moments
+- Decision signals that connect current weather to focus, risk, and recommendation nudges
+- Local history with create, edit, delete, and sample-data flows
+- Weekly summaries with calmer infographic-style insight screens
+- Audience-facing app navigation for Today, Check-in, Signals, History, and Summary
+- Dev-only Release checks hidden behind the preview flag
 
 ---
 
-## Current version
+## Current Version
 
-`1.50` — production-hardened prototype
+`2.0.0` — production-ready app shell
+
+Highlights:
+
+- soothing dark-first palette for lower-glare weather and decision review
+- app-style screen segregation with a calmer wellness-inspired flow
+- audience navigation hides dev-only Release checks by default
+- production-ready 2.0 release state across app, docs, and package versions
+- Expo Go SDK 55 compatibility checked
 
 ---
 
@@ -33,7 +42,7 @@ Built as a personal tool — no accounts, no cloud sync. All data stays on the d
 
 ---
 
-## Run locally
+## Run Locally
 
 ```bash
 npm install

@@ -9,6 +9,14 @@ import {
   TextInput,
   View,
 } from "react-native";
+
+declare const window:
+  | {
+      location?: {
+        search?: string;
+      };
+    }
+  | undefined;
 import {
   DECISION_CATEGORIES,
   DECISION_OPTIONS,
@@ -53,10 +61,17 @@ import {
   WEATHER_SOURCE_OPTIONS,
 } from "./src/lib/weather";
 
-type AppTab = "log" | "history" | "summary";
+type AppTab = "today" | "checkin" | "signals" | "history" | "summary" | "release";
 type LogSection = "checkin" | "signals" | "release";
 type ThemeMode = "light" | "dark";
 type WeatherSyncState = "local" | "syncing" | "api" | "fallback";
+type AppScreenConfig = {
+  id: AppTab;
+  label: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+};
 type EntryEditorState = {
   id: string;
   mood: number;
@@ -97,60 +112,113 @@ type ThemePalette = {
 const moodScale = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const NOTE_LIMIT = 120;
 
+const audienceScreens: AppScreenConfig[] = [
+  {
+    id: "today",
+    label: "Today",
+    icon: "☁️",
+    title: "Your weather-behavior home.",
+    subtitle: "A calm read of today’s context, current signal, and next useful move.",
+  },
+  {
+    id: "checkin",
+    label: "Check-in",
+    icon: "✍️",
+    title: "Log one decision moment.",
+    subtitle: "Capture mood, energy, weather, and the choice you are making now.",
+  },
+  {
+    id: "signals",
+    label: "Signals",
+    icon: "🧭",
+    title: "Read the current signal.",
+    subtitle: "See readiness, behavioral weather reads, and nudges before acting.",
+  },
+  {
+    id: "history",
+    label: "History",
+    icon: "🗂️",
+    title: "Review what changed.",
+    subtitle: "Edit saved entries and spot the conditions behind repeated choices.",
+  },
+  {
+    id: "summary",
+    label: "Summary",
+    icon: "📊",
+    title: "Scan the weekly pattern.",
+    subtitle: "Turn recent logs into weather, mood, and decision themes.",
+  },
+];
+
+const devReleaseScreen: AppScreenConfig = {
+  id: "release",
+  label: "Release",
+  icon: "✓",
+  title: "Confirm readiness.",
+  subtitle: "Keep the production pass visible without mixing it into daily use.",
+};
+
+const appScreens: AppScreenConfig[] = [
+  ...audienceScreens,
+  {
+    ...devReleaseScreen,
+  },
+];
+
 const lightTheme: ThemePalette = {
-  background: "#f3efe7",
-  backgroundGlow: "#ebe3d1",
-  card: "#fffaf2",
-  cardAlt: "#f8f3ea",
-  border: "#e6dac6",
-  text: "#1f201e",
-  mutedText: "#66685f",
-  eyebrow: "#976f2d",
-  accent: "#2f6c5d",
-  accentSoft: "#e7f0ec",
-  accentText: "#f8faf6",
-  chip: "#efe5d5",
-  chipText: "#4b4133",
-  selectedChip: "#2f6c5d",
-  selectedChipText: "#f7f5ef",
+  background: "#eef3ee",
+  backgroundGlow: "#dfe8e1",
+  card: "#fbfaf4",
+  cardAlt: "#f1f5ee",
+  border: "#d8e0d5",
+  text: "#202622",
+  mutedText: "#647067",
+  eyebrow: "#667f6c",
+  accent: "#5c8370",
+  accentSoft: "#e1ebe3",
+  accentText: "#f9fbf7",
+  chip: "#e6eee5",
+  chipText: "#435247",
+  selectedChip: "#5c8370",
+  selectedChipText: "#f8fbf6",
   input: "#ffffff",
-  statusBg: "#e3efee",
-  statusText: "#2f5c52",
-  insightBg: "#f6e2b7",
-  insightText: "#6c541b",
-  destructiveBg: "#f2d9d2",
-  destructiveText: "#8a3c2c",
-  summaryTrack: "#eadfcd",
-  heroCloud: "#ffffff",
-  heroSun: "#f6c25b",
+  statusBg: "#dde9e3",
+  statusText: "#426858",
+  insightBg: "#ece6d0",
+  insightText: "#645f43",
+  destructiveBg: "#ead9d6",
+  destructiveText: "#7f4b42",
+  summaryTrack: "#dbe4dd",
+  heroCloud: "#f7fbf8",
+  heroSun: "#d7bd72",
 };
 
 const darkTheme: ThemePalette = {
-  background: "#11161d",
-  backgroundGlow: "#1a2530",
-  card: "#19222c",
-  cardAlt: "#22303d",
-  border: "#2f4252",
-  text: "#f2f6f8",
-  mutedText: "#a9b8c4",
-  eyebrow: "#f1bc63",
-  accent: "#79c0ab",
-  accentSoft: "#223942",
-  accentText: "#0d1519",
-  chip: "#263440",
-  chipText: "#d8e2e8",
-  selectedChip: "#79c0ab",
-  selectedChipText: "#102025",
-  input: "#101820",
-  statusBg: "#20323d",
-  statusText: "#bde7da",
-  insightBg: "#3d3521",
-  insightText: "#f5dda1",
-  destructiveBg: "#4a2a2b",
-  destructiveText: "#ffb8b4",
-  summaryTrack: "#2d3d49",
-  heroCloud: "#d9e1e8",
-  heroSun: "#f1b24c",
+  background: "#0e1718",
+  backgroundGlow: "#172423",
+  card: "#162120",
+  cardAlt: "#1d2b29",
+  border: "#2c403b",
+  text: "#eef5ef",
+  mutedText: "#a6b5ad",
+  eyebrow: "#d6c58a",
+  accent: "#8fb7a1",
+  accentSoft: "#243832",
+  accentText: "#0d1715",
+  chip: "#22312f",
+  chipText: "#d8e4dc",
+  selectedChip: "#8fb7a1",
+  selectedChipText: "#0d1715",
+  input: "#101c1b",
+  statusBg: "#21362f",
+  statusText: "#c7ded2",
+  insightBg: "#342f20",
+  insightText: "#eadcae",
+  destructiveBg: "#3c2828",
+  destructiveText: "#e7b7ad",
+  summaryTrack: "#293b36",
+  heroCloud: "#d7e2da",
+  heroSun: "#cdb676",
 };
 
 const seededEntries: DecisionLogInput[] = [
@@ -269,8 +337,8 @@ const seededEntries: DecisionLogInput[] = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<AppTab>("summary");
-  const [logSection, setLogSection] = useState<LogSection>("checkin");
+  const [showDevRelease, setShowDevRelease] = useState(false);
+  const [activeTab, setActiveTab] = useState<AppTab>("today");
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
@@ -341,6 +409,29 @@ export default function App() {
       : sunnyEntryCount >= cloudyEntryCount
         ? "sunny"
         : "cloudy";
+  const visibleScreens = showDevRelease ? appScreens : audienceScreens;
+  const currentLogSection: LogSection =
+    activeTab === "signals" ? "signals" : activeTab === "release" ? "release" : "checkin";
+  const activeScreen = appScreens.find((item) => item.id === activeTab) || appScreens[0];
+
+  useEffect(() => {
+    const search = typeof window !== "undefined" ? window.location?.search || "" : "";
+    const hasDevRelease = search.includes("dev=1") || search.includes("release=1");
+
+    if (hasDevRelease) {
+      setShowDevRelease(true);
+    }
+
+    if (search.includes("screen=release") && hasDevRelease) {
+      setActiveTab("release");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showDevRelease && activeTab === "release") {
+      setActiveTab("today");
+    }
+  }, [activeTab, showDevRelease]);
 
   useEffect(() => {
     let isMounted = true;
@@ -587,7 +678,7 @@ export default function App() {
           <View style={styles.heroTopRow}>
             <View style={styles.heroTitleWrap}>
               <Text style={styles.eyebrow}>Weathered</Text>
-              <Text style={styles.title}>A local-first weather journal for decision awareness.</Text>
+              <Text style={styles.title}>{activeScreen.title}</Text>
             </View>
 
             <Pressable style={styles.themeToggle} onPress={() => setThemeMode(themeMode === "light" ? "dark" : "light")}>
@@ -596,9 +687,7 @@ export default function App() {
             </Pressable>
           </View>
 
-          <Text style={styles.subtitle}>
-            Start with quick personal logging now, then let local weather patterns shape the next decision.
-          </Text>
+          <Text style={styles.subtitle}>{activeScreen.subtitle}</Text>
 
           <View style={styles.weatherVisualRow}>
             <View style={styles.weatherScene}>
@@ -618,6 +707,20 @@ export default function App() {
           </View>
         </View>
 
+        <View style={styles.routeStrip}>
+          <View style={styles.routeMarker}>
+            <Text style={styles.routeMarkerIcon}>{activeScreen.icon}</Text>
+          </View>
+          <View style={styles.routeMarkerTextWrap}>
+            <Text style={styles.routeMarkerLabel}>{activeScreen.label}</Text>
+            <Text style={styles.routeMarkerText}>
+              {activeTab === "today"
+                ? "A soft landing for the current weather signal and next decision."
+                : "A focused workspace for this part of the weather-behavior loop."}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.statusBarCard}>
           <Text style={styles.statusText}>
             {isHydrating
@@ -631,50 +734,84 @@ export default function App() {
         </View>
 
         <View style={styles.tabRow}>
-          <TabButton label="Log" selected={activeTab === "log"} onPress={() => setActiveTab("log")} styles={styles} />
-          <TabButton
-            label="History"
-            selected={activeTab === "history"}
-            onPress={() => setActiveTab("history")}
-            styles={styles}
-          />
-          <TabButton
-            label="Summary"
-            selected={activeTab === "summary"}
-            onPress={() => setActiveTab("summary")}
-            styles={styles}
-          />
+          {visibleScreens.map((screen) => (
+            <TabButton
+              key={screen.id}
+              icon={screen.icon}
+              label={screen.label}
+              selected={activeTab === screen.id}
+              onPress={() => setActiveTab(screen.id)}
+              styles={styles}
+            />
+          ))}
         </View>
 
-        {activeTab === "log" ? (
+        {activeTab === "today" ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Daily Check-In</Text>
-            <Text style={styles.sectionCopy}>Capture one mood, one decision, and let context do the rest.</Text>
+            <Text style={styles.sectionTitle}>Today</Text>
+            <Text style={styles.sectionCopy}>A gentle home base for the current weather signal, your latest state, and the next useful decision.</Text>
 
-            <View style={styles.segmentRow}>
-              <SelectableChip
-                label="Check-in"
-                selected={logSection === "checkin"}
-                onPress={() => setLogSection("checkin")}
+            <View style={styles.infographicRow}>
+              <MiniMetricCard emoji="🧠" label="Mood" value={`${mood}/10`} styles={styles} />
+              <MiniMetricCard emoji="🌦️" label="Weather" value={currentWeather.condition} styles={styles} />
+              <MiniMetricCard emoji="🗂️" label="Logs" value={String(entries.length)} styles={styles} />
+            </View>
+
+            <View style={styles.journeyGrid}>
+              <JourneyButton
+                icon="✍️"
+                title="Log the moment"
+                detail="Mood, energy, choice, context"
+                onPress={() => setActiveTab("checkin")}
                 styles={styles}
               />
-              <SelectableChip
-                label="Signals"
-                selected={logSection === "signals"}
-                onPress={() => setLogSection("signals")}
+              <JourneyButton
+                icon="🧭"
+                title="Read the signal"
+                detail="Readiness, nudges, weather"
+                onPress={() => setActiveTab("signals")}
                 styles={styles}
               />
-              <SelectableChip
-                label="Release"
-                selected={logSection === "release"}
-                onPress={() => setLogSection("release")}
+              <JourneyButton
+                icon="🗂️"
+                title="Review patterns"
+                detail="Saved entries and edits"
+                onPress={() => setActiveTab("history")}
+                styles={styles}
+              />
+              <JourneyButton
+                icon="📊"
+                title="Weekly view"
+                detail="Mood and weather trends"
+                onPress={() => setActiveTab("summary")}
                 styles={styles}
               />
             </View>
 
-            <LogSectionIntro section={logSection} styles={styles} />
+            <ForecastActionCard forecast={forecast} styles={styles} />
+          </View>
+        ) : null}
 
-            {logSection === "checkin" ? (
+        {activeTab === "checkin" || activeTab === "signals" || activeTab === "release" ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>
+              {currentLogSection === "checkin"
+                ? "Daily Check-In"
+                : currentLogSection === "signals"
+                  ? "Decision Signals"
+                  : "Release Readiness"}
+            </Text>
+            <Text style={styles.sectionCopy}>
+              {currentLogSection === "checkin"
+                ? "Capture one mood, one decision, and let context do the rest."
+                : currentLogSection === "signals"
+                  ? "Test live weather, readiness, behavioral reads, and recommendation nudges."
+                  : "Confirm production checks and the current release pass."}
+            </Text>
+
+            <LogSectionIntro section={currentLogSection} styles={styles} />
+
+            {currentLogSection === "checkin" ? (
               <LogWeatherBoard
                 summary={summary}
                 currentWeather={currentWeather}
@@ -684,7 +821,7 @@ export default function App() {
               />
             ) : null}
 
-            {logSection === "signals" ? (
+            {currentLogSection === "signals" ? (
               <View style={styles.summaryPanel}>
                 <Text style={styles.summaryTitle}>Signals Overview</Text>
                 <View style={styles.infographicRow}>
@@ -695,7 +832,7 @@ export default function App() {
               </View>
             ) : null}
 
-            {logSection === "signals" ? (
+            {currentLogSection === "signals" ? (
               <View style={styles.summaryPanel}>
                 <Text style={styles.summaryTitle}>Weather Source</Text>
                 <View style={styles.segmentRow}>
@@ -719,7 +856,7 @@ export default function App() {
               </View>
             ) : null}
 
-            {logSection === "checkin" ? (
+            {currentLogSection === "checkin" ? (
               <View style={styles.infographicRow}>
                 <MiniMetricCard emoji="🧠" label="Mood Target" value={`${mood}/10`} styles={styles} />
                 <MiniMetricCard emoji="⚡" label="Energy" value={energy} styles={styles} />
@@ -727,7 +864,7 @@ export default function App() {
               </View>
             ) : null}
 
-            {logSection === "signals" ? (
+            {currentLogSection === "signals" ? (
               <>
                 <DecisionReadinessCard readiness={decisionReadiness} styles={styles} />
 
@@ -742,7 +879,7 @@ export default function App() {
               </>
             ) : null}
 
-            {logSection === "release" ? (
+            {currentLogSection === "release" ? (
               <>
                 <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
 
@@ -757,7 +894,7 @@ export default function App() {
               </>
             ) : null}
 
-            {logSection === "signals" ? (
+            {currentLogSection === "signals" ? (
               <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Weather Snapshot</Text>
               <View style={styles.weatherMixRow}>
@@ -786,14 +923,14 @@ export default function App() {
               </View>
             ) : null}
 
-            {logSection === "signals" ? (
+            {currentLogSection === "signals" ? (
               <View style={styles.summaryPanel}>
               <Text style={styles.summaryTitle}>Mood Line Preview</Text>
               <MoodSparkline entries={weeklyEntries} styles={styles} />
               </View>
             ) : null}
 
-            {logSection === "checkin" ? (
+            {currentLogSection === "checkin" ? (
               <>
                 <View style={styles.summaryPanel}>
                   <Text style={styles.summaryTitle}>Check-in Progress</Text>
@@ -937,8 +1074,7 @@ export default function App() {
                   <Pressable
                     style={styles.primaryButtonWide}
                     onPress={() => {
-                      setActiveTab("log");
-                      setLogSection("checkin");
+                      setActiveTab("checkin");
                     }}
                   >
                     <Text style={styles.primaryButtonText}>Start check-in</Text>
@@ -1180,11 +1316,13 @@ function SelectableChip({
 }
 
 function TabButton({
+  icon,
   label,
   selected,
   onPress,
   styles,
 }: {
+  icon: string;
   label: string;
   selected: boolean;
   onPress: () => void;
@@ -1192,7 +1330,32 @@ function TabButton({
 }) {
   return (
     <Pressable onPress={onPress} style={[styles.tabButton, selected && styles.tabButtonSelected]}>
+      <Text style={styles.tabIcon}>{icon}</Text>
       <Text style={[styles.tabLabel, selected && styles.tabLabelSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function JourneyButton({
+  icon,
+  title,
+  detail,
+  onPress,
+  styles,
+}: {
+  icon: string;
+  title: string;
+  detail: string;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.journeyButton}>
+      <Text style={styles.journeyIcon}>{icon}</Text>
+      <View style={styles.journeyTextWrap}>
+        <Text style={styles.journeyTitle}>{title}</Text>
+        <Text style={styles.journeyDetail}>{detail}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -1640,10 +1803,10 @@ function VersionMilestoneCard({
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>2.0 Readiness</Text>
-        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Ready for final pass" : `${remainingGates} gates left`}</Text>
+        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Production ready" : `${remainingGates} gates left`}</Text>
       </View>
       <Text style={styles.recommendationTitle}>
-        {releaseFlowPassed ? "Device confidence and weather reachability are recorded; final hardening is next." : "Next major version needs real-world data confidence."}
+        {releaseFlowPassed ? "Weathered is aligned for the 2.0 production pass." : "Next major version needs real-world data confidence."}
       </Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
@@ -1666,7 +1829,7 @@ function VersionMilestoneCard({
         />
         <MilestoneItem
           label="Production hardening"
-          detail="Ready for 2.0 once the current UI passes on phone."
+          detail="2.0 release state is aligned across app, docs, packages, and validation gates."
           status="done"
           styles={styles}
         />
@@ -1680,9 +1843,9 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
     <View style={styles.milestonePanel}>
       <View style={styles.forecastHeader}>
         <Text style={styles.recommendationTone}>Production Hardening</Text>
-        <Text style={styles.milestoneStatus}>Final phone pass</Text>
+        <Text style={styles.milestoneStatus}>2.0 aligned</Text>
       </View>
-      <Text style={styles.recommendationTitle}>The core app is ready for the 2.0 jump after the current UI passes on phone.</Text>
+      <Text style={styles.recommendationTitle}>The core app is now in a production-ready 2.0 state for the current scope.</Text>
       <View style={styles.milestoneGrid}>
         <MilestoneItem
           label="Live weather reliability"
@@ -1698,7 +1861,7 @@ function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createS
         />
         <MilestoneItem
           label="Release validation"
-          detail="Compatibility, browser preview, and reachability checks are passing; final phone flow remains."
+          detail="Compatibility, browser preview, reachability, typecheck, and export gates are part of the release pass."
           status="started"
           styles={styles}
         />
@@ -2470,23 +2633,65 @@ function createStyles(theme: ThemePalette) {
       lineHeight: 20,
       fontWeight: "600",
     },
+    routeStrip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      backgroundColor: theme.card,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+      padding: 14,
+    },
+    routeMarker: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: theme.accentSoft,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    routeMarkerIcon: {
+      fontSize: 20,
+    },
+    routeMarkerTextWrap: {
+      flex: 1,
+      gap: 3,
+    },
+    routeMarkerLabel: {
+      color: theme.text,
+      fontWeight: "800",
+      fontSize: 16,
+    },
+    routeMarkerText: {
+      color: theme.mutedText,
+      lineHeight: 20,
+    },
     tabRow: {
       flexDirection: "row",
+      flexWrap: "wrap",
       gap: 10,
     },
     tabButton: {
       flex: 1,
+      minWidth: 104,
       paddingVertical: 12,
-      borderRadius: 999,
+      paddingHorizontal: 10,
+      borderRadius: 18,
       alignItems: "center",
+      gap: 4,
       backgroundColor: theme.chip,
     },
     tabButtonSelected: {
       backgroundColor: theme.accent,
     },
+    tabIcon: {
+      fontSize: 16,
+    },
     tabLabel: {
       color: theme.chipText,
       fontWeight: "700",
+      fontSize: 12,
     },
     tabLabelSelected: {
       color: theme.accentText,
@@ -2512,6 +2717,45 @@ function createStyles(theme: ThemePalette) {
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 10,
+    },
+    journeyGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    journeyButton: {
+      flex: 1,
+      minWidth: 210,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      padding: 14,
+      borderRadius: 18,
+      backgroundColor: theme.cardAlt,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    journeyIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      textAlign: "center",
+      textAlignVertical: "center",
+      fontSize: 18,
+      backgroundColor: theme.accentSoft,
+    },
+    journeyTextWrap: {
+      flex: 1,
+      gap: 3,
+    },
+    journeyTitle: {
+      color: theme.text,
+      fontWeight: "800",
+      fontSize: 15,
+    },
+    journeyDetail: {
+      color: theme.mutedText,
+      lineHeight: 19,
     },
     miniMetricCard: {
       flex: 1,
@@ -3085,7 +3329,7 @@ function createStyles(theme: ThemePalette) {
       borderLeftColor: theme.accent,
     },
     recommendationCaution: {
-      borderLeftColor: "#D97706",
+      borderLeftColor: theme.eyebrow,
     },
     recommendationReframe: {
       borderLeftColor: theme.eyebrow,
@@ -3276,15 +3520,15 @@ function createStyles(theme: ThemePalette) {
       color: theme.statusText,
     },
     unifiedDarkPanel: {
-      backgroundColor: "#071017",
+      backgroundColor: theme.card,
       borderRadius: 22,
       padding: 16,
       gap: 12,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
     },
     unifiedEyebrow: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
@@ -3300,26 +3544,26 @@ function createStyles(theme: ThemePalette) {
       minWidth: 110,
       padding: 14,
       borderRadius: 16,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 4,
     },
     unifiedMetricValue: {
-      color: "#f3fbfd",
+      color: theme.text,
       fontSize: 20,
       fontWeight: "800",
       textTransform: "capitalize",
     },
     unifiedMetricLabel: {
-      color: "#88a0a8",
+      color: theme.mutedText,
       fontSize: 12,
       textTransform: "uppercase",
       letterSpacing: 0.8,
       fontWeight: "700",
     },
     unifiedCommentary: {
-      color: "#9aadb4",
+      color: theme.mutedText,
       lineHeight: 22,
     },
     unifiedHistoryRow: {
@@ -3334,7 +3578,7 @@ function createStyles(theme: ThemePalette) {
       gap: 8,
     },
     unifiedHistoryHeadline: {
-      color: "#f5fbfc",
+      color: theme.text,
       fontSize: 24,
       lineHeight: 30,
       fontWeight: "800",
@@ -3343,56 +3587,56 @@ function createStyles(theme: ThemePalette) {
       width: 160,
       padding: 12,
       borderRadius: 16,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       alignItems: "center",
     },
     unifiedInsightStrip: {
       padding: 14,
       borderRadius: 16,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 6,
     },
     unifiedInsightTitle: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 15,
       fontWeight: "800",
     },
     unifiedInsightText: {
-      color: "#a7b9bf",
+      color: theme.mutedText,
       lineHeight: 22,
     },
     forecastStrip: {
       padding: 14,
       borderRadius: 16,
-      backgroundColor: "#0d2226",
+      backgroundColor: theme.accentSoft,
       borderWidth: 1,
-      borderColor: "#1b4f4e",
+      borderColor: theme.border,
       gap: 5,
     },
     forecastStripTitle: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 15,
       fontWeight: "800",
     },
     forecastStripText: {
-      color: "#d2e4e5",
+      color: theme.statusText,
       lineHeight: 21,
       fontWeight: "700",
     },
     darkIntelPanel: {
-      backgroundColor: "#071017",
+      backgroundColor: theme.card,
       borderRadius: 24,
       padding: 18,
       gap: 16,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
     },
     darkIntelEyebrow: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 12,
       fontWeight: "700",
       textTransform: "uppercase",
@@ -3414,25 +3658,25 @@ function createStyles(theme: ThemePalette) {
       height: 140,
       borderRadius: 70,
       borderWidth: 12,
-      borderColor: "#18e3b7",
+      borderColor: theme.accent,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "#0b1218",
+      backgroundColor: theme.background,
     },
     signalScoreValue: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 30,
       fontWeight: "800",
     },
     signalScoreLabel: {
-      color: "#7eb5ac",
+      color: theme.statusText,
       fontSize: 12,
       textTransform: "uppercase",
       letterSpacing: 1.2,
       fontWeight: "700",
     },
     signalScoreCaption: {
-      color: "#8ea1a8",
+      color: theme.mutedText,
       textAlign: "center",
       lineHeight: 20,
     },
@@ -3442,13 +3686,13 @@ function createStyles(theme: ThemePalette) {
       gap: 10,
     },
     darkIntelHeadline: {
-      color: "#f5fbfc",
+      color: theme.text,
       fontSize: 28,
       lineHeight: 34,
       fontWeight: "800",
     },
     darkIntelCopy: {
-      color: "#93a5ad",
+      color: theme.mutedText,
       fontSize: 16,
       lineHeight: 24,
     },
@@ -3496,35 +3740,35 @@ function createStyles(theme: ThemePalette) {
     darkForecastCard: {
       padding: 14,
       borderRadius: 18,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#1b4f4e",
+      borderColor: theme.border,
       gap: 8,
     },
     darkForecastLabel: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
       letterSpacing: 1.2,
     },
     darkForecastSignal: {
-      color: "#8cb3b1",
+      color: theme.statusText,
       fontSize: 12,
       fontWeight: "700",
     },
     darkForecastTitle: {
-      color: "#f5fbfc",
+      color: theme.text,
       fontSize: 18,
       lineHeight: 24,
       fontWeight: "800",
     },
     darkForecastText: {
-      color: "#a6b5ba",
+      color: theme.mutedText,
       lineHeight: 22,
     },
     darkForecastAction: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontWeight: "800",
       lineHeight: 20,
     },
@@ -3538,13 +3782,13 @@ function createStyles(theme: ThemePalette) {
       minWidth: 220,
       padding: 14,
       borderRadius: 18,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 10,
     },
     darkIntelMiniTitle: {
-      color: "#b4c2c8",
+      color: theme.text,
       fontSize: 12,
       fontWeight: "700",
       textTransform: "uppercase",
@@ -3560,13 +3804,13 @@ function createStyles(theme: ThemePalette) {
       width: 18,
       height: 18,
       borderRadius: 9,
-      backgroundColor: "#203038",
+      backgroundColor: theme.summaryTrack,
     },
     dotMatrixDotActive: {
-      backgroundColor: "#18e3b7",
+      backgroundColor: theme.accent,
     },
     darkIntelFootnote: {
-      color: "#7e9098",
+      color: theme.mutedText,
       fontSize: 12,
       lineHeight: 18,
     },
@@ -3578,30 +3822,30 @@ function createStyles(theme: ThemePalette) {
     darkInsightCard: {
       padding: 14,
       borderRadius: 18,
-      backgroundColor: "#0b161d",
+      backgroundColor: theme.cardAlt,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 6,
     },
     darkInsightTitle: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 16,
       fontWeight: "800",
     },
     darkInsightText: {
-      color: "#a6b5ba",
+      color: theme.mutedText,
       lineHeight: 22,
     },
     editorialBoard: {
-      backgroundColor: "#06070f",
+      backgroundColor: theme.background,
       borderRadius: 24,
       padding: 18,
       gap: 16,
       borderWidth: 1,
-      borderColor: "#10242f",
+      borderColor: theme.border,
     },
     editorialEyebrow: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
@@ -3623,25 +3867,25 @@ function createStyles(theme: ThemePalette) {
       height: 156,
       borderRadius: 78,
       borderWidth: 14,
-      borderColor: "#18e3b7",
-      backgroundColor: "#0a0d16",
+      borderColor: theme.accent,
+      backgroundColor: theme.background,
       alignItems: "center",
       justifyContent: "center",
     },
     editorialDonutValue: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 34,
       fontWeight: "900",
     },
     editorialDonutLabel: {
-      color: "#8ab7af",
+      color: theme.statusText,
       fontSize: 12,
       textTransform: "uppercase",
       letterSpacing: 1.2,
       fontWeight: "800",
     },
     editorialCaption: {
-      color: "#81909c",
+      color: theme.mutedText,
       textAlign: "center",
       lineHeight: 20,
     },
@@ -3651,13 +3895,13 @@ function createStyles(theme: ThemePalette) {
       gap: 10,
     },
     editorialHeadline: {
-      color: "#fbfdff",
+      color: theme.text,
       fontSize: 34,
       lineHeight: 40,
       fontWeight: "900",
     },
     editorialSubcopy: {
-      color: "#8e99a4",
+      color: theme.mutedText,
       fontSize: 16,
       lineHeight: 24,
       maxWidth: 520,
@@ -3670,22 +3914,22 @@ function createStyles(theme: ThemePalette) {
     editorialDotPanel: {
       flex: 1,
       minWidth: 240,
-      backgroundColor: "#0a1118",
+      backgroundColor: theme.cardAlt,
       borderRadius: 20,
       padding: 14,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 10,
     },
     editorialMiniHeading: {
-      color: "#c6d0d6",
+      color: theme.text,
       fontSize: 12,
       fontWeight: "800",
       textTransform: "uppercase",
       letterSpacing: 1.2,
     },
     editorialLegend: {
-      color: "#77858f",
+      color: theme.mutedText,
       fontSize: 12,
       lineHeight: 18,
     },
@@ -3695,20 +3939,20 @@ function createStyles(theme: ThemePalette) {
       gap: 12,
     },
     editorialStackCard: {
-      backgroundColor: "#0a1118",
+      backgroundColor: theme.cardAlt,
       borderRadius: 18,
       padding: 14,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 4,
     },
     editorialStackValue: {
-      color: "#18e3b7",
+      color: theme.accent,
       fontSize: 28,
       fontWeight: "900",
     },
     editorialStackTitle: {
-      color: "#b1bcc5",
+      color: theme.text,
       fontSize: 15,
       fontWeight: "700",
     },
@@ -3720,27 +3964,27 @@ function createStyles(theme: ThemePalette) {
     editorialWideCard: {
       flex: 1,
       minWidth: 260,
-      backgroundColor: "#0a1118",
+      backgroundColor: theme.cardAlt,
       borderRadius: 20,
       padding: 14,
       borderWidth: 1,
-      borderColor: "#12373f",
+      borderColor: theme.border,
       gap: 12,
     },
     editorialQuoteCard: {
       paddingLeft: 14,
       borderLeftWidth: 4,
-      borderLeftColor: "#18e3b7",
+      borderLeftColor: theme.accent,
       gap: 8,
     },
     editorialQuoteText: {
-      color: "#f3fbfd",
+      color: theme.text,
       fontSize: 22,
       lineHeight: 28,
       fontWeight: "800",
     },
     editorialQuoteMeta: {
-      color: "#8d99a4",
+      color: theme.mutedText,
       lineHeight: 22,
     },
     matrixWrap: {

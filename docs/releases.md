@@ -1,5 +1,27 @@
 # Weathered Releases
 
+## 2.0.0
+
+Weathered 2.0.0 marks the app production-ready for the current 2.0 scope.
+
+- Promotes the release from final-pass readiness to a 2.0 production-ready state.
+- Splits the experience into direct app screens for Today, Check-in, Signals, History, Summary, and Release.
+- Hides the Release screen from audience navigation unless the dev preview flag is enabled.
+- Adds a Today testing dashboard so the build can be checked through a clear user path.
+- Adds calmer guided navigation and journey cards inspired by wellness app patterns.
+- Refines the dark-first palette with lower-glare greens, softer borders, and warmer weather accents.
+- Aligns package, mobile app, lockfile, docs, and release copy on the 2.0 version.
+- Keeps the homepage free of visible version-number clutter while preserving release documentation.
+
+Validation:
+
+```bash
+npm run dev:mobile:device:auto -- --check
+npx expo install --check
+npm run typecheck
+npm run export:web
+```
+
 ## 1.50.0
 
 Weathered 1.50.0 marks the app ready for the final 2.0 phone pass.
