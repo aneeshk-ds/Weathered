@@ -2,6 +2,8 @@
 
 A local-first mobile app for understanding how weather, mood, energy, and time shape everyday decisions.
 
+Live app → https://aneeshk-ds.github.io/Weathered/
+
 Built as a personal tool: no accounts, no cloud sync. All data stays on the device.
 
 ---
