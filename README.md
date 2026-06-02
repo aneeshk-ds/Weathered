@@ -4,6 +4,8 @@ A local-first mobile app for understanding how weather, mood, energy, and time s
 
 Live app → https://aneeshk-ds.github.io/Weathered/
 
+Android APK preview → https://expo.dev/artifacts/eas/a8B7JjQ7mA4XzmatpPPsYa.apk
+
 Built as a personal tool: no accounts, no cloud sync. All data stays on the device.
 
 ---
