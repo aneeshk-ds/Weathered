@@ -1,13 +1,9 @@
 import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
+import { LocationPermissionError, resolveDeviceLocation } from "./location";
 
-declare const process: {
-  env?: {
-    EXPO_PUBLIC_WEATHER_API_URL?: string;
-  };
-};
+export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["live_ready", "seasonal_mock", "daily_mock"];
 
-export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["daily_mock", "seasonal_mock", "live_ready"];
-const defaultWeatherApiBaseUrl = "http://localhost:4000";
+const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 
 export interface WeatherSourceStatus {
   label: string;
@@ -15,10 +11,6 @@ export interface WeatherSourceStatus {
   message: string;
   readiness: string;
   provider?: string;
-  apiBaseUrl?: string;
-  deviceHint?: string;
-  envKey?: string;
-  endpoint?: string;
   fallback?: string;
 }
 
@@ -26,11 +18,7 @@ export function buildLocalWeatherSnapshot(
   mode: WeatherSourceMode,
   date: Date = new Date(),
 ): WeatherSnapshot {
-  if (mode === "live_ready") {
-    return buildLiveReadySnapshot(date);
-  }
-
-  if (mode === "seasonal_mock") {
+  if (mode === "seasonal_mock" || mode === "live_ready") {
     return buildSeasonalSnapshot(date);
   }
 
@@ -39,7 +27,7 @@ export function buildLocalWeatherSnapshot(
 
 export function formatWeatherSource(mode: WeatherSourceMode) {
   if (mode === "live_ready") {
-    return "live ready";
+    return "live";
   }
 
   return mode === "seasonal_mock" ? "seasonal" : "daily";
@@ -48,90 +36,87 @@ export function formatWeatherSource(mode: WeatherSourceMode) {
 export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceStatus {
   if (mode === "live_ready") {
     return {
-      label: "Live Ready",
-      title: "Provider handoff is prepared",
-      message: "Weathered calls the API route for Open-Meteo weather, then falls back locally if the device cannot reach it.",
-      readiness: "Needs reachable API",
+      label: "Live",
+      title: "Live weather is active",
+      message: "Weathered reads your current conditions from Open-Meteo using your device location, and falls back to a local estimate if it cannot reach the network.",
+      readiness: "Live provider connected",
       provider: "Open-Meteo",
-      apiBaseUrl: getWeatherApiBaseUrl(),
-      deviceHint: getWeatherApiDeviceHint(),
-      envKey: "EXPO_PUBLIC_WEATHER_API_URL",
-      endpoint: "/context/weather?mode=live_ready",
-      fallback: "Seasonal Bengaluru profile",
+      fallback: "Local seasonal estimate",
     };
   }
 
   if (mode === "seasonal_mock") {
     return {
       label: "Local Seasonal",
-      title: "Seasonal context is active",
-      message: "Weathered is using a local Bengaluru seasonal profile to make the check-in feel less static.",
-      readiness: "Live-provider ready",
+      title: "Seasonal estimate is active",
+      message: "Weathered is using a local seasonal profile instead of live data.",
+      readiness: "Offline-friendly estimate",
     };
   }
 
   return {
     label: "Local Daily",
-    title: "Daily rotating context is active",
-    message: "Weathered is using a date-based local weather cycle so patterns can be tested without network data.",
-    readiness: "Prototype stable",
+    title: "Daily rotating estimate is active",
+    message: "Weathered is using a date-based local cycle so patterns can be tested without network data.",
+    readiness: "Prototype mode",
+  };
+}
+
+interface OpenMeteoCurrentResponse {
+  current?: {
+    temperature_2m?: number;
+    relative_humidity_2m?: number;
+    weather_code?: number;
   };
 }
 
 export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> {
-  const apiBaseUrl = getWeatherApiBaseUrl();
-  const response = await fetch(`${apiBaseUrl}/context/weather?mode=live_ready`);
+  const location = await resolveDeviceLocation();
+
+  const params = new URLSearchParams({
+    latitude: String(location.latitude),
+    longitude: String(location.longitude),
+    current: "temperature_2m,relative_humidity_2m,weather_code",
+    timezone: "auto",
+  });
+
+  const response = await fetch(`${OPEN_METEO_URL}?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error(`Weather API request failed: ${response.status}`);
+    throw new Error(`Open-Meteo request failed: ${response.status}`);
   }
 
-  return normalizeWeatherSnapshot(await response.json());
-}
-
-export function getWeatherApiBaseUrl() {
-  return process.env?.EXPO_PUBLIC_WEATHER_API_URL || defaultWeatherApiBaseUrl;
-}
-
-function getWeatherApiDeviceHint() {
-  const apiBaseUrl = getWeatherApiBaseUrl();
-
-  if (apiBaseUrl.includes("localhost") || apiBaseUrl.includes("127.0.0.1")) {
-    return "Expo Go needs your Mac LAN URL, for example http://192.168.x.x:4000.";
-  }
-
-  return "Device URL is configured for network testing.";
-}
-
-function buildLiveReadySnapshot(date: Date): WeatherSnapshot {
-  return {
-    ...buildSeasonalSnapshot(date),
-    locationLabel: "Bengaluru live-ready fallback",
-  };
-}
-
-function normalizeWeatherSnapshot(value: unknown): WeatherSnapshot {
-  const snapshot = value as Partial<WeatherSnapshot>;
+  const payload = (await response.json()) as OpenMeteoCurrentResponse;
+  const current = payload.current;
 
   if (
-    !isWeatherCondition(snapshot.condition) ||
-    typeof snapshot.temperatureC !== "number" ||
-    typeof snapshot.humidity !== "number" ||
-    typeof snapshot.locationLabel !== "string"
+    typeof current?.temperature_2m !== "number" ||
+    typeof current.relative_humidity_2m !== "number" ||
+    typeof current.weather_code !== "number"
   ) {
-    throw new Error("Weather API returned an invalid snapshot");
+    throw new Error("Open-Meteo response missing current weather fields");
   }
 
   return {
-    condition: snapshot.condition,
-    temperatureC: Math.round(snapshot.temperatureC),
-    humidity: Math.round(snapshot.humidity),
-    locationLabel: snapshot.locationLabel,
+    condition: mapOpenMeteoCondition(current.weather_code),
+    temperatureC: Math.round(current.temperature_2m),
+    humidity: Math.round(current.relative_humidity_2m),
+    locationLabel: location.label,
   };
 }
 
-function isWeatherCondition(value: unknown): value is WeatherSnapshot["condition"] {
-  return value === "sunny" || value === "cloudy" || value === "rainy";
+export { LocationPermissionError };
+
+function mapOpenMeteoCondition(code: number): WeatherSnapshot["condition"] {
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 99)) {
+    return "rainy";
+  }
+
+  if (code >= 1 && code <= 3) {
+    return "cloudy";
+  }
+
+  return "sunny";
 }
 
 function buildDailySnapshot(date: Date): WeatherSnapshot {
@@ -142,7 +127,7 @@ function buildDailySnapshot(date: Date): WeatherSnapshot {
     condition,
     temperatureC: condition === "rainy" ? 22 : 29,
     humidity: condition === "rainy" ? 82 : 58,
-    locationLabel: "Bengaluru",
+    locationLabel: "Local estimate",
   };
 }
 
@@ -156,6 +141,6 @@ function buildSeasonalSnapshot(date: Date): WeatherSnapshot {
     condition,
     temperatureC: isWarmSeason ? 31 : isMonsoonLeaning ? 23 : 26,
     humidity: isMonsoonLeaning ? 86 : isWarmSeason ? 48 : 66,
-    locationLabel: "Bengaluru",
+    locationLabel: "Local estimate",
   };
 }
