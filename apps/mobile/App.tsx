@@ -24,12 +24,16 @@ import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges 
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { buildSummary } from "./src/lib/summary";
+import { exportBackup, importBackup } from "./src/lib/backup";
 import { colors } from "./src/theme";
 import { seedEntries } from "./src/seed";
 import { TabBar, type TabId } from "./src/components/TabBar";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { HistoryScreen, type EditingState } from "./src/screens/HistoryScreen";
 import { InsightsScreen } from "./src/screens/InsightsScreen";
+import { SettingsScreen } from "./src/screens/SettingsScreen";
+
+const APP_VERSION = "2.0.1";
 
 function personalize(
   nudges: ReturnType<typeof buildRecommendationNudges>,
@@ -205,6 +209,25 @@ export default function App() {
     setEditing(null);
   }
 
+  async function handleBackup() {
+    const result = await exportBackup(entries, nudgeFeedback);
+    return result.message;
+  }
+
+  async function handleRestore() {
+    const result = await importBackup();
+    if (result.ok && result.entries) {
+      setEntries(result.entries);
+      setNudgeFeedback(result.feedback ?? []);
+    }
+    return result.message;
+  }
+
+  function handleClearAll() {
+    setEntries([]);
+    setNudgeFeedback([]);
+  }
+
   function handleNudgeFeedback(id: string, value: RecommendationFeedbackValue) {
     setNudgeFeedback((current) => [
       { nudgeId: id, value, timestamp: new Date().toISOString() },
@@ -264,6 +287,16 @@ export default function App() {
             nudgeFeedback={nudgeFeedback}
             onNudgeFeedback={handleNudgeFeedback}
             forecast={forecast}
+          />
+        ) : null}
+
+        {activeTab === "settings" ? (
+          <SettingsScreen
+            entryCount={entries.length}
+            version={APP_VERSION}
+            onBackup={handleBackup}
+            onRestore={handleRestore}
+            onClear={handleClearAll}
           />
         ) : null}
       </ScrollView>

@@ -30,7 +30,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Weathered uses your location to show current local weather alongside your check-ins."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "ios": {
       "infoPlist": {

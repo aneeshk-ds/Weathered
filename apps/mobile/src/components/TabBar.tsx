@@ -2,12 +2,13 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme";
 
-export type TabId = "home" | "history" | "insights";
+export type TabId = "home" | "history" | "insights" | "settings";
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: "home", label: "Home", icon: "☀️" },
   { id: "history", label: "History", icon: "🗂️" },
   { id: "insights", label: "Insights", icon: "📊" },
+  { id: "settings", label: "Settings", icon: "⚙️" },
 ];
 
 export function TabBar({ active, onChange }: { active: TabId; onChange: (tab: TabId) => void }) {
