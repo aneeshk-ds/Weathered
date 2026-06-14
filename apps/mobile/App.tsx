@@ -42,14 +42,11 @@ import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import {
   loadEntries,
-  loadDeviceTestResult,
   loadPreferences,
   loadRecommendationFeedback,
-  saveDeviceTestResult,
   saveEntries,
   savePreferences,
   saveRecommendationFeedback,
-  type DeviceTestResult,
 } from "./src/lib/storage";
 import { buildSummary, isWithinLast7Days } from "./src/lib/summary";
 import {
@@ -61,8 +58,8 @@ import {
   WEATHER_SOURCE_OPTIONS,
 } from "./src/lib/weather";
 
-type AppTab = "today" | "checkin" | "signals" | "history" | "summary" | "release";
-type LogSection = "checkin" | "signals" | "release";
+type AppTab = "today" | "checkin" | "signals" | "history" | "summary";
+type LogSection = "checkin" | "signals";
 type ThemeMode = "light" | "dark";
 type WeatherSyncState = "local" | "syncing" | "api" | "fallback";
 type AppScreenConfig = {
@@ -150,20 +147,7 @@ const audienceScreens: AppScreenConfig[] = [
   },
 ];
 
-const devReleaseScreen: AppScreenConfig = {
-  id: "release",
-  label: "Release",
-  icon: "✓",
-  title: "Confirm readiness.",
-  subtitle: "Keep the production pass visible without mixing it into daily use.",
-};
-
-const appScreens: AppScreenConfig[] = [
-  ...audienceScreens,
-  {
-    ...devReleaseScreen,
-  },
-];
+const appScreens: AppScreenConfig[] = audienceScreens;
 
 const lightTheme: ThemePalette = {
   background: "#eef3ee",
@@ -337,12 +321,11 @@ const seededEntries: DecisionLogInput[] = [
 ];
 
 export default function App() {
-  const [showDevRelease, setShowDevRelease] = useState(false);
   const [activeTab, setActiveTab] = useState<AppTab>("today");
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
-  const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("daily_mock");
-  const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("daily_mock"));
+  const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("live_ready");
+  const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncState, setWeatherSyncState] = useState<WeatherSyncState>("local");
   const [weatherCheckedAt, setWeatherCheckedAt] = useState<string | null>(null);
   const [mood, setMood] = useState<number>(6);
@@ -352,7 +335,6 @@ export default function App() {
   const [note, setNote] = useState("");
   const [latestInsight, setLatestInsight] = useState<Insight | null>(null);
   const [nudgeFeedback, setNudgeFeedback] = useState<RecommendationFeedback[]>([]);
-  const [deviceTestResult, setDeviceTestResult] = useState<DeviceTestResult>({ status: "pending" });
   const [editor, setEditor] = useState<EntryEditorState>(null);
   const [isHydrating, setIsHydrating] = useState(true);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
@@ -409,39 +391,18 @@ export default function App() {
       : sunnyEntryCount >= cloudyEntryCount
         ? "sunny"
         : "cloudy";
-  const visibleScreens = showDevRelease ? appScreens : audienceScreens;
-  const currentLogSection: LogSection =
-    activeTab === "signals" ? "signals" : activeTab === "release" ? "release" : "checkin";
+  const visibleScreens = audienceScreens;
+  const currentLogSection: LogSection = activeTab === "signals" ? "signals" : "checkin";
   const activeScreen = appScreens.find((item) => item.id === activeTab) || appScreens[0];
-
-  useEffect(() => {
-    const search = typeof window !== "undefined" ? window.location?.search || "" : "";
-    const hasDevRelease = search.includes("dev=1") || search.includes("release=1");
-
-    if (hasDevRelease) {
-      setShowDevRelease(true);
-    }
-
-    if (search.includes("screen=release") && hasDevRelease) {
-      setActiveTab("release");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!showDevRelease && activeTab === "release") {
-      setActiveTab("today");
-    }
-  }, [activeTab, showDevRelease]);
 
   useEffect(() => {
     let isMounted = true;
 
     async function hydrate() {
-      const [nextEntries, preferences, nextNudgeFeedback, nextDeviceTestResult] = await Promise.all([
+      const [nextEntries, preferences, nextNudgeFeedback] = await Promise.all([
         loadEntries(seededEntries),
         loadPreferences(),
         loadRecommendationFeedback(),
-        loadDeviceTestResult(),
       ]);
       if (!isMounted) {
         return;
@@ -450,7 +411,6 @@ export default function App() {
       setEntries(nextEntries);
       setWeatherSourceMode(preferences.weatherSourceMode);
       setNudgeFeedback(nextNudgeFeedback);
-      setDeviceTestResult(nextDeviceTestResult);
       setIsHydrating(false);
     }
 
@@ -552,14 +512,6 @@ export default function App() {
     saveRecommendationFeedback(nudgeFeedback);
   }, [nudgeFeedback, isHydrating]);
 
-  useEffect(() => {
-    if (isHydrating) {
-      return;
-    }
-
-    saveDeviceTestResult(deviceTestResult);
-  }, [deviceTestResult, isHydrating]);
-
   const handleCategorySelect = (nextCategory: DecisionCategory) => {
     setCategory(nextCategory);
     setOutcome(DECISION_OPTIONS[nextCategory][0]);
@@ -606,14 +558,6 @@ export default function App() {
       { nudgeId, value, timestamp: new Date().toISOString() },
       ...current.filter((item) => item.nudgeId !== nudgeId),
     ]);
-  };
-
-  const handleMarkDevicePass = () => {
-    setDeviceTestResult({ status: "passed", timestamp: new Date().toISOString() });
-  };
-
-  const handleResetDevicePass = () => {
-    setDeviceTestResult({ status: "pending" });
   };
 
   const handleDeleteEntry = (id: string) => {
@@ -792,21 +736,15 @@ export default function App() {
           </View>
         ) : null}
 
-        {activeTab === "checkin" || activeTab === "signals" || activeTab === "release" ? (
+        {activeTab === "checkin" || activeTab === "signals" ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>
-              {currentLogSection === "checkin"
-                ? "Daily Check-In"
-                : currentLogSection === "signals"
-                  ? "Decision Signals"
-                  : "Release Readiness"}
+              {currentLogSection === "checkin" ? "Daily Check-In" : "Decision Signals"}
             </Text>
             <Text style={styles.sectionCopy}>
               {currentLogSection === "checkin"
                 ? "Capture one mood, one decision, and let context do the rest."
-                : currentLogSection === "signals"
-                  ? "Test live weather, readiness, behavioral reads, and recommendation nudges."
-                  : "Confirm production checks and the current release pass."}
+                : "Test live weather, readiness, behavioral reads, and recommendation nudges."}
             </Text>
 
             <LogSectionIntro section={currentLogSection} styles={styles} />
@@ -874,21 +812,6 @@ export default function App() {
                   feedback={nudgeFeedback}
                   nudges={recommendationNudges}
                   onFeedback={handleNudgeFeedback}
-                  styles={styles}
-                />
-              </>
-            ) : null}
-
-            {currentLogSection === "release" ? (
-              <>
-                <VersionMilestoneCard deviceTestPassed={deviceTestResult.status === "passed"} styles={styles} />
-
-                <ProductionHardeningCard styles={styles} />
-
-                <DeviceReleaseChecklistCard
-                  result={deviceTestResult}
-                  onMarkPass={handleMarkDevicePass}
-                  onReset={handleResetDevicePass}
                   styles={styles}
                 />
               </>
@@ -1651,11 +1574,6 @@ function LogSectionIntro({ section, styles }: { section: LogSection; styles: Ret
       message: "Read the decision score, weather-behavior interpretation, recommendation nudges, and recent pattern charts.",
       meta: "Insight layer",
     },
-    release: {
-      title: "Release readiness",
-      message: "Track phone confidence, final hardening, and release readiness in one focused space.",
-      meta: "Release status",
-    },
   }[section];
 
   return (
@@ -1691,203 +1609,6 @@ function DecisionReadinessCard({
       </View>
       <Text style={styles.recommendationText}>{readiness.message}</Text>
       <Text style={styles.recommendationEvidence}>{readiness.drivers.slice(0, 4).join(" • ")}</Text>
-    </View>
-  );
-}
-
-function DeviceReleaseChecklistCard({
-  result,
-  onMarkPass,
-  onReset,
-  styles,
-}: {
-  result: DeviceTestResult;
-  onMarkPass: () => void;
-  onReset: () => void;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  const hasPassed = result.status === "passed";
-
-  return (
-    <View style={styles.deviceChecklistPanel}>
-      <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>Release Check</Text>
-        <Text style={styles.milestoneStatus}>{hasPassed ? "Phone pass recorded" : "Phone check ready"}</Text>
-      </View>
-      <Text style={styles.recommendationTitle}>
-        {hasPassed ? "Phone testing is recorded for this release." : "Open the phone build, then confirm the app's core flows."}
-      </Text>
-      <View style={styles.deviceCommandBox}>
-        <Text style={styles.deviceCommandLabel}>Release path</Text>
-        <Text style={styles.deviceCommandText}>Browser preview, live-weather reachability, phone pass.</Text>
-      </View>
-      <View style={styles.milestoneGrid}>
-        <ReleaseCheckItem label="Browser preview" detail="Latest exported build loads locally." status="done" styles={styles} />
-        <ReleaseCheckItem label="API reachability" detail="LAN health check passes before phone testing." status="done" styles={styles} />
-        <ReleaseCheckItem
-          label="Phone launch"
-          detail="The phone build opens and matches the current app experience."
-          status={hasPassed ? "done" : "next"}
-          styles={styles}
-        />
-        <ReleaseCheckItem
-          label="Core flows"
-          detail="Check-in, signals, history, and release views behave on device."
-          status={hasPassed ? "done" : "next"}
-          styles={styles}
-        />
-      </View>
-      <View style={styles.deviceCommandBox}>
-        <Text style={styles.deviceCommandLabel}>Phone flow checklist</Text>
-        <Text style={styles.deviceCommandText}>Check-in saves, Signals refreshes, History edits, Summary scans, Release records pass.</Text>
-      </View>
-      <View style={styles.deviceResultBox}>
-        <Text style={styles.deviceResultText}>
-          {hasPassed ? `Passed ${formatDevicePassTimestamp(result.timestamp)}` : "Phone result not recorded yet."}
-        </Text>
-        <Pressable style={styles.deviceResultButton} onPress={hasPassed ? onReset : onMarkPass}>
-          <Text style={styles.deviceResultButtonText}>{hasPassed ? "Reset" : "Mark phone pass"}</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function formatDevicePassTimestamp(timestamp?: string) {
-  if (!timestamp) {
-    return "on device";
-  }
-
-  return new Date(timestamp).toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function ReleaseCheckItem({
-  detail,
-  label,
-  status,
-  styles,
-}: {
-  detail: string;
-  label: string;
-  status: "done" | "next";
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.releaseCheckItem}>
-      <Text style={styles.releaseCheckDot}>{status === "done" ? "●" : "○"}</Text>
-      <View style={styles.milestoneCopy}>
-        <Text style={styles.milestoneText}>{label}</Text>
-        <Text style={styles.milestoneDetail}>{detail}</Text>
-      </View>
-    </View>
-  );
-}
-
-function VersionMilestoneCard({
-  deviceTestPassed,
-  styles,
-}: {
-  deviceTestPassed: boolean;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  const projectGatesPassed = true;
-  const releaseFlowPassed = deviceTestPassed || projectGatesPassed;
-  const remainingGates = releaseFlowPassed ? 0 : 2;
-
-  return (
-    <View style={styles.milestonePanel}>
-      <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>2.0 Readiness</Text>
-        <Text style={styles.milestoneStatus}>{remainingGates === 0 ? "Production ready" : `${remainingGates} gates left`}</Text>
-      </View>
-      <Text style={styles.recommendationTitle}>
-        {releaseFlowPassed ? "Weathered is aligned for the 2.0 production pass." : "Next major version needs real-world data confidence."}
-      </Text>
-      <View style={styles.milestoneGrid}>
-        <MilestoneItem
-          label="Live weather reachability"
-          detail="Weather service reachability is confirmed for the test path."
-          status="done"
-          styles={styles}
-        />
-        <MilestoneItem
-          label="Personalized nudge tuning"
-          detail="Feedback now changes recommendation ordering locally."
-          status="done"
-          styles={styles}
-        />
-        <MilestoneItem
-          label="Phone-tested release flow"
-          detail={releaseFlowPassed ? "Phone pass recorded for this release." : "Final gate is a clean phone run."}
-          status={releaseFlowPassed ? "done" : "next"}
-          styles={styles}
-        />
-        <MilestoneItem
-          label="Production hardening"
-          detail="2.0 release state is aligned across app, docs, packages, and validation gates."
-          status="done"
-          styles={styles}
-        />
-      </View>
-    </View>
-  );
-}
-
-function ProductionHardeningCard({ styles }: { styles: ReturnType<typeof createStyles> }) {
-  return (
-    <View style={styles.milestonePanel}>
-      <View style={styles.forecastHeader}>
-        <Text style={styles.recommendationTone}>Production Hardening</Text>
-        <Text style={styles.milestoneStatus}>2.0 aligned</Text>
-      </View>
-      <Text style={styles.recommendationTitle}>The core app is now in a production-ready 2.0 state for the current scope.</Text>
-      <View style={styles.milestoneGrid}>
-        <MilestoneItem
-          label="Live weather reliability"
-          detail="Keep retry, fallback, and last-checked behavior clear when the API or network fails."
-          status="started"
-          styles={styles}
-        />
-        <MilestoneItem
-          label="Local state durability"
-          detail="Protect logs, feedback, preferences, and device-test state across restarts."
-          status="started"
-          styles={styles}
-        />
-        <MilestoneItem
-          label="Release validation"
-          detail="Compatibility, browser preview, reachability, typecheck, and export gates are part of the release pass."
-          status="started"
-          styles={styles}
-        />
-      </View>
-    </View>
-  );
-}
-
-function MilestoneItem({
-  detail,
-  label,
-  status,
-  styles,
-}: {
-  detail: string;
-  label: string;
-  status: "done" | "started" | "next";
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.milestoneItem}>
-      <Text style={styles.milestoneDot}>{status === "next" ? "○" : "●"}</Text>
-      <View style={styles.milestoneCopy}>
-        <Text style={styles.milestoneText}>{label}</Text>
-        <Text style={styles.milestoneDetail}>{detail}</Text>
-      </View>
     </View>
   );
 }
