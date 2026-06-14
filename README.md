@@ -1,6 +1,6 @@
 # Weathered
 
-A local-first mobile app for understanding how weather, mood, energy, and time shape everyday decisions.
+A local-first mobile app for understanding how weather, mood, and energy shape your everyday decisions.
 
 Live app → https://aneeshk-ds.github.io/Weathered/
 
@@ -12,27 +12,21 @@ Built as a personal tool: no accounts, no cloud sync. All data stays on the devi
 
 ## What It Does
 
-- Fast personal check-ins for mood, energy, weather context, and decision moments
-- Decision signals that connect current weather to focus, risk, and recommendation nudges
-- Local history with create, edit, delete, and sample-data flows
-- Weekly summaries with calmer infographic-style insight screens
-- Audience-facing app navigation for Today, Check-in, Signals, History, and Summary
-- Dev-only Release checks hidden behind the preview flag
+- Fast 20-second check-ins for mood, energy, and the decision you're making
+- Live local weather from Open-Meteo using your device location
+- A plain-language daily read on whether it's a good moment to decide
+- Local history you can edit and delete, with sample data to explore
+- An Insights view with ring and bar infographics, weekly patterns, and suggestions
 
 ---
 
-## Current Version
+## Screens
 
-`2.0.1` — Android APK-ready production app shell
+Three tabs, one job each:
 
-Highlights:
-
-- soothing dark-first palette for lower-glare weather and decision review
-- app-style screen segregation with a calmer wellness-inspired flow
-- audience navigation hides dev-only Release checks by default
-- production-ready 2.0 release state across app, docs, and package versions
-- Android APK preview build profile for direct device testing
-- Expo Go SDK 55 compatibility checked
+- **Home** — the check-in plus today's weather and a one-line read
+- **History** — your past check-ins, editable
+- **Insights** — patterns, mood rings, decision breakdown, and suggestions
 
 ---
 
@@ -42,8 +36,13 @@ Highlights:
 |---|---|
 | Framework | Expo (React Native) |
 | Language | TypeScript |
-| Architecture | Monorepo (apps / packages / scripts) |
-| Storage | Local-only |
+| Charts | react-native-svg |
+| Location | expo-location |
+| Weather | Open-Meteo (no key) |
+| Storage | On-device (AsyncStorage) |
+
+Code is organised into `src/components`, `src/screens`, and `src/lib` (logic),
+with shared types in `packages/shared`.
 
 ---
 
@@ -57,3 +56,4 @@ npm run build:android:apk # Android APK preview build
 ```
 
 Requires Node 18+, Expo CLI, and either an iOS simulator or Android emulator.
+Live weather needs location permission; without it the app falls back to a local estimate.
