@@ -259,6 +259,7 @@ export default function App() {
             entries={entries}
             weekMood={weekMood}
             readiness={readiness}
+            behavioralRead={behavioralRead}
             nudges={nudges}
             nudgeFeedback={nudgeFeedback}
             onNudgeFeedback={handleNudgeFeedback}

@@ -4,6 +4,7 @@ import {
   DECISION_CATEGORIES,
   type DecisionForecast,
   type DecisionLogInput,
+  type BehavioralRead,
   type DecisionReadiness,
   type Insight,
   type RecommendationFeedback,
@@ -25,6 +26,7 @@ export function InsightsScreen({
   entries,
   weekMood,
   readiness,
+  behavioralRead,
   nudges,
   nudgeFeedback,
   onNudgeFeedback,
@@ -35,6 +37,7 @@ export function InsightsScreen({
   entries: DecisionLogInput[];
   weekMood: number[];
   readiness: DecisionReadiness;
+  behavioralRead: BehavioralRead;
   nudges: RecommendationNudge[];
   nudgeFeedback: RecommendationFeedback[];
   onNudgeFeedback: (id: string, value: RecommendationFeedbackValue) => void;
@@ -58,6 +61,8 @@ export function InsightsScreen({
   return (
     <View>
       <ScreenHeader eyebrow="Insights" title="Your patterns" subtitle="What the last week is telling you." />
+
+      <Text style={styles.todayRead}>◆ {behavioralRead.summary}</Text>
 
       {insight ? (
         <View style={styles.insight}>
@@ -152,6 +157,7 @@ export function InsightsScreen({
 }
 
 const styles = StyleSheet.create({
+  todayRead: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
   insight: { backgroundColor: colors.card, borderLeftWidth: 3, borderLeftColor: colors.accent, borderRadius: 0, padding: 13, marginBottom: 14 },
   insightTag: { fontSize: 12, color: colors.accent, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
   insightMsg: { fontSize: 14, color: colors.text, lineHeight: 21 },
