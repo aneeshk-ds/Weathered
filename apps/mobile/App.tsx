@@ -364,7 +364,7 @@ export default function App() {
     nudgeFeedback,
   );
   const summary = buildSummary(entries);
-  const forecast = buildDecisionForecast(entries, currentWeather);
+  const forecast = buildDecisionForecast(entries, currentWeather, { mood, energy });
   const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
   const averageHumidity =
     weeklyEntries.length > 0
