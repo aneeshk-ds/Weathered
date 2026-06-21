@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Project release checks
+        run: npm run verify:project
+
       - name: Export web app
         run: npm run export:web
 

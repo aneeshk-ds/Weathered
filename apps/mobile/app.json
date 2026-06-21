@@ -5,10 +5,17 @@
     "version": "2.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0e1718"
+    },
     "android": {
       "package": "com.aneeshkds.weathered",
       "versionCode": 201,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0e1718"
       },
       "permissions": [
@@ -37,6 +44,9 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Weathered uses your location to show current local weather alongside your check-ins."
       }
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
     }
   }
 }

@@ -8,6 +8,10 @@ Android APK preview → https://expo.dev/artifacts/eas/a8B7JjQ7mA4XzmatpPPsYa.ap
 
 Built as a personal tool: no accounts, no cloud sync. All data stays on the device.
 
+Privacy policy -> [docs/privacy-policy.md](docs/privacy-policy.md)
+
+Release checklist -> [docs/release-checklist.md](docs/release-checklist.md)
+
 ---
 
 ## What It Does
