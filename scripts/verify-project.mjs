@@ -43,6 +43,7 @@ const lockfile = readJson("package-lock.json");
 const appConfig = readJson("apps/mobile/app.json");
 const easConfig = readJson("apps/mobile/eas.json");
 const workflow = readText(".github/workflows/deploy-web.yml");
+const androidWorkflow = readText(".github/workflows/android-build.yml");
 const readme = readText("README.md");
 const backupModule = readText("apps/mobile/src/lib/backup.ts");
 
@@ -50,6 +51,8 @@ const workspacePackages = Object.keys(lockfile.packages).filter((key) => key.sta
 
 check(rootPackage.scripts?.typecheck === "npm --workspace packages/shared run build && npm --workspace apps/mobile run typecheck", "Root typecheck script should check shared and mobile.");
 check(rootPackage.scripts?.["verify:project"] === "node scripts/verify-project.mjs", "Root verify:project script is missing.");
+check(rootPackage.scripts?.["build:android:apk"]?.includes("--profile preview-apk"), "Root APK build script should use the preview-apk profile.");
+check(rootPackage.scripts?.["build:android:production"]?.includes("--profile production"), "Root production Android build script is missing.");
 check(workspacePackages.includes("apps/mobile"), "Lockfile should include apps/mobile.");
 check(workspacePackages.includes("packages/shared"), "Lockfile should include packages/shared.");
 check(!workspacePackages.includes("apps/api"), "Lockfile should not include removed apps/api workspace.");
@@ -61,6 +64,14 @@ check(typecheckIndex !== -1, "Deploy workflow should run npm run typecheck.");
 check(exportIndex !== -1, "Deploy workflow should run npm run export:web.");
 check(typecheckIndex !== -1 && exportIndex !== -1 && typecheckIndex < exportIndex, "Deploy workflow should typecheck before export.");
 check(workflow.includes("npm run verify:project"), "Deploy workflow should run project release checks.");
+
+check(androidWorkflow.includes("workflow_dispatch"), "Android build workflow should be manually dispatchable.");
+check(androidWorkflow.includes("preview-apk"), "Android build workflow should support preview-apk.");
+check(androidWorkflow.includes("production"), "Android build workflow should support production.");
+check(androidWorkflow.includes("EXPO_TOKEN"), "Android build workflow should require EXPO_TOKEN.");
+check(androidWorkflow.includes("npm run verify:project"), "Android build workflow should run project release checks.");
+check(androidWorkflow.includes("npm run typecheck"), "Android build workflow should run typecheck.");
+check(androidWorkflow.includes("npx eas-cli@latest build"), "Android build workflow should run EAS build.");
 
 check(backupModule.includes("function normalizeEntry"), "Backup restore should validate entries before importing.");
 check(backupModule.includes("isValidMood"), "Backup restore should validate mood values.");

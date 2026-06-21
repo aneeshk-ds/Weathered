@@ -20,6 +20,34 @@ This uses the `preview-apk` EAS profile in `apps/mobile/eas.json` and produces a
 
 If building from CI or another non-interactive terminal, set `EXPO_TOKEN` instead of using `eas login`.
 
+## GitHub Actions Build
+
+You can also build Android from GitHub:
+
+1. Add `EXPO_TOKEN` as a repository secret.
+2. Open the **Android Build** workflow in GitHub Actions.
+3. Click **Run workflow**.
+4. Choose `preview-apk` for an internal APK, or `production` for a Play Store app bundle.
+
+The workflow runs:
+
+```bash
+npm ci
+npm run verify:project
+npm run typecheck
+npx eas-cli@latest build --platform android --profile <profile> --non-interactive
+```
+
+## Production App Bundle
+
+For Play Store production builds, run:
+
+```bash
+npm run build:android:production
+```
+
+This uses the `production` EAS profile and creates an Android app bundle.
+
 ## What Works Offline
 
 - Local check-ins

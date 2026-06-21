@@ -1,0 +1,58 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile to run
+        required: true
+        default: preview-apk
+        type: choice
+        options:
+          - preview-apk
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}-${{ inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: Android ${{ inputs.profile }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Project release checks
+        run: npm run verify:project
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Verify Expo token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "Missing EXPO_TOKEN. Add it as a repository secret before running Android builds."
+            exit 1
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run EAS Android build
+        working-directory: apps/mobile
+        run: npx eas-cli@latest build --platform android --profile "${{ inputs.profile }}" --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

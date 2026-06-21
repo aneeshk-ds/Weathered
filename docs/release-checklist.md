@@ -25,8 +25,8 @@ Use this checklist before publishing Weathered beyond a local demo.
 ## Android Internal APK
 
 - Confirm Expo account access.
-- Log in with `npx eas-cli login`, or set `EXPO_TOKEN` in CI.
-- Run `npm run build:android:apk`.
+- Log in with `npx eas-cli login`, or set `EXPO_TOKEN` in GitHub repository secrets.
+- Run `npm run build:android:apk`, or manually run the **Android Build** GitHub Actions workflow with `preview-apk`.
 - Install the APK on a physical Android device.
 - Test location permission allow and deny flows.
 - Test backup export through the native share sheet.
@@ -36,7 +36,7 @@ Use this checklist before publishing Weathered beyond a local demo.
 
 - Confirm `apps/mobile/app.json` has the correct version and Android `versionCode`.
 - Confirm icon, adaptive icon, and splash assets are present.
-- Build the production app bundle with the `production` EAS profile.
+- Build the production app bundle with `npm run build:android:production`, or manually run the **Android Build** GitHub Actions workflow with `production`.
 - Complete Play Store data safety and privacy forms.
 - Provide the privacy policy URL.
 - Add screenshots, short description, full description, and release notes.
