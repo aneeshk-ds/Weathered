@@ -1,23 +1,30 @@
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, StyleSheet, Text, View } from "react-native";
+import type { AppDiagnostics } from "../lib/diagnostics";
+import { summarizeHealth } from "../lib/diagnostics";
 import { colors } from "../theme";
 import { Card, PrimaryButton, ScreenHeader } from "../components/ui";
+
+const SUPPORT_URL = "https://github.com/aneeshk-ds/Weathered/issues";
 
 export function SettingsScreen({
   entryCount,
   version,
+  diagnostics,
   onBackup,
   onRestore,
   onClear,
 }: {
   entryCount: number;
   version: string;
+  diagnostics: AppDiagnostics;
   onBackup: () => Promise<string>;
   onRestore: () => Promise<string>;
   onClear: () => void;
 }) {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const health = summarizeHealth(diagnostics);
 
   async function run(action: () => Promise<string>) {
     if (busy) return;
@@ -33,6 +40,14 @@ export function SettingsScreen({
       { text: "Cancel", style: "cancel" },
       { text: "Clear", style: "destructive", onPress: onClear },
     ]);
+  }
+
+  async function openSupport() {
+    try {
+      await Linking.openURL(SUPPORT_URL);
+    } catch {
+      setStatus("Could not open the support page. Visit github.com/aneeshk-ds/Weathered/issues.");
+    }
   }
 
   return (
@@ -56,6 +71,32 @@ export function SettingsScreen({
       {status ? <Text style={styles.status}>{status}</Text> : null}
 
       <Card>
+        <Text style={styles.cardTitle}>App health</Text>
+        <Text style={styles.healthLabel}>{health.label}</Text>
+        <Text style={styles.cardBody}>{health.message}</Text>
+        <View style={styles.healthGrid}>
+          <View style={styles.healthCell}>
+            <Text style={styles.healthValue}>{diagnostics.weather.successCount}</Text>
+            <Text style={styles.healthCaption}>weather ok</Text>
+          </View>
+          <View style={styles.healthCell}>
+            <Text style={styles.healthValue}>{diagnostics.weather.failureCount}</Text>
+            <Text style={styles.healthCaption}>fallbacks</Text>
+          </View>
+          <View style={styles.healthCell}>
+            <Text style={styles.healthValue}>{diagnostics.backup.exportSuccessCount + diagnostics.backup.restoreSuccessCount}</Text>
+            <Text style={styles.healthCaption}>backup ops</Text>
+          </View>
+          <View style={styles.healthCell}>
+            <Text style={styles.healthValue}>{diagnostics.storage.writeFailureCount}</Text>
+            <Text style={styles.healthCaption}>save issues</Text>
+          </View>
+        </View>
+        {diagnostics.weather.lastMessage ? <Text style={styles.cardBody}>Weather: {diagnostics.weather.lastMessage}</Text> : null}
+        {diagnostics.backup.lastMessage ? <Text style={styles.cardBody}>Backup: {diagnostics.backup.lastMessage}</Text> : null}
+      </Card>
+
+      <Card>
         <Text style={styles.cardTitle}>Your data</Text>
         <Text style={styles.cardBody}>{entryCount} check-in{entryCount === 1 ? "" : "s"} stored on this device.</Text>
         <View style={{ height: 12 }} />
@@ -66,6 +107,9 @@ export function SettingsScreen({
         <Text style={styles.cardTitle}>About</Text>
         <Text style={styles.cardBody}>Weathered {version}</Text>
         <Text style={styles.cardBody}>Local-first: no accounts, no cloud sync. Live weather uses your device location via Open-Meteo.</Text>
+        <Text style={styles.cardBody}>Support: include the app version, check-in count, and App health details when reporting an issue.</Text>
+        <View style={{ height: 12 }} />
+        <PrimaryButton label="Open support page" onPress={openSupport} tone="ghost" />
       </Card>
     </View>
   );
@@ -75,4 +119,9 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 },
   cardBody: { fontSize: 13, color: colors.muted, lineHeight: 19, marginBottom: 2 },
   status: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
+  healthLabel: { fontSize: 18, fontWeight: "700", color: colors.accent, marginBottom: 4 },
+  healthGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 10 },
+  healthCell: { backgroundColor: colors.card2, borderRadius: 8, minWidth: 92, flex: 1, padding: 10 },
+  healthValue: { fontSize: 20, fontWeight: "700", color: colors.text, marginBottom: 2 },
+  healthCaption: { fontSize: 11, color: colors.muted },
 });

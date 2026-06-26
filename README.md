@@ -12,6 +12,12 @@ Privacy policy -> [docs/privacy-policy.md](docs/privacy-policy.md)
 
 Release checklist -> [docs/release-checklist.md](docs/release-checklist.md)
 
+System design -> [docs/system-design.md](docs/system-design.md)
+
+User validation plan -> [docs/user-validation.md](docs/user-validation.md)
+
+Support -> https://github.com/aneeshk-ds/Weathered/issues
+
 ---
 
 ## What It Does

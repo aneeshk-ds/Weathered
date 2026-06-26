@@ -13,6 +13,7 @@
     "export:web": "npm --workspace apps/mobile run export:web",
     "typecheck": "npm --workspace packages/shared run build && npm --workspace apps/mobile run typecheck",
     "verify:project": "node scripts/verify-project.mjs",
+    "test:core": "node --no-warnings --experimental-strip-types scripts/test-core.mjs",
     "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081",
     "build:android:apk": "cd apps/mobile && npx eas-cli build --platform android --profile preview-apk",
     "build:android:production": "cd apps/mobile && npx eas-cli build --platform android --profile production"

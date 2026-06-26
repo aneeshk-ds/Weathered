@@ -25,6 +25,13 @@ import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { buildSummary } from "./src/lib/summary";
 import { exportBackup, importBackup } from "./src/lib/backup";
+import {
+  emptyDiagnostics,
+  loadDiagnostics,
+  recordDiagnosticEvent,
+  type AppDiagnostics,
+  type DiagnosticEvent,
+} from "./src/lib/diagnostics";
 import { colors } from "./src/theme";
 import { seedEntries } from "./src/seed";
 import { TabBar, type TabId } from "./src/components/TabBar";
@@ -32,6 +39,7 @@ import { HomeScreen } from "./src/screens/HomeScreen";
 import { HistoryScreen, type EditingState } from "./src/screens/HistoryScreen";
 import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
+import { LocationPermissionError } from "./src/lib/location";
 
 const APP_VERSION = "2.0.1";
 
@@ -80,18 +88,26 @@ export default function App() {
   const [nudgeFeedback, setNudgeFeedback] = useState<RecommendationFeedback[]>([]);
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
+  const [diagnostics, setDiagnostics] = useState<AppDiagnostics>(emptyDiagnostics);
+
+  async function track(event: DiagnosticEvent, message?: string) {
+    const next = await recordDiagnosticEvent(event, message);
+    setDiagnostics(next);
+  }
 
   useEffect(() => {
     let mounted = true;
     async function hydrate() {
-      const [nextEntries, , nextFeedback] = await Promise.all([
+      const [nextEntries, , nextFeedback, nextDiagnostics] = await Promise.all([
         loadEntries(seedEntries),
         loadPreferences(),
         loadRecommendationFeedback(),
+        loadDiagnostics(),
       ]);
       if (!mounted) return;
       setEntries(nextEntries);
       setNudgeFeedback(nextFeedback);
+      setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
     }
     hydrate();
@@ -107,9 +123,20 @@ export default function App() {
     setWeatherSyncing(true);
     fetchLiveReadyWeatherSnapshot()
       .then((snapshot) => {
-        if (mounted) setCurrentWeather(snapshot);
+        if (mounted) {
+          setCurrentWeather(snapshot);
+          void track("weather_sync_success", `Live weather updated for ${snapshot.locationLabel}.`);
+        }
       })
-      .catch(() => {})
+      .catch((error: unknown) => {
+        if (!mounted) return;
+        const event = error instanceof LocationPermissionError ? "location_permission_denied" : "weather_sync_failure";
+        const message =
+          event === "location_permission_denied"
+            ? "Location permission denied; local weather estimate used."
+            : "Live weather unavailable; local weather estimate used.";
+        void track(event, message);
+      })
       .finally(() => {
         if (mounted) setWeatherSyncing(false);
       });
@@ -120,17 +147,23 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    saveEntries(entries);
+    saveEntries(entries).then((ok) => {
+      if (!ok) void track("storage_write_failure", "Could not save check-ins locally.");
+    });
   }, [entries, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
-    savePreferences({ weatherSourceMode });
+    savePreferences({ weatherSourceMode }).then((ok) => {
+      if (!ok) void track("storage_write_failure", "Could not save local preferences.");
+    });
   }, [weatherSourceMode, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
-    saveRecommendationFeedback(nudgeFeedback);
+    saveRecommendationFeedback(nudgeFeedback).then((ok) => {
+      if (!ok) void track("storage_write_failure", "Could not save recommendation feedback.");
+    });
   }, [nudgeFeedback, isHydrating]);
 
   const behavioralRead = useMemo(
@@ -211,6 +244,7 @@ export default function App() {
 
   async function handleBackup() {
     const result = await exportBackup(entries, nudgeFeedback);
+    await track(result.ok ? "backup_export_success" : "backup_export_failure", result.message);
     return result.message;
   }
 
@@ -220,6 +254,7 @@ export default function App() {
       setEntries(result.entries);
       setNudgeFeedback(result.feedback ?? []);
     }
+    await track(result.ok ? "backup_restore_success" : "backup_restore_failure", result.message);
     return result.message;
   }
 
@@ -294,6 +329,7 @@ export default function App() {
           <SettingsScreen
             entryCount={entries.length}
             version={APP_VERSION}
+            diagnostics={diagnostics}
             onBackup={handleBackup}
             onRestore={handleRestore}
             onClear={handleClearAll}

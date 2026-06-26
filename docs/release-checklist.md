@@ -10,9 +10,11 @@ Use this checklist before publishing Weathered beyond a local demo.
 - Run `npm run typecheck`.
 - Run `npm run export:web`.
 - Smoke test Home, History, Insights, and Settings.
+- Confirm the Settings support link opens the support page.
 - Test location denied, offline weather fallback, and slow network behavior.
 - Test backup export and restore with a real file.
 - Confirm `README.md` and release notes mention the correct version.
+- Record user validation results in `docs/user-validation.md` before calling the product complete.
 
 ## Web Preview
 
@@ -41,6 +43,7 @@ Use this checklist before publishing Weathered beyond a local demo.
 - Provide the privacy policy URL.
 - Add screenshots, short description, full description, and release notes.
 - Run a closed/internal Play Store test before public release.
+- Confirm the user validation pass criteria have been met or explicitly deferred.
 
 ## iOS Production
 

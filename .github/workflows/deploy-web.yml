@@ -37,6 +37,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Core smoke tests
+        run: npm run test:core
+
       - name: Project release checks
         run: npm run verify:project
 

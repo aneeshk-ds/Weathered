@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weathered Design Guide Status</title>
+  <style>
+    :root {
+      --bg: #0e1718;
+      --panel: #162120;
+      --panel-2: #1d2b29;
+      --line: #2c403b;
+      --text: #eef5ef;
+      --muted: #a6b5ad;
+      --green: #8fb7a1;
+      --amber: #cdb676;
+      --red: #e7b7ad;
+      --blue: #7fb3e0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 20px 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.4fr 0.6fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.05;
+      margin-bottom: 12px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 21px;
+      margin-bottom: 14px;
+    }
+
+    h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .score {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 220px;
+      text-align: center;
+    }
+
+    .score-number {
+      color: var(--green);
+      font-size: clamp(54px, 8vw, 92px);
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--muted);
+    }
+
+    .dot.met { background: var(--green); }
+    .dot.partial { background: var(--amber); }
+    .dot.missing { background: var(--red); }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .criterion {
+      min-height: 145px;
+      border-top: 4px solid var(--line);
+    }
+
+    .criterion.met { border-top-color: var(--green); }
+    .criterion.partial { border-top-color: var(--amber); }
+    .criterion.missing { border-top-color: var(--red); }
+
+    .status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .status.met { color: var(--green); }
+    .status.partial { color: var(--amber); }
+    .status.missing { color: var(--red); }
+
+    .bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 72px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .track {
+      height: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: inherit;
+    }
+
+    .fill.partial { background: var(--amber); }
+    .fill.missing { background: var(--red); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    ol, ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li { margin-bottom: 8px; }
+
+    code {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      color: var(--text);
+      padding: 2px 5px;
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 860px) {
+      header, .two-col, .criteria-grid, .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <section class="card">
+        <h1>Weathered vs. Beginner Design Guide</h1>
+        <p class="muted">Status review against the non-technical app planning checklist. Source guide: <code>E:\claude-workspace\Apps\Design_Guide_NonTech.md</code>.</p>
+        <div class="legend">
+          <span class="pill"><span class="dot met"></span>Met</span>
+          <span class="pill"><span class="dot partial"></span>Partial / needs proof</span>
+          <span class="pill"><span class="dot missing"></span>Missing</span>
+        </div>
+      </section>
+
+      <section class="card score">
+        <div class="score-number">80%</div>
+        <div class="score-label">weighted design-readiness score</div>
+        <p class="muted" style="margin: 12px 0 0;">9 met, 8 partial, 0 missing</p>
+      </section>
+    </header>
+
+    <section class="stats">
+      <div class="stat"><strong>9</strong><span class="muted">criteria met</span></div>
+      <div class="stat"><strong>8</strong><span class="muted">criteria partial</span></div>
+      <div class="stat"><strong>0</strong><span class="muted">criteria missing</span></div>
+      <div class="stat"><strong>0</strong><span class="muted">done gates fully passed</span></div>
+    </section>
+
+    <section class="section card">
+      <h2>Current Release Position</h2>
+      <div class="bars">
+        <div class="bar-row">
+          <strong>Web preview</strong>
+          <div class="track"><div class="fill" style="width: 90%;"></div></div>
+          <span class="muted">Ready</span>
+        </div>
+        <div class="bar-row">
+          <strong>Android APK</strong>
+          <div class="track"><div class="fill partial" style="width: 65%;"></div></div>
+          <span class="muted">Blocked</span>
+        </div>
+        <div class="bar-row">
+          <strong>Play Store</strong>
+          <div class="track"><div class="fill partial" style="width: 45%;"></div></div>
+          <span class="muted">Not ready</span>
+        </div>
+        <div class="bar-row">
+          <strong>iOS/TestFlight</strong>
+          <div class="track"><div class="fill missing" style="width: 25%;"></div></div>
+          <span class="muted">Not ready</span>
+        </div>
+        <div class="bar-row">
+          <strong>Operations</strong>
+          <div class="track"><div class="fill partial" style="width: 45%;"></div></div>
+          <span class="muted">Partial</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>17 Design Criteria</h2>
+      <div class="criteria-grid">
+        <div class="card criterion met"><div class="status met">Met</div><h3>1. Real problem</h3><p class="muted">Clear target problem and audience in <code>docs/product-goals.md</code>.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>2. Success moment</h3><p class="muted">20-second check-in is the core first-session value.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>3. Trust model</h3><p class="muted">Local-first, privacy policy, backup/export/delete exist. Needs real-device validation.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>4. Secrets out of app</h3><p class="muted">Open-Meteo uses no key. EAS token is expected as a GitHub secret.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>5. Data scope</h3><p class="muted">Local-only data avoids cross-user leakage now; future sync ownership model is not implemented.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>6. Simple architecture</h3><p class="muted">Expo app, shared types, local storage, no unnecessary backend.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>7. Failure behavior</h3><p class="muted">Weather fallback and friendly backup messages exist. No retry/request-id/debug trail.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>8. Human UX language</h3><p class="muted">User-facing copy is mostly plain-language and non-technical.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>9. Quality gate</h3><p class="muted">CI typecheck/export/verifier and core smoke tests exist. Recorded real-device smoke tests are still missing.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>10. Observability</h3><p class="muted">Settings now includes local app health, weather fallback counts, backup operation counts, and save issue counts. Still missing remote crash/error monitoring.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>11. Maintainability</h3><p class="muted">Clear screens, components, lib modules, shared package boundaries.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>12. Non-goals</h3><p class="muted">MVP non-goals are written in <code>docs/product-goals.md</code>.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>13. Phased roadmap</h3><p class="muted">Milestones and expansion path are documented.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>14. Real-user validation</h3><p class="muted">A 3-5 user validation plan and results table now exist. Actual tester results are still missing.</p></div>
+        <div class="card criterion met"><div class="status met">Met</div><h3>15. Plain docs</h3><p class="muted">Product overview, system design, privacy policy, APK notes, and release checklist are documented.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>16. Complete definition</h3><p class="muted">Useful and safe direction is strong. Reliability, supportability, adoptability still need proof.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>17. Universal done gates</h3><p class="muted">No gate is fully complete yet; operations and user validation are the largest gaps.</p></div>
+      </div>
+    </section>
+
+    <section class="section two-col">
+      <div class="card">
+        <h2>Done Gate Status</h2>
+        <ul>
+          <li><strong>Product:</strong> partial. Problem is clear; onboarding/user testing not proven.</li>
+          <li><strong>Reliability:</strong> partial. Fallbacks exist; poor-network/device testing not recorded.</li>
+          <li><strong>Security/privacy:</strong> partial. Local-first and privacy docs exist; future account boundaries not implemented.</li>
+          <li><strong>Quality:</strong> partial. CI checks and core smoke tests exist; real-device regression evidence is still missing.</li>
+          <li><strong>Operations:</strong> partial. Local diagnostics exist; remote crash/error reporting and rollback drills are still missing.</li>
+          <li><strong>Business/UX:</strong> partial. First-session value and support path are clear; user validation evidence is still missing.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Next Work Order</h2>
+        <ol>
+          <li>Add <code>EXPO_TOKEN</code> and run Android Build with <code>preview-apk</code>.</li>
+          <li>Run a physical-device smoke test and record results in the release checklist.</li>
+          <li>Add more automated tests for summary, weather fallback, and storage behavior.</li>
+          <li>Decide whether remote crash/error reporting is needed before store release.</li>
+          <li>Run the 3-5 user validation plan and record actual results.</li>
+        </ol>
+      </div>
+    </section>
+
+    <p class="footer">Generated on 2026-06-26 from local repo state and latest public GitHub Actions status. Latest web deploy: success. Android Build workflow: active, not yet run.</p>
+  </main>
+</body>
+</html>
