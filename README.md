@@ -16,6 +16,8 @@ System design -> [docs/system-design.md](docs/system-design.md)
 
 User validation plan -> [docs/user-validation.md](docs/user-validation.md)
 
+Build results -> [docs/build-results.md](docs/build-results.md)
+
 Support -> https://github.com/aneeshk-ds/Weathered/issues
 
 ---

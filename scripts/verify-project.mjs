@@ -98,6 +98,8 @@ check(exists("docs/system-design.md"), "System design document is missing.");
 check(readme.includes("docs/system-design.md"), "README should link the system design document.");
 check(exists("docs/user-validation.md"), "User validation plan is missing.");
 check(readme.includes("docs/user-validation.md"), "README should link the user validation plan.");
+check(exists("docs/build-results.md"), "Build results document is missing.");
+check(readme.includes("docs/build-results.md"), "README should link the build results document.");
 
 check(appConfig.expo?.name === "Weathered", "Expo app name should be Weathered.");
 check(appConfig.expo?.slug === "weathered", "Expo app slug should be weathered.");
