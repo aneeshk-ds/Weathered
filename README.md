@@ -18,6 +18,8 @@ User validation plan -> [docs/user-validation.md](docs/user-validation.md)
 
 Build results -> [docs/build-results.md](docs/build-results.md)
 
+Android smoke test -> [docs/android-smoke-test.md](docs/android-smoke-test.md)
+
 Support -> https://github.com/aneeshk-ds/Weathered/issues
 
 ---

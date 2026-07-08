@@ -54,6 +54,8 @@ Weathered asks for foreground location permission when live weather is enabled. 
 
 Open-Meteo does not require a secret API key in this app.
 
+The live request uses the phone's foreground location, asks Open-Meteo for temperature, relative humidity, and weather code, and does not send any account, API key, or token. The request has a timeout and one retry so a brief network wobble does not immediately force fallback weather.
+
 If location permission is denied, the network fails, or the weather provider returns bad data, Weathered falls back to a local weather estimate.
 
 ## Backup And Restore
@@ -92,9 +94,10 @@ The deploy workflow runs:
 1. `npm ci`
 2. `npm run typecheck`
 3. `npm run test:core`
-4. `npm run verify:project`
-5. `npm run export:web`
-6. GitHub Pages deployment
+4. `npm run test:data`
+5. `npm run verify:project`
+6. `npm run export:web`
+7. GitHub Pages deployment
 
 Android builds run through the manual **Android Build** workflow. The workflow requires an `EXPO_TOKEN` repository secret.
 

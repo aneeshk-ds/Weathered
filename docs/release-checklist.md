@@ -8,8 +8,9 @@ Use this checklist before publishing Weathered beyond a local demo.
 - Run `npm ci`.
 - Run `npm run verify:project`.
 - Run `npm run typecheck`.
+- Run `npm run test:data`.
 - Run `npm run export:web`.
-- Smoke test Home, History, Insights, and Settings.
+- Smoke test Home, History, Insights, and Settings; record Android results in `docs/android-smoke-test.md`.
 - Confirm the Settings support link opens the support page.
 - Test location denied, offline weather fallback, and slow network behavior.
 - Test backup export and restore with a real file.
@@ -30,6 +31,7 @@ Use this checklist before publishing Weathered beyond a local demo.
 - Log in with `npx eas-cli login`, or set `EXPO_TOKEN` in GitHub repository secrets.
 - Run `npm run build:android:apk`, or manually run the **Android Build** GitHub Actions workflow with `preview-apk`.
 - Install the APK on a physical Android device.
+- Fill `docs/android-smoke-test.md` with device, Android version, and pass/fail notes.
 - Test location permission allow and deny flows.
 - Test backup export through the native share sheet.
 - Test restore through the native document picker.

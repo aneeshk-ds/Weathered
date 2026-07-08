@@ -1,12 +1,13 @@
-import {
-  DECISION_CATEGORIES,
-  type DecisionCategory,
-  type DecisionForecast,
-  type DecisionLogInput,
-  type EnergyLevel,
-  type InsightConfidence,
-  type WeatherSnapshot,
+import type {
+  DecisionCategory,
+  DecisionForecast,
+  DecisionLogInput,
+  EnergyLevel,
+  InsightConfidence,
+  WeatherSnapshot,
 } from "@weathered/shared";
+
+const DECISION_CATEGORIES: DecisionCategory[] = ["social", "work", "spending", "other"];
 
 interface CurrentState {
   mood: number;

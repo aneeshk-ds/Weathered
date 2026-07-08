@@ -40,6 +40,9 @@ jobs:
       - name: Core smoke tests
         run: npm run test:core
 
+      - name: Data stress tests
+        run: npm run test:data
+
       - name: Project release checks
         run: npm run verify:project
 

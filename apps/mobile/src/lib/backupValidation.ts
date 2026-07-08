@@ -8,6 +8,13 @@ const DECISION_OPTIONS = {
   spending: ["buy", "avoid"],
   other: ["note_only"],
 } as const;
+const MAX_BACKUP_ENTRIES = 5000;
+const MAX_BACKUP_FEEDBACK = 5000;
+const MAX_ID_LENGTH = 160;
+const MAX_USER_ID_LENGTH = 80;
+const MAX_NOTE_LENGTH = 120;
+const MAX_LOCATION_LABEL_LENGTH = 120;
+const MAX_TIMESTAMP_LENGTH = 40;
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
 
@@ -18,6 +25,14 @@ export interface NormalizedBackup {
 
 export function normalizeBackupPayload(value: unknown): NormalizedBackup | null {
   if (!isRecord(value) || value.app !== "weathered" || !Array.isArray(value.entries)) {
+    return null;
+  }
+
+  if (value.entries.length > MAX_BACKUP_ENTRIES) {
+    return null;
+  }
+
+  if (Array.isArray(value.feedback) && value.feedback.length > MAX_BACKUP_FEEDBACK) {
     return null;
   }
 
@@ -48,22 +63,26 @@ function normalizeEntry(value: unknown, index: number): DecisionLogInput | null 
     return null;
   }
 
-  if (typeof value.timestamp !== "string" || Number.isNaN(Date.parse(value.timestamp))) {
+  if (!isBoundedString(value.timestamp, MAX_TIMESTAMP_LENGTH) || Number.isNaN(Date.parse(value.timestamp))) {
     return null;
   }
 
-  if (value.note !== undefined && typeof value.note !== "string") {
+  if (value.note !== undefined && !isBoundedString(value.note, MAX_NOTE_LENGTH)) {
     return null;
   }
+
+  const id = isBoundedString(value.id, MAX_ID_LENGTH) && value.id.trim() ? value.id : `restored-${value.timestamp}-${index}`;
+  const userId = isBoundedString(value.userId, MAX_USER_ID_LENGTH) && value.userId.trim() ? value.userId : "local";
+  const note = value.note !== undefined && value.note.trim() ? value.note : undefined;
 
   return {
-    id: typeof value.id === "string" && value.id.trim() ? value.id : `restored-${value.timestamp}-${index}`,
-    userId: typeof value.userId === "string" && value.userId.trim() ? value.userId : "local",
+    id,
+    userId,
     mood: value.mood,
     energy: value.energy,
     decisionCategory: value.decisionCategory,
     decisionOutcome: value.decisionOutcome,
-    note: value.note,
+    note,
     weather: value.weather,
     timestamp: value.timestamp,
   };
@@ -73,9 +92,10 @@ function normalizeFeedback(value: unknown): RecommendationFeedback | null {
   if (!isRecord(value)) return null;
 
   if (
-    typeof value.nudgeId !== "string" ||
+    !isBoundedString(value.nudgeId, MAX_ID_LENGTH) ||
+    !value.nudgeId.trim() ||
     (value.value !== "helpful" && value.value !== "not_now") ||
-    typeof value.timestamp !== "string" ||
+    !isBoundedString(value.timestamp, MAX_TIMESTAMP_LENGTH) ||
     Number.isNaN(Date.parse(value.timestamp))
   ) {
     return null;
@@ -90,6 +110,10 @@ function normalizeFeedback(value: unknown): RecommendationFeedback | null {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isBoundedString(value: unknown, maxLength: number): value is string {
+  return typeof value === "string" && value.length <= maxLength;
 }
 
 function isValidMood(value: unknown): value is number {
@@ -115,11 +139,14 @@ function isWeatherSnapshot(value: unknown): value is DecisionLogInput["weather"]
     isWeatherCondition(value.condition) &&
     typeof value.temperatureC === "number" &&
     Number.isFinite(value.temperatureC) &&
+    value.temperatureC >= -80 &&
+    value.temperatureC <= 80 &&
     typeof value.humidity === "number" &&
     Number.isFinite(value.humidity) &&
     value.humidity >= 0 &&
     value.humidity <= 100 &&
-    typeof value.locationLabel === "string"
+    isBoundedString(value.locationLabel, MAX_LOCATION_LABEL_LENGTH) &&
+    value.locationLabel.trim().length > 0
   );
 }
 

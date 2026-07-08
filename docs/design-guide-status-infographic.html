@@ -256,7 +256,7 @@
       </section>
 
       <section class="card score">
-        <div class="score-number">82%</div>
+        <div class="score-number">83%</div>
         <div class="score-label">weighted design-readiness score</div>
         <p class="muted" style="margin: 12px 0 0;">9 met, 8 partial, 0 missing</p>
       </section>
@@ -311,7 +311,7 @@
         <div class="card criterion met"><div class="status met">Met</div><h3>6. Simple architecture</h3><p class="muted">Expo app, shared types, local storage, no unnecessary backend.</p></div>
         <div class="card criterion partial"><div class="status partial">Partial</div><h3>7. Failure behavior</h3><p class="muted">Weather fallback and friendly backup messages exist. No retry/request-id/debug trail.</p></div>
         <div class="card criterion met"><div class="status met">Met</div><h3>8. Human UX language</h3><p class="muted">User-facing copy is mostly plain-language and non-technical.</p></div>
-        <div class="card criterion partial"><div class="status partial">Partial</div><h3>9. Quality gate</h3><p class="muted">CI typecheck/export/verifier and core smoke tests exist. Recorded real-device smoke tests are still missing.</p></div>
+        <div class="card criterion partial"><div class="status partial">Partial</div><h3>9. Quality gate</h3><p class="muted">CI typecheck/export/verifier, broader core smoke tests, and an Android smoke-test record exist. Real-device results are still missing.</p></div>
         <div class="card criterion partial"><div class="status partial">Partial</div><h3>10. Observability</h3><p class="muted">Settings now includes local app health, weather fallback counts, backup operation counts, and save issue counts. Still missing remote crash/error monitoring.</p></div>
         <div class="card criterion met"><div class="status met">Met</div><h3>11. Maintainability</h3><p class="muted">Clear screens, components, lib modules, shared package boundaries.</p></div>
         <div class="card criterion met"><div class="status met">Met</div><h3>12. Non-goals</h3><p class="muted">MVP non-goals are written in <code>docs/product-goals.md</code>.</p></div>
@@ -330,7 +330,7 @@
           <li><strong>Product:</strong> partial. Problem is clear; onboarding/user testing not proven.</li>
           <li><strong>Reliability:</strong> partial. Fallbacks exist; poor-network/device testing not recorded.</li>
           <li><strong>Security/privacy:</strong> partial. Local-first and privacy docs exist; future account boundaries not implemented.</li>
-          <li><strong>Quality:</strong> partial. CI checks and core smoke tests exist; real-device regression evidence is still missing.</li>
+          <li><strong>Quality:</strong> partial. CI checks, expanded core smoke tests, and a device-test record exist; real-device regression evidence is still missing.</li>
           <li><strong>Operations:</strong> partial. Local diagnostics exist; remote crash/error reporting and rollback drills are still missing.</li>
           <li><strong>Business/UX:</strong> partial. First-session value and support path are clear; user validation evidence is still missing.</li>
         </ul>
@@ -339,16 +339,16 @@
       <div class="card">
         <h2>Next Work Order</h2>
         <ol>
-          <li>Open the successful Android Build job or Expo dashboard and copy the APK artifact link.</li>
-          <li>Install the APK on a physical Android device and record smoke test results.</li>
-          <li>Add more automated tests for summary, weather fallback, and storage behavior.</li>
+          <li>Install the linked Android preview APK on a physical device and fill <code>docs/android-smoke-test.md</code>.</li>
+          <li>Run location allow/deny, check-in, history edit/delete, insights, backup/restore, app health, and support-link checks.</li>
+          <li>Add native/UI regression tests after physical-device testing identifies the riskiest flows.</li>
           <li>Decide whether remote crash/error reporting is needed before store release.</li>
           <li>Run the 3-5 user validation plan and record actual results.</li>
         </ol>
       </div>
     </section>
 
-    <p class="footer">Generated on 2026-06-26 from local repo state and latest public GitHub Actions status. Latest web deploy: success. Android preview-apk workflow: success. APK link must be copied from the GitHub job logs or Expo dashboard.</p>
+    <p class="footer">Generated on 2026-06-26 from local repo state and latest public GitHub Actions status. Latest web deploy: success. Android preview-apk workflow: success. APK link is recorded in README and build results.</p>
   </main>
 </body>
 </html>

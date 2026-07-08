@@ -1,19 +1,20 @@
-import {
-  DECISION_CATEGORIES,
-  type GuidanceCard,
-  type DecisionLogInput,
-  type Insight,
-  type WeeklySummary,
-} from "@weathered/shared";
+import type { GuidanceCard, DecisionLogInput, Insight, WeeklySummary } from "@weathered/shared";
 
-export function isWithinLast7Days(timestamp: string) {
+const DECISION_CATEGORIES: DecisionLogInput["decisionCategory"][] = ["social", "work", "spending", "other"];
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function isWithinLast7Days(timestamp: string, nowMs = Date.now()) {
   const entryTime = new Date(timestamp).getTime();
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  return entryTime >= sevenDaysAgo;
+  const sevenDaysAgo = nowMs - SEVEN_DAYS_MS;
+  return Number.isFinite(entryTime) && entryTime <= nowMs && entryTime >= sevenDaysAgo;
+}
+
+export function filterEntriesWithinLast7Days(entries: DecisionLogInput[], nowMs = Date.now()) {
+  return entries.filter((item) => isWithinLast7Days(item.timestamp, nowMs));
 }
 
 export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
-  const weeklyEntries = entries.filter((item) => isWithinLast7Days(item.timestamp));
+  const weeklyEntries = filterEntriesWithinLast7Days(entries);
   const totalEntries = weeklyEntries.length;
   const averageMood =
     totalEntries === 0

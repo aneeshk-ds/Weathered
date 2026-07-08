@@ -17,6 +17,7 @@ import { CATEGORY_LABEL } from "../format";
 import { Card, ScreenHeader } from "../components/ui";
 import { DonutRing, ProgressRing } from "../components/Rings";
 import { WeekBars } from "../components/WeekBars";
+import { filterEntriesWithinLast7Days } from "../lib/summary";
 
 const ACTED: string[] = ["go_out", "work", "buy"];
 
@@ -43,8 +44,9 @@ export function InsightsScreen({
   onNudgeFeedback: (id: string, value: RecommendationFeedbackValue) => void;
   forecast: DecisionForecast;
 }) {
-  const total = entries.length;
-  const followed = entries.filter((entry) => ACTED.includes(entry.decisionOutcome)).length;
+  const weeklyEntries = filterEntriesWithinLast7Days(entries);
+  const total = summary.totalEntries;
+  const followed = weeklyEntries.filter((entry) => ACTED.includes(entry.decisionOutcome)).length;
   const followFrac = total > 0 ? followed / total : 0;
   const moodFrac = summary.averageMood > 0 ? summary.averageMood / 10 : 0;
 

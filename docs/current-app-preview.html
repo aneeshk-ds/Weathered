@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weathered Current App Preview</title>
+  <style>
+    :root {
+      --bg: #0e1718;
+      --panel: #0f1814;
+      --card: #162120;
+      --card2: #1d2b29;
+      --line: #2c403b;
+      --text: #eef5ef;
+      --muted: #a6b5ad;
+      --dim: #6b7d74;
+      --accent: #8fb7a1;
+      --accentText: #0d1715;
+      --blue: #7fb3e0;
+      --gold: #cdb676;
+      --danger: #e7b7ad;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #05090a;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 390px minmax(260px, 380px);
+      gap: 24px;
+      align-items: center;
+      width: min(100%, 860px);
+    }
+
+    .phone {
+      height: 780px;
+      background: var(--bg);
+      border: 1px solid #243632;
+      border-radius: 34px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .status {
+      height: 34px;
+      padding: 0 20px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      flex: none;
+    }
+
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 18px 18px;
+    }
+
+    .screen::-webkit-scrollbar { width: 0; }
+
+    .tabbar {
+      flex: none;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      padding: 8px 0 12px;
+    }
+
+    .tab {
+      color: var(--dim);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 11px;
+    }
+
+    .tab .icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      margin: 0 auto 3px;
+      display: grid;
+      place-items: center;
+      background: var(--card2);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .tab.active {
+      color: var(--accent);
+    }
+
+    .tab.active .icon {
+      background: var(--accent);
+      color: var(--accentText);
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 4px 0 3px;
+    }
+
+    h1 {
+      font-size: 22px;
+      line-height: 1.14;
+      margin: 0 0 5px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .weather {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .weatherIcon {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      background: var(--card2);
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .mainText {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .minorText {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 2px;
+    }
+
+    .read {
+      color: var(--accent);
+      font-size: 13px;
+      margin: 2px 0 14px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 2px 0 8px;
+    }
+
+    .moodrow {
+      display: grid;
+      grid-template-columns: 1fr 30px;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .moodval {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .chips, .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .chip, .smallBtn {
+      flex: 1;
+      min-width: 74px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--card2);
+      color: var(--muted);
+      padding: 9px 8px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip.active, .smallBtn.active {
+      background: var(--accent);
+      color: var(--accentText);
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      resize: none;
+      border-radius: 10px;
+      background: var(--card2);
+      color: var(--text);
+      padding: 10px;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 12px;
+      background: var(--accent);
+      color: var(--accentText);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+
+    .btn.ghost {
+      background: var(--card2);
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 88px;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      background: var(--accent);
+      color: var(--accentText);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .entry {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .entryTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .when {
+      color: var(--dim);
+      font-size: 12px;
+      flex: none;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .entryBtns {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .entryBtns button {
+      flex: 1;
+      background: var(--card2);
+      color: var(--muted);
+      border: 0;
+      border-radius: 8px;
+      padding: 7px;
+      cursor: pointer;
+    }
+
+    .entryBtns .danger {
+      color: var(--danger);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      background: var(--card2);
+      border-radius: 12px;
+      padding: 13px 10px;
+      text-align: center;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 82px;
+      margin: 10px 0 5px;
+    }
+
+    .bar {
+      flex: 1;
+      background: #2a3b32;
+      border-radius: 4px 4px 2px 2px;
+    }
+
+    .bar.high {
+      background: var(--accent);
+    }
+
+    .barlabels {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      color: var(--dim);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .healthGrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .healthCell {
+      background: var(--card2);
+      border-radius: 9px;
+      padding: 10px;
+    }
+
+    .healthCell strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+
+    .healthCell span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .side {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .side h2 {
+      color: var(--text);
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    .side ul {
+      padding-left: 18px;
+      margin: 12px 0 0;
+    }
+
+    .side li {
+      margin: 7px 0;
+    }
+
+    @media (max-width: 780px) {
+      body { align-items: flex-start; padding: 14px; }
+      .stage { grid-template-columns: 1fr; }
+      .phone { width: min(100%, 390px); margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="phone">
+      <div class="status"><span id="clock">9:41</span><span>Weathered</span><span>100%</span></div>
+      <div class="screen" id="screen"></div>
+      <div class="tabbar" id="tabbar"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <aside class="side">
+      <h2>Current Weathered Preview</h2>
+      <p>This standalone HTML mirrors the current app direction: fast check-ins, local history, pattern insights, backup and restore, app health, and support access.</p>
+      <ul>
+        <li>Use the bottom tabs to switch screens.</li>
+        <li>Move the mood slider and save a check-in.</li>
+        <li>Edit or delete items in History.</li>
+        <li>Open Settings to see backup, health, data, and support.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <script>
+    const state = {
+      tab: "home",
+      mood: 6,
+      energy: "medium",
+      category: "social",
+      outcome: "go_out",
+      note: "",
+      status: "",
+      editing: null,
+      diagnostics: {
+        weatherOk: 1,
+        fallbacks: 1,
+        backupOps: 0,
+        saveIssues: 0,
+        weatherMessage: "Live weather unavailable; local weather estimate used.",
+        backupMessage: ""
+      },
+      entries: [
+        { id: 1, mood: 4, energy: "low", category: "social", outcome: "cancel", condition: "rainy", note: "too wet to head out", ago: "Yesterday" },
+        { id: 2, mood: 8, energy: "high", category: "work", outcome: "work", condition: "sunny", note: "", ago: "2 days ago" },
+        { id: 3, mood: 5, energy: "medium", category: "spending", outcome: "avoid", condition: "cloudy", note: "", ago: "3 days ago" }
+      ]
+    };
+
+    const categories = {
+      social: "Going out",
+      work: "Work",
+      spending: "Spending",
+      other: "Other"
+    };
+
+    const outcomes = {
+      social: [["go_out", "Go out"], ["cancel", "Cancel"]],
+      work: [["work", "Do it"], ["skip", "Skip"]],
+      spending: [["buy", "Buy"], ["avoid", "Hold off"]],
+      other: [["note_only", "Note only"]]
+    };
+
+    const tabs = [
+      ["home", "Home", "H"],
+      ["history", "History", "L"],
+      ["insights", "Insights", "I"],
+      ["settings", "Settings", "S"]
+    ];
+
+    function toast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    function readiness() {
+      if (state.mood >= 7 && state.energy !== "low") return "Steady mood - good day to decide.";
+      if (state.energy === "low") return "Low energy - choose the lighter version.";
+      if (state.mood <= 4) return "Slow down - save big decisions for later.";
+      return "Mixed signals - keep choices light.";
+    }
+
+    function outcomeLabel(value) {
+      for (const list of Object.values(outcomes)) {
+        const found = list.find(([id]) => id === value);
+        if (found) return found[1];
+      }
+      return value;
+    }
+
+    function renderHome() {
+      return `
+        <div class="eyebrow">Home</div>
+        <h1>How are you right now?</h1>
+        <p class="sub">One quick check-in. Takes about 20 seconds.</p>
+        <div class="card weather">
+          <div class="weatherIcon">RAIN</div>
+          <div>
+            <div class="mainText">Rainy, 23 C</div>
+            <div class="minorText">Local estimate - humidity 86%</div>
+          </div>
+        </div>
+        <div class="read">${readiness()}</div>
+        <div class="label">Mood</div>
+        <div class="moodrow">
+          <input id="mood" type="range" min="1" max="10" value="${state.mood}">
+          <div class="moodval" id="moodval">${state.mood}</div>
+        </div>
+        <div class="label">Energy</div>
+        <div class="chips">${["low", "medium", "high"].map(value => `<button class="chip ${state.energy === value ? "active" : ""}" data-energy="${value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join("")}</div>
+        <div class="label">What are you deciding?</div>
+        <div class="chips">${Object.entries(categories).map(([id, label]) => `<button class="chip ${state.category === id ? "active" : ""}" data-category="${id}">${label}</button>`).join("")}</div>
+        <div class="label">Your choice</div>
+        <div class="chips">${outcomes[state.category].map(([id, label]) => `<button class="chip ${state.outcome === id ? "active" : ""}" data-outcome="${id}">${label}</button>`).join("")}</div>
+        <div class="label">Note (optional)</div>
+        <textarea id="note" maxlength="120" placeholder="Anything worth remembering...">${state.note}</textarea>
+        <button class="btn" id="save">Save check-in</button>
+      `;
+    }
+
+    function renderHistory() {
+      if (!state.entries.length) {
+        return `<div class="eyebrow">History</div><h1>Your check-ins</h1><p class="sub">No check-ins yet. Log one from Home.</p>`;
+      }
+      return `
+        <div class="eyebrow">History</div>
+        <h1>Your check-ins</h1>
+        <p class="sub">Review what changed and the conditions behind it.</p>
+        ${state.entries.map(entry => renderEntry(entry)).join("")}
+        <button class="btn ghost" id="clearAll">Clear all entries</button>
+      `;
+    }
+
+    function renderEntry(entry) {
+      if (state.editing === entry.id) {
+        return `
+          <div class="entry">
+            <div class="label">Mood</div>
+            <div class="moodrow">
+              <input type="range" min="1" max="10" value="${entry.mood}" data-edit-mood="${entry.id}">
+              <div class="moodval" id="editMoodVal">${entry.mood}</div>
+            </div>
+            <div class="label">Energy</div>
+            <div class="chips">${["low", "medium", "high"].map(value => `<button class="chip ${entry.energy === value ? "active" : ""}" data-edit-energy="${value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join("")}</div>
+            <button class="btn" id="saveEdit">Save changes</button>
+            <button class="btn ghost" id="cancelEdit">Cancel</button>
+          </div>
+        `;
+      }
+      return `
+        <div class="entry">
+          <div class="entryTop">
+            <strong>${categories[entry.category]} - ${outcomeLabel(entry.outcome)}</strong>
+            <span class="when">${entry.ago}</span>
+          </div>
+          <div class="meta">Mood ${entry.mood}/10 - ${entry.energy} energy - ${entry.condition}${entry.note ? " - " + entry.note : ""}</div>
+          <div class="entryBtns">
+            <button data-edit="${entry.id}">Edit</button>
+            <button class="danger" data-delete="${entry.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderInsights() {
+      const total = state.entries.length;
+      const avg = total ? (state.entries.reduce((sum, entry) => sum + entry.mood, 0) / total).toFixed(1) : "0.0";
+      const acted = total ? Math.round(state.entries.filter(entry => ["go_out", "work", "buy", "note_only"].includes(entry.outcome)).length / total * 100) : 0;
+      const rainyCancel = state.entries.some(entry => entry.condition === "rainy" && entry.outcome === "cancel");
+      const week = [4, 6, 5, 8, 5, 7, state.mood];
+      const max = Math.max(...week);
+      return `
+        <div class="eyebrow">Insights</div>
+        <h1>Your patterns</h1>
+        <p class="sub">What the last week is telling you.</p>
+        <div class="read">${readiness()}</div>
+        <div class="card">
+          <div class="mainText">Pattern</div>
+          <div class="minorText">${rainyCancel ? "Rainy, low-energy days are connected with softer social follow-through." : "Keep logging - a few more check-ins will reveal stronger patterns."}</div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong>${avg}</strong><span>average mood</span></div>
+          <div class="metric"><strong>${acted}%</strong><span>followed through</span></div>
+        </div>
+        <div class="card">
+          <div class="label">Mood this week</div>
+          <div class="bars">${week.map(value => `<div class="bar ${value === max ? "high" : ""}" style="height:${value * 10}%"></div>`).join("")}</div>
+          <div class="barlabels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+        </div>
+        <div class="card">
+          <div class="mainText">Suggestion</div>
+          <div class="minorText">Choose the lighter version before making the full decision. Small follow-through still counts.</div>
+        </div>
+      `;
+    }
+
+    function renderSettings() {
+      const healthLabel = state.diagnostics.saveIssues ? "Needs attention" : "Healthy";
+      const healthMessage = state.diagnostics.saveIssues
+        ? "A local save issue was recorded. Export a backup before making more changes."
+        : "Local storage and core checks look normal.";
+      return `
+        <div class="eyebrow">Settings</div>
+        <h1>Backup & data</h1>
+        <p class="sub">Weathered keeps everything on this device. Back up to your cloud to move it to another.</p>
+        <div class="card">
+          <div class="mainText">Back up to your cloud</div>
+          <div class="minorText">Saves a backup file through your device share sheet.</div>
+          <button class="btn" id="backup">Back up now</button>
+        </div>
+        <div class="card">
+          <div class="mainText">Restore from a backup</div>
+          <div class="minorText">Pick a Weathered backup file to load it onto this device.</div>
+          <button class="btn ghost" id="restore">Restore from a file</button>
+        </div>
+        ${state.status ? `<div class="read">${state.status}</div>` : ""}
+        <div class="card">
+          <div class="mainText">App health</div>
+          <div class="read">${healthLabel}</div>
+          <div class="minorText">${healthMessage}</div>
+          <div class="healthGrid">
+            <div class="healthCell"><strong>${state.diagnostics.weatherOk}</strong><span>weather ok</span></div>
+            <div class="healthCell"><strong>${state.diagnostics.fallbacks}</strong><span>fallbacks</span></div>
+            <div class="healthCell"><strong>${state.diagnostics.backupOps}</strong><span>backup ops</span></div>
+            <div class="healthCell"><strong>${state.diagnostics.saveIssues}</strong><span>save issues</span></div>
+          </div>
+          <div class="minorText">Weather: ${state.diagnostics.weatherMessage}</div>
+          ${state.diagnostics.backupMessage ? `<div class="minorText">Backup: ${state.diagnostics.backupMessage}</div>` : ""}
+        </div>
+        <div class="card">
+          <div class="mainText">Your data</div>
+          <div class="minorText">${state.entries.length} check-in${state.entries.length === 1 ? "" : "s"} stored on this device.</div>
+          <button class="btn ghost" id="clearData">Clear all data</button>
+        </div>
+        <div class="card">
+          <div class="mainText">About</div>
+          <div class="minorText">Weathered 2.0.1</div>
+          <div class="minorText">Local-first: no accounts, no cloud sync. Live weather uses Open-Meteo.</div>
+          <div class="minorText" style="margin-top:8px;">Support: include app version, check-in count, and App health details.</div>
+          <button class="btn ghost" id="support">Open support page</button>
+        </div>
+      `;
+    }
+
+    function render() {
+      document.getElementById("screen").innerHTML =
+        state.tab === "home" ? renderHome() :
+        state.tab === "history" ? renderHistory() :
+        state.tab === "insights" ? renderInsights() :
+        renderSettings();
+
+      document.getElementById("tabbar").innerHTML = tabs.map(([id, label, icon]) => `
+        <div class="tab ${state.tab === id ? "active" : ""}" data-tab="${id}">
+          <div class="icon">${icon}</div>
+          <div>${label}</div>
+        </div>
+      `).join("");
+
+      bind();
+    }
+
+    function bind() {
+      document.querySelectorAll("[data-tab]").forEach(el => {
+        el.onclick = () => { state.tab = el.dataset.tab; state.editing = null; state.status = ""; render(); };
+      });
+
+      if (state.tab === "home") {
+        document.getElementById("mood").oninput = event => {
+          state.mood = Number(event.target.value);
+          document.getElementById("moodval").textContent = state.mood;
+          document.querySelector(".read").textContent = readiness();
+        };
+        document.querySelectorAll("[data-energy]").forEach(el => el.onclick = () => { state.energy = el.dataset.energy; render(); });
+        document.querySelectorAll("[data-category]").forEach(el => el.onclick = () => {
+          state.category = el.dataset.category;
+          state.outcome = outcomes[state.category][0][0];
+          render();
+        });
+        document.querySelectorAll("[data-outcome]").forEach(el => el.onclick = () => { state.outcome = el.dataset.outcome; render(); });
+        document.getElementById("note").oninput = event => { state.note = event.target.value; };
+        document.getElementById("save").onclick = () => {
+          state.entries.unshift({
+            id: Date.now(),
+            mood: state.mood,
+            energy: state.energy,
+            category: state.category,
+            outcome: state.outcome,
+            condition: "rainy",
+            note: state.note.trim(),
+            ago: "Just now"
+          });
+          state.note = "";
+          state.tab = "insights";
+          toast("Check-in saved");
+          render();
+        };
+      }
+
+      if (state.tab === "history") {
+        document.querySelectorAll("[data-edit]").forEach(el => el.onclick = () => { state.editing = Number(el.dataset.edit); render(); });
+        document.querySelectorAll("[data-delete]").forEach(el => el.onclick = () => {
+          state.entries = state.entries.filter(entry => entry.id !== Number(el.dataset.delete));
+          toast("Entry deleted");
+          render();
+        });
+        const clear = document.getElementById("clearAll");
+        if (clear) clear.onclick = () => { state.entries = []; toast("All entries cleared"); render(); };
+        document.querySelectorAll("[data-edit-mood]").forEach(el => el.oninput = event => {
+          const entry = state.entries.find(item => item.id === state.editing);
+          if (entry) entry.mood = Number(event.target.value);
+          document.getElementById("editMoodVal").textContent = event.target.value;
+        });
+        document.querySelectorAll("[data-edit-energy]").forEach(el => el.onclick = () => {
+          const entry = state.entries.find(item => item.id === state.editing);
+          if (entry) entry.energy = el.dataset.editEnergy;
+          render();
+        });
+        const save = document.getElementById("saveEdit");
+        if (save) save.onclick = () => { state.editing = null; toast("Changes saved"); render(); };
+        const cancel = document.getElementById("cancelEdit");
+        if (cancel) cancel.onclick = () => { state.editing = null; render(); };
+      }
+
+      if (state.tab === "settings") {
+        document.getElementById("backup").onclick = () => {
+          state.diagnostics.backupOps += 1;
+          state.diagnostics.backupMessage = "Backup export completed in preview mode.";
+          state.status = "Backup ready - choose iCloud Drive or Google Drive on a real device.";
+          toast("Backup ready");
+          render();
+        };
+        document.getElementById("restore").onclick = () => {
+          state.diagnostics.backupOps += 1;
+          state.diagnostics.backupMessage = "Restore picker opened in preview mode.";
+          state.status = "Pick a Weathered backup file on a real device.";
+          toast("Restore opened");
+          render();
+        };
+        document.getElementById("clearData").onclick = () => {
+          state.entries = [];
+          state.status = "All local preview data cleared.";
+          toast("Data cleared");
+          render();
+        };
+        document.getElementById("support").onclick = () => {
+          window.open("https://github.com/aneeshk-ds/Weathered/issues", "_blank", "noopener,noreferrer");
+        };
+      }
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toTimeString().slice(0, 5);
+    }, 1000);
+
+    render();
+  </script>
+</body>
+</html>

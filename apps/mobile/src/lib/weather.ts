@@ -1,9 +1,25 @@
 import type { WeatherSnapshot, WeatherSourceMode } from "@weathered/shared";
-import { LocationPermissionError, resolveDeviceLocation } from "./location";
 
 export const WEATHER_SOURCE_OPTIONS: WeatherSourceMode[] = ["live_ready", "seasonal_mock", "daily_mock"];
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
+const OPEN_METEO_CURRENT_FIELDS = "temperature_2m,relative_humidity_2m,weather_code";
+const WEATHER_REQUEST_TIMEOUT_MS = 8000;
+const WEATHER_REQUEST_RETRIES = 1;
+
+interface WeatherLocation {
+  latitude: number;
+  longitude: number;
+  label: string;
+}
+
+interface WeatherResponseLike {
+  ok: boolean;
+  status: number;
+  json(): Promise<OpenMeteoCurrentResponse>;
+}
+
+type WeatherFetcher = (url: string, init?: RequestInit) => Promise<WeatherResponseLike>;
 
 export interface WeatherSourceStatus {
   label: string;
@@ -62,6 +78,17 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
   };
 }
 
+export function buildOpenMeteoCurrentUrl(location: Pick<WeatherLocation, "latitude" | "longitude">) {
+  const params = new URLSearchParams({
+    latitude: String(location.latitude),
+    longitude: String(location.longitude),
+    current: OPEN_METEO_CURRENT_FIELDS,
+    timezone: "auto",
+  });
+
+  return `${OPEN_METEO_URL}?${params.toString()}`;
+}
+
 interface OpenMeteoCurrentResponse {
   current?: {
     temperature_2m?: number;
@@ -70,23 +97,10 @@ interface OpenMeteoCurrentResponse {
   };
 }
 
-export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> {
-  const location = await resolveDeviceLocation();
-
-  const params = new URLSearchParams({
-    latitude: String(location.latitude),
-    longitude: String(location.longitude),
-    current: "temperature_2m,relative_humidity_2m,weather_code",
-    timezone: "auto",
-  });
-
-  const response = await fetch(`${OPEN_METEO_URL}?${params.toString()}`);
-
-  if (!response.ok) {
-    throw new Error(`Open-Meteo request failed: ${response.status}`);
-  }
-
-  const payload = (await response.json()) as OpenMeteoCurrentResponse;
+export function normalizeOpenMeteoCurrentResponse(
+  payload: OpenMeteoCurrentResponse,
+  locationLabel: string,
+): WeatherSnapshot {
   const current = payload.current;
 
   if (
@@ -101,11 +115,60 @@ export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> 
     condition: mapOpenMeteoCondition(current.weather_code),
     temperatureC: Math.round(current.temperature_2m),
     humidity: Math.round(current.relative_humidity_2m),
-    locationLabel: location.label,
+    locationLabel,
   };
 }
 
-export { LocationPermissionError };
+export async function fetchOpenMeteoCurrentWeather(
+  location: WeatherLocation,
+  fetcher: WeatherFetcher = fetch,
+): Promise<WeatherSnapshot> {
+  const payload = await fetchOpenMeteoPayload(buildOpenMeteoCurrentUrl(location), fetcher);
+  return normalizeOpenMeteoCurrentResponse(payload, location.label);
+}
+
+export async function fetchLiveReadyWeatherSnapshot(): Promise<WeatherSnapshot> {
+  const { resolveDeviceLocation } = await import("./location");
+  const location = await resolveDeviceLocation();
+  return fetchOpenMeteoCurrentWeather(location);
+}
+
+async function fetchOpenMeteoPayload(url: string, fetcher: WeatherFetcher): Promise<OpenMeteoCurrentResponse> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= WEATHER_REQUEST_RETRIES; attempt += 1) {
+    try {
+      const response = await fetchWithTimeout(url, fetcher);
+
+      if (!response.ok) {
+        throw new Error(`Open-Meteo request failed: ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Open-Meteo request failed");
+}
+
+async function fetchWithTimeout(url: string, fetcher: WeatherFetcher): Promise<WeatherResponseLike> {
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  const timeout = controller
+    ? setTimeout(() => {
+        controller.abort();
+      }, WEATHER_REQUEST_TIMEOUT_MS)
+    : null;
+
+  try {
+    return await fetcher(url, controller ? { signal: controller.signal } : undefined);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 function mapOpenMeteoCondition(code: number): WeatherSnapshot["condition"] {
   if ((code >= 51 && code <= 67) || (code >= 80 && code <= 99)) {

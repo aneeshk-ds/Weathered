@@ -45,6 +45,9 @@ jobs:
       - name: Core smoke tests
         run: npm run test:core
 
+      - name: Data stress tests
+        run: npm run test:data
+
       - name: Verify Expo token
         run: |
           if [ -z "$EXPO_TOKEN" ]; then

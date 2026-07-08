@@ -1,6 +1,9 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 const DIAGNOSTICS_KEY = "weathered.local.diagnostics.v1";
+
+interface AsyncStorageApi {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+}
 
 export type DiagnosticEvent =
   | "weather_sync_success"
@@ -55,8 +58,14 @@ export const emptyDiagnostics: AppDiagnostics = {
   },
 };
 
+async function getAsyncStorage(): Promise<AsyncStorageApi> {
+  const module = await import("@react-native-async-storage/async-storage");
+  return module.default;
+}
+
 export async function loadDiagnostics(): Promise<AppDiagnostics> {
   try {
+    const AsyncStorage = await getAsyncStorage();
     const raw = await AsyncStorage.getItem(DIAGNOSTICS_KEY);
     if (!raw) return emptyDiagnostics;
 
@@ -75,6 +84,7 @@ export async function recordDiagnosticEvent(
   const updated = applyEvent(current, event, message);
 
   try {
+    const AsyncStorage = await getAsyncStorage();
     await AsyncStorage.setItem(DIAGNOSTICS_KEY, JSON.stringify(updated));
   } catch {
     return updated;
