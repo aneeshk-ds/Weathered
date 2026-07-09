@@ -28,7 +28,15 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
   );
 }
 
-export function PrimaryButton({ label, onPress, tone = "solid" }: { label: string; onPress: () => void; tone?: "solid" | "ghost" }) {
+export function PrimaryButton({
+  label,
+  onPress,
+  tone = "solid",
+}: {
+  label: string;
+  onPress: () => void;
+  tone?: "solid" | "ghost";
+}) {
   return (
     <Pressable onPress={onPress} style={[styles.btn, tone === "ghost" && styles.btnGhost]}>
       <Text style={[styles.btnText, tone === "ghost" && styles.btnGhostText]}>{label}</Text>
@@ -67,7 +75,14 @@ const styles = StyleSheet.create({
   title: { fontSize: 21, fontWeight: "600", color: colors.text, marginBottom: 3 },
   subtitle: { fontSize: 13, color: colors.muted, lineHeight: 19 },
   label: { fontSize: 13, color: colors.muted, marginBottom: 8, marginTop: 2 },
-  chip: { backgroundColor: colors.card2, borderRadius: 16, paddingVertical: 8, paddingHorizontal: 15, marginRight: 8, marginBottom: 8 },
+  chip: {
+    backgroundColor: colors.card2,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
   chipOn: { backgroundColor: colors.accent },
   chipText: { fontSize: 13, color: colors.muted },
   chipTextOn: { color: colors.accentText, fontWeight: "600" },
@@ -81,7 +96,14 @@ const styles = StyleSheet.create({
   moodCell: { height: 6, borderRadius: 3, backgroundColor: colors.line },
   moodCellOn: { backgroundColor: colors.accent },
   moodValue: { fontSize: 16, fontWeight: "600", color: colors.text, minWidth: 26, textAlign: "right" },
-  metric: { flex: 1, backgroundColor: colors.card2, borderRadius: 11, paddingVertical: 13, paddingHorizontal: 8, alignItems: "center" },
+  metric: {
+    flex: 1,
+    backgroundColor: colors.card2,
+    borderRadius: 11,
+    paddingVertical: 13,
+    paddingHorizontal: 8,
+    alignItems: "center",
+  },
   metricLabel: { fontSize: 11, color: colors.muted, marginBottom: 4 },
   metricValue: { fontSize: 22, fontWeight: "600", color: colors.text },
 });

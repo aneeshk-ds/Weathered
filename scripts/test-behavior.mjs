@@ -1,0 +1,161 @@
+import assert from "node:assert/strict";
+import {
+  buildBehavioralRead,
+  buildDecisionReadiness,
+  buildRecommendationNudges,
+} from "../apps/mobile/src/lib/behavior.ts";
+import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
+import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
+import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
+
+const baseWeather = {
+  condition: "cloudy",
+  temperatureC: 24,
+  humidity: 60,
+  locationLabel: "Local estimate",
+};
+
+function makeEntry(overrides = {}) {
+  return {
+    id: `entry-${Math.random().toString(36).slice(2)}`,
+    userId: "local",
+    mood: 6,
+    energy: "medium",
+    decisionCategory: "social",
+    decisionOutcome: "go_out",
+    weather: { ...baseWeather, ...(overrides.weather || {}) },
+    timestamp: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+// --- behavior.ts: strong risk context (heat load) forces a pause ---
+{
+  const weather = { ...baseWeather, temperatureC: 32 };
+  const read = buildBehavioralRead({ mood: 5, energy: "medium", weather });
+  const risk = read.signals.find((s) => s.label === "Decision Risk");
+  assert.equal(risk.level, "strong", "temp >= 30 should raise a strong risk signal");
+
+  const readiness = buildDecisionReadiness({
+    read,
+    category: "work",
+    mood: 5,
+    energy: "medium",
+    weather,
+    entries: [],
+  });
+  assert.equal(readiness.label, "Pause", "strong risk should push readiness to Pause");
+  assert.ok(readiness.score < 55, "pause readiness score should sit below the steady band");
+
+  const nudges = buildRecommendationNudges({ read, category: "work", mood: 5, energy: "medium", weather, entries: [] });
+  assert.equal(nudges[0].id, "nudge-delay-irrevocable", "strong risk should lead with the slow-down nudge");
+  assert.ok(nudges.length <= 3, "nudges are capped at three");
+}
+
+// --- behavior.ts: high energy, cool, work focus window is Ready ---
+{
+  const weather = { ...baseWeather, temperatureC: 24 };
+  const read = buildBehavioralRead({ mood: 7, energy: "high", weather });
+  const focus = read.signals.find((s) => s.label === "Focus");
+  assert.equal(focus.level, "strong", "high energy in cool weather is a strong focus window");
+
+  const readiness = buildDecisionReadiness({ read, category: "work", mood: 7, energy: "high", weather, entries: [] });
+  assert.equal(readiness.label, "Ready", "strong focus and high energy should read as Ready");
+
+  const nudges = buildRecommendationNudges({ read, category: "work", mood: 7, energy: "high", weather, entries: [] });
+  assert.equal(nudges[0].id, "nudge-use-focus-window", "work focus window should lead with the focus nudge");
+}
+
+// --- behavior.ts: sunny social window leads with social nudge ---
+{
+  const weather = { ...baseWeather, condition: "sunny", temperatureC: 26 };
+  const read = buildBehavioralRead({ mood: 8, energy: "high", weather });
+  const nudges = buildRecommendationNudges({ read, category: "social", mood: 8, energy: "high", weather, entries: [] });
+  assert.equal(nudges[0].id, "nudge-social-follow-through", "sunny social window should lead with the social nudge");
+}
+
+// --- behavior.ts: low energy leads with the lighter-version nudge ---
+{
+  const read = buildBehavioralRead({ mood: 6, energy: "low", weather: baseWeather });
+  const nudges = buildRecommendationNudges({
+    read,
+    category: "other",
+    mood: 6,
+    energy: "low",
+    weather: baseWeather,
+    entries: [],
+  });
+  assert.equal(nudges[0].id, "nudge-low-energy-version", "low energy should lead with the lighter-version nudge");
+}
+
+// --- insights.ts: rainy social cancel pattern surfaces ---
+{
+  const rainyCancel = makeEntry({
+    decisionCategory: "social",
+    decisionOutcome: "cancel",
+    weather: { ...baseWeather, condition: "rainy" },
+  });
+  const insight = buildInsight(rainyCancel, [rainyCancel]);
+  assert.equal(insight.id, "rainy-social-cancel", "a rainy social cancel should surface the rainy-social insight");
+}
+
+// --- insights.ts: first check-in fallback ---
+{
+  const plain = makeEntry({ decisionOutcome: "go_out" });
+  const insight = buildInsight(plain, [plain]);
+  assert.equal(insight.id, "first-checkin", "a single non-pattern entry should return the first-checkin insight");
+}
+
+// --- insights.ts: keep-logging fallback for multiple non-pattern entries ---
+{
+  const a = makeEntry({ decisionCategory: "work", decisionOutcome: "work", mood: 6 });
+  const b = makeEntry({ decisionCategory: "work", decisionOutcome: "work", mood: 6 });
+  const insight = buildInsight(a, [a, b]);
+  assert.equal(insight.id, "keep-logging", "multiple non-pattern entries should return the keep-logging insight");
+}
+
+// --- insights.ts: repeated sunny social go-outs surface ---
+{
+  const s1 = makeEntry({ weather: { ...baseWeather, condition: "sunny" }, decisionOutcome: "go_out" });
+  const s2 = makeEntry({ weather: { ...baseWeather, condition: "sunny" }, decisionOutcome: "go_out" });
+  const insight = buildInsight(s1, [s1, s2]);
+  assert.equal(insight.id, "sunny-social-go-out", "two sunny go-outs should surface the sunshine insight");
+}
+
+// --- weekMood.ts: deterministic seven-slot averaging ---
+{
+  assert.equal(sameDay(new Date(2026, 6, 9, 1, 0), new Date(2026, 6, 9, 23, 0)), true);
+  assert.equal(sameDay(new Date(2026, 6, 9), new Date(2026, 6, 8)), false);
+
+  const today = new Date(2026, 6, 9, 12, 0, 0);
+  const entries = [
+    makeEntry({ mood: 6, timestamp: new Date(2026, 6, 9, 10, 0, 0).toISOString() }),
+    makeEntry({ mood: 8, timestamp: new Date(2026, 6, 9, 15, 0, 0).toISOString() }),
+    makeEntry({ mood: 4, timestamp: new Date(2026, 6, 8, 10, 0, 0).toISOString() }),
+  ];
+  const week = buildWeekMood(entries, today);
+  assert.equal(week.length, 7, "week should always have seven slots");
+  assert.equal(week[6], 7, "today slot should average moods 6 and 8");
+  assert.equal(week[5], 4, "yesterday slot should hold the single mood");
+  assert.equal(
+    week.slice(0, 5).reduce((sum, v) => sum + v, 0),
+    0,
+    "days with no entries should be zero",
+  );
+}
+
+// --- personalize.ts: helpful first, not_now last, stable in between ---
+{
+  const nudges = [{ id: "a" }, { id: "b" }, { id: "c" }];
+  const feedback = [
+    { nudgeId: "b", value: "helpful", timestamp: "2026-07-01T00:00:00.000Z" },
+    { nudgeId: "a", value: "not_now", timestamp: "2026-07-01T00:00:00.000Z" },
+  ];
+  const ordered = personalizeNudges(nudges, feedback).map((n) => n.id);
+  assert.deepEqual(ordered, ["b", "c", "a"], "helpful ranks first, not_now last, unrated stays in the middle");
+
+  const untouched = personalizeNudges(nudges, []).map((n) => n.id);
+  assert.deepEqual(untouched, ["a", "b", "c"], "no feedback should preserve original order");
+}
+
+console.log("Behavior and helper tests passed.");

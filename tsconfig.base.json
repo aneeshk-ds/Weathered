@@ -9,10 +9,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@weathered/shared": [
-        "packages/shared/src"
-      ]
+      "@weathered/shared": ["packages/shared/src"]
     }
   }
 }
-

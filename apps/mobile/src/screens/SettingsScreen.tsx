@@ -52,18 +52,26 @@ export function SettingsScreen({
 
   return (
     <View>
-      <ScreenHeader eyebrow="Settings" title="Backup & data" subtitle="Weathered keeps everything on this device. Back up to your cloud to move it to another." />
+      <ScreenHeader
+        eyebrow="Settings"
+        title="Backup & data"
+        subtitle="Weathered keeps everything on this device. Back up to your cloud to move it to another."
+      />
 
       <Card>
         <Text style={styles.cardTitle}>Back up to your cloud</Text>
-        <Text style={styles.cardBody}>Saves a backup file you can drop into iCloud Drive or Google Drive from the share sheet.</Text>
+        <Text style={styles.cardBody}>
+          Saves a backup file you can drop into iCloud Drive or Google Drive from the share sheet.
+        </Text>
         <View style={{ height: 12 }} />
         <PrimaryButton label={busy ? "Working…" : "Back up now"} onPress={() => run(onBackup)} />
       </Card>
 
       <Card>
         <Text style={styles.cardTitle}>Restore from a backup</Text>
-        <Text style={styles.cardBody}>Pick a Weathered backup file from your cloud or files to load it onto this device.</Text>
+        <Text style={styles.cardBody}>
+          Pick a Weathered backup file from your cloud or files to load it onto this device.
+        </Text>
         <View style={{ height: 12 }} />
         <PrimaryButton label="Restore from a file" onPress={() => run(onRestore)} tone="ghost" />
       </Card>
@@ -84,7 +92,9 @@ export function SettingsScreen({
             <Text style={styles.healthCaption}>fallbacks</Text>
           </View>
           <View style={styles.healthCell}>
-            <Text style={styles.healthValue}>{diagnostics.backup.exportSuccessCount + diagnostics.backup.restoreSuccessCount}</Text>
+            <Text style={styles.healthValue}>
+              {diagnostics.backup.exportSuccessCount + diagnostics.backup.restoreSuccessCount}
+            </Text>
             <Text style={styles.healthCaption}>backup ops</Text>
           </View>
           <View style={styles.healthCell}>
@@ -92,13 +102,19 @@ export function SettingsScreen({
             <Text style={styles.healthCaption}>save issues</Text>
           </View>
         </View>
-        {diagnostics.weather.lastMessage ? <Text style={styles.cardBody}>Weather: {diagnostics.weather.lastMessage}</Text> : null}
-        {diagnostics.backup.lastMessage ? <Text style={styles.cardBody}>Backup: {diagnostics.backup.lastMessage}</Text> : null}
+        {diagnostics.weather.lastMessage ? (
+          <Text style={styles.cardBody}>Weather: {diagnostics.weather.lastMessage}</Text>
+        ) : null}
+        {diagnostics.backup.lastMessage ? (
+          <Text style={styles.cardBody}>Backup: {diagnostics.backup.lastMessage}</Text>
+        ) : null}
       </Card>
 
       <Card>
         <Text style={styles.cardTitle}>Your data</Text>
-        <Text style={styles.cardBody}>{entryCount} check-in{entryCount === 1 ? "" : "s"} stored on this device.</Text>
+        <Text style={styles.cardBody}>
+          {entryCount} check-in{entryCount === 1 ? "" : "s"} stored on this device.
+        </Text>
         <View style={{ height: 12 }} />
         <PrimaryButton label="Clear all data" onPress={confirmClear} tone="ghost" />
       </Card>
@@ -106,8 +122,12 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>About</Text>
         <Text style={styles.cardBody}>Weathered {version}</Text>
-        <Text style={styles.cardBody}>Local-first: no accounts, no cloud sync. Live weather uses your device location via Open-Meteo.</Text>
-        <Text style={styles.cardBody}>Support: include the app version, check-in count, and App health details when reporting an issue.</Text>
+        <Text style={styles.cardBody}>
+          Local-first: no accounts, no cloud sync. Live weather uses your device location via Open-Meteo.
+        </Text>
+        <Text style={styles.cardBody}>
+          Support: include the app version, check-in count, and App health details when reporting an issue.
+        </Text>
         <View style={{ height: 12 }} />
         <PrimaryButton label="Open support page" onPress={openSupport} tone="ghost" />
       </Card>

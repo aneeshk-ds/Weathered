@@ -52,24 +52,51 @@ const weatherModule = readText("apps/mobile/src/lib/weather.ts");
 const storageModule = readText("apps/mobile/src/lib/storage.ts");
 const settingsScreen = readText("apps/mobile/src/screens/SettingsScreen.tsx");
 
-const workspacePackages = Object.keys(lockfile.packages).filter((key) => key.startsWith("apps/") || key.startsWith("packages/"));
+const workspacePackages = Object.keys(lockfile.packages).filter(
+  (key) => key.startsWith("apps/") || key.startsWith("packages/"),
+);
 
-check(rootPackage.scripts?.typecheck === "npm --workspace packages/shared run build && npm --workspace apps/mobile run typecheck", "Root typecheck script should check shared and mobile.");
-check(rootPackage.scripts?.["verify:project"] === "node scripts/verify-project.mjs", "Root verify:project script is missing.");
-check(rootPackage.scripts?.["test:core"] === "node --no-warnings --experimental-strip-types scripts/test-core.mjs", "Root test:core script is missing.");
-check(rootPackage.scripts?.["test:data"] === "node --no-warnings --experimental-strip-types scripts/test-data-stress.mjs", "Root data stress script is missing.");
-check(rootPackage.scripts?.["build:android:apk"]?.includes("--profile preview-apk"), "Root APK build script should use the preview-apk profile.");
-check(rootPackage.scripts?.["build:android:production"]?.includes("--profile production"), "Root production Android build script is missing.");
+check(
+  rootPackage.scripts?.typecheck ===
+    "npm --workspace packages/shared run build && npm --workspace apps/mobile run typecheck",
+  "Root typecheck script should check shared and mobile.",
+);
+check(
+  rootPackage.scripts?.["verify:project"] === "node scripts/verify-project.mjs",
+  "Root verify:project script is missing.",
+);
+check(
+  rootPackage.scripts?.["test:core"] === "node --no-warnings --experimental-strip-types scripts/test-core.mjs",
+  "Root test:core script is missing.",
+);
+check(
+  rootPackage.scripts?.["test:data"] === "node --no-warnings --experimental-strip-types scripts/test-data-stress.mjs",
+  "Root data stress script is missing.",
+);
+check(
+  rootPackage.scripts?.["build:android:apk"]?.includes("--profile preview-apk"),
+  "Root APK build script should use the preview-apk profile.",
+);
+check(
+  rootPackage.scripts?.["build:android:production"]?.includes("--profile production"),
+  "Root production Android build script is missing.",
+);
 check(workspacePackages.includes("apps/mobile"), "Lockfile should include apps/mobile.");
 check(workspacePackages.includes("packages/shared"), "Lockfile should include packages/shared.");
 check(!workspacePackages.includes("apps/api"), "Lockfile should not include removed apps/api workspace.");
-check(workspacePackages.every((workspace) => exists(`${workspace}/package.json`)), "Every lockfile workspace should exist on disk.");
+check(
+  workspacePackages.every((workspace) => exists(`${workspace}/package.json`)),
+  "Every lockfile workspace should exist on disk.",
+);
 
 const typecheckIndex = workflow.indexOf("npm run typecheck");
 const exportIndex = workflow.indexOf("npm run export:web");
 check(typecheckIndex !== -1, "Deploy workflow should run npm run typecheck.");
 check(exportIndex !== -1, "Deploy workflow should run npm run export:web.");
-check(typecheckIndex !== -1 && exportIndex !== -1 && typecheckIndex < exportIndex, "Deploy workflow should typecheck before export.");
+check(
+  typecheckIndex !== -1 && exportIndex !== -1 && typecheckIndex < exportIndex,
+  "Deploy workflow should typecheck before export.",
+);
 check(workflow.includes("npm run test:core"), "Deploy workflow should run core smoke tests.");
 check(workflow.includes("npm run test:data"), "Deploy workflow should run data stress tests.");
 check(workflow.includes("npm run verify:project"), "Deploy workflow should run project release checks.");
@@ -85,14 +112,20 @@ check(androidWorkflow.includes("npm run test:data"), "Android build workflow sho
 check(androidWorkflow.includes("npx eas-cli@latest build"), "Android build workflow should run EAS build.");
 
 check(backupModule.includes("normalizeBackupPayload"), "Backup restore should call the backup payload validator.");
-check(backupValidationModule.includes("function normalizeEntry"), "Backup restore should validate entries before importing.");
+check(
+  backupValidationModule.includes("function normalizeEntry"),
+  "Backup restore should validate entries before importing.",
+);
 check(backupValidationModule.includes("isValidMood"), "Backup restore should validate mood values.");
 check(backupValidationModule.includes("isWeatherSnapshot"), "Backup restore should validate weather snapshots.");
 check(storageModule.includes("isStoredEntry"), "Local stored entries should be validated before loading.");
 check(storageModule.includes("isWeatherSnapshot"), "Local stored entries should validate weather snapshots.");
 check(diagnosticsModule.includes("recordDiagnosticEvent"), "Diagnostics module should record local support events.");
 check(diagnosticsModule.includes("summarizeHealth"), "Diagnostics module should summarize app health.");
-check(weatherModule.includes("https://api.open-meteo.com/v1/forecast"), "Live weather should use the Open-Meteo forecast endpoint.");
+check(
+  weatherModule.includes("https://api.open-meteo.com/v1/forecast"),
+  "Live weather should use the Open-Meteo forecast endpoint.",
+);
 check(!/api[_-]?key|apikey|token/i.test(weatherModule), "Live weather should not require a weather API key or token.");
 check(weatherModule.includes("WEATHER_REQUEST_TIMEOUT_MS"), "Live weather should have a request timeout.");
 check(weatherModule.includes("WEATHER_REQUEST_RETRIES"), "Live weather should retry transient provider failures.");
@@ -118,18 +151,33 @@ check(appConfig.expo?.name === "Weathered", "Expo app name should be Weathered."
 check(appConfig.expo?.slug === "weathered", "Expo app slug should be weathered.");
 check(appConfig.expo?.icon === "./assets/icon.png", "Expo icon should point to assets/icon.png.");
 check(exists("apps/mobile/assets/icon.png"), "App icon asset is missing.");
-check(appConfig.expo?.splash?.image === "./assets/splash-icon.png", "Expo splash should point to assets/splash-icon.png.");
+check(
+  appConfig.expo?.splash?.image === "./assets/splash-icon.png",
+  "Expo splash should point to assets/splash-icon.png.",
+);
 check(exists("apps/mobile/assets/splash-icon.png"), "Splash icon asset is missing.");
 check(Boolean(appConfig.expo?.android?.package), "Android package name is missing.");
 check(Number.isInteger(appConfig.expo?.android?.versionCode), "Android versionCode should be an integer.");
-check(appConfig.expo?.android?.adaptiveIcon?.foregroundImage === "./assets/adaptive-icon.png", "Android adaptive icon foreground is missing.");
+check(
+  appConfig.expo?.android?.adaptiveIcon?.foregroundImage === "./assets/adaptive-icon.png",
+  "Android adaptive icon foreground is missing.",
+);
 check(exists("apps/mobile/assets/adaptive-icon.png"), "Android adaptive icon asset is missing.");
-check(appConfig.expo?.android?.permissions?.includes("ACCESS_FINE_LOCATION"), "Android fine location permission is missing.");
-check(appConfig.expo?.plugins?.some((plugin) => Array.isArray(plugin) && plugin[0] === "expo-location"), "expo-location plugin configuration is missing.");
+check(
+  appConfig.expo?.android?.permissions?.includes("ACCESS_FINE_LOCATION"),
+  "Android fine location permission is missing.",
+);
+check(
+  appConfig.expo?.plugins?.some((plugin) => Array.isArray(plugin) && plugin[0] === "expo-location"),
+  "expo-location plugin configuration is missing.",
+);
 check(Boolean(appConfig.expo?.extra?.eas?.projectId), "EAS projectId is missing.");
 
 check(easConfig.build?.["preview-apk"]?.android?.buildType === "apk", "preview-apk profile should build an APK.");
-check(easConfig.build?.production?.android?.buildType === "app-bundle", "production profile should build an Android app bundle.");
+check(
+  easConfig.build?.production?.android?.buildType === "app-bundle",
+  "production profile should build an Android app bundle.",
+);
 
 const textFiles = [
   "README.md",

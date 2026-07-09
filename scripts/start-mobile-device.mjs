@@ -16,7 +16,9 @@ function findLanIp() {
 const lanIp = findLanIp();
 
 if (!lanIp) {
-  console.error("Could not detect a LAN IP. Use EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000 npm run dev:mobile:device instead.");
+  console.error(
+    "Could not detect a LAN IP. Use EXPO_PUBLIC_WEATHER_API_URL=http://YOUR_MAC_LAN_IP:4000 npm run dev:mobile:device instead.",
+  );
   process.exit(1);
 }
 
@@ -41,7 +43,7 @@ if (process.argv.includes("--check")) {
 
     console.log("Weathered API is reachable from this Mac LAN URL.");
     process.exit(0);
-  } catch (error) {
+  } catch {
     console.error(`Weathered API is not reachable at ${healthUrl}. Start it with npm run dev:api first.`);
     process.exit(1);
   }

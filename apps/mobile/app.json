@@ -18,14 +18,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0e1718"
       },
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ]
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "extra": {
       "eas": {
         "projectId": "b25740c3-b666-40cf-bd55-06256f9458f2"

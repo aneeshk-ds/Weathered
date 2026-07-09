@@ -51,7 +51,11 @@ export function HomeScreen({
 
   return (
     <View>
-      <ScreenHeader eyebrow="Home" title="How are you right now?" subtitle="One quick check-in. Takes about 20 seconds." />
+      <ScreenHeader
+        eyebrow="Home"
+        title="How are you right now?"
+        subtitle="One quick check-in. Takes about 20 seconds."
+      />
 
       <Card style={styles.weatherCard}>
         <Text style={styles.weatherIcon}>{weatherEmoji(weather.condition)}</Text>

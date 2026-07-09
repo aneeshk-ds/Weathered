@@ -45,7 +45,11 @@ export function HistoryScreen({
 }) {
   return (
     <View>
-      <ScreenHeader eyebrow="History" title="Your check-ins" subtitle="Review what changed and the conditions behind it." />
+      <ScreenHeader
+        eyebrow="History"
+        title="Your check-ins"
+        subtitle="Review what changed and the conditions behind it."
+      />
 
       {entries.length === 0 ? (
         <Card>
@@ -63,7 +67,12 @@ export function HistoryScreen({
             <Label>Energy</Label>
             <View style={styles.chipRow}>
               {ENERGY_LEVELS.map((level) => (
-                <Chip key={level} label={ENERGY_LABEL[level]} selected={editing.energy === level} onPress={() => onChangeEditing({ energy: level })} />
+                <Chip
+                  key={level}
+                  label={ENERGY_LABEL[level]}
+                  selected={editing.energy === level}
+                  onPress={() => onChangeEditing({ energy: level })}
+                />
               ))}
             </View>
             <Label>Decision</Label>
@@ -79,7 +88,12 @@ export function HistoryScreen({
             </View>
             <View style={styles.chipRow}>
               {DECISION_OPTIONS[editing.category].map((item) => (
-                <Chip key={item} label={outcomeLabel(item)} selected={editing.outcome === item} onPress={() => onChangeEditing({ outcome: item })} />
+                <Chip
+                  key={item}
+                  label={outcomeLabel(item)}
+                  selected={editing.outcome === item}
+                  onPress={() => onChangeEditing({ outcome: item })}
+                />
               ))}
             </View>
             <Label>Note</Label>
@@ -136,7 +150,15 @@ const styles = StyleSheet.create({
   empty: { color: colors.dim, fontSize: 13, textAlign: "center" },
   editCard: { borderWidth: 1, borderColor: colors.accent },
   chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
-  note: { backgroundColor: colors.card2, borderRadius: 10, color: colors.text, fontSize: 13, padding: 10, minHeight: 48, textAlignVertical: "top" },
+  note: {
+    backgroundColor: colors.card2,
+    borderRadius: 10,
+    color: colors.text,
+    fontSize: 13,
+    padding: 10,
+    minHeight: 48,
+    textAlignVertical: "top",
+  },
   entry: {},
   entryTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   entryTags: { fontSize: 13, color: colors.text, fontWeight: "600" },

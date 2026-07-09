@@ -41,7 +41,8 @@ export function buildInsight(entry: DecisionLogInput, entries: DecisionLogInput[
 
   const rainySocialCancels = count(
     entries,
-    (item) => item.decisionCategory === "social" && item.decisionOutcome === "cancel" && item.weather.condition === "rainy",
+    (item) =>
+      item.decisionCategory === "social" && item.decisionOutcome === "cancel" && item.weather.condition === "rainy",
   );
   if (rainySocialCancels >= 1) {
     candidates.push({
@@ -75,7 +76,8 @@ export function buildInsight(entry: DecisionLogInput, entries: DecisionLogInput[
 
   const sunnySocialGoOut = count(
     entries,
-    (item) => item.weather.condition === "sunny" && item.decisionCategory === "social" && item.decisionOutcome === "go_out",
+    (item) =>
+      item.weather.condition === "sunny" && item.decisionCategory === "social" && item.decisionOutcome === "go_out",
   );
   if (sunnySocialGoOut >= 2) {
     candidates.push({
@@ -112,7 +114,10 @@ export function buildInsight(entry: DecisionLogInput, entries: DecisionLogInput[
 
   const upbeatSpending = count(
     entries,
-    (item) => item.decisionCategory === "spending" && item.decisionOutcome === "buy" && (item.mood >= 8 || item.weather.condition === "sunny"),
+    (item) =>
+      item.decisionCategory === "spending" &&
+      item.decisionOutcome === "buy" &&
+      (item.mood >= 8 || item.weather.condition === "sunny"),
   );
   if (upbeatSpending >= 2) {
     candidates.push({

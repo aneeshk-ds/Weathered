@@ -7,8 +7,11 @@ Use this checklist before publishing Weathered beyond a local demo.
 - Confirm the repo is clean or only contains intentional release changes.
 - Run `npm ci`.
 - Run `npm run verify:project`.
+- Run `npm run lint`.
+- Run `npm run format:check`.
 - Run `npm run typecheck`.
 - Run `npm run test:data`.
+- Run `npm run test:behavior`.
 - Run `npm run export:web`.
 - Smoke test Home, History, Insights, and Settings; record Android results in `docs/android-smoke-test.md`.
 - Confirm the Settings support link opens the support page.

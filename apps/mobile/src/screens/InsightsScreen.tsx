@@ -75,7 +75,11 @@ export function InsightsScreen({
 
       <View style={styles.rings}>
         <Card style={styles.ringCard}>
-          <ProgressRing fraction={moodFrac} value={summary.averageMood > 0 ? summary.averageMood.toFixed(1) : "–"} unit="/ 10" />
+          <ProgressRing
+            fraction={moodFrac}
+            value={summary.averageMood > 0 ? summary.averageMood.toFixed(1) : "–"}
+            unit="/ 10"
+          />
           <Text style={styles.ringLabel}>Avg mood</Text>
         </Card>
         <Card style={styles.ringCard}>
@@ -160,7 +164,14 @@ export function InsightsScreen({
 
 const styles = StyleSheet.create({
   todayRead: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
-  insight: { backgroundColor: colors.card, borderLeftWidth: 3, borderLeftColor: colors.accent, borderRadius: 0, padding: 13, marginBottom: 14 },
+  insight: {
+    backgroundColor: colors.card,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+    borderRadius: 0,
+    padding: 13,
+    marginBottom: 14,
+  },
   insightTag: { fontSize: 12, color: colors.accent, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
   insightMsg: { fontSize: 14, color: colors.text, lineHeight: 21 },
   rings: { flexDirection: "row", gap: 10 },

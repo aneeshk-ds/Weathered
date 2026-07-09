@@ -12,14 +12,26 @@
     "dev:mobile:device:auto": "node scripts/start-mobile-device.mjs",
     "export:web": "npm --workspace apps/mobile run export:web",
     "typecheck": "npm --workspace packages/shared run build && npm --workspace apps/mobile run typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "verify:project": "node scripts/verify-project.mjs",
     "test:core": "node --no-warnings --experimental-strip-types scripts/test-core.mjs",
     "test:data": "node --no-warnings --experimental-strip-types scripts/test-data-stress.mjs",
+    "test:behavior": "node --no-warnings --experimental-strip-types scripts/test-behavior.mjs",
     "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081",
     "build:android:apk": "cd apps/mobile && npx eas-cli build --platform android --profile preview-apk",
     "build:android:production": "cd apps/mobile && npx eas-cli build --platform android --profile production"
   },
   "devDependencies": {
-    "@expo/ngrok": "^4.1.3"
+    "@eslint/js": "^9.39.4",
+    "@expo/ngrok": "^4.1.3",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.9.4",
+    "typescript-eslint": "^8.63.0"
   }
 }

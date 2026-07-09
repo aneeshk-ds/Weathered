@@ -28,7 +28,14 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (tab: Ta
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: "row", borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.panel, paddingTop: 8, paddingBottom: 12 },
+  bar: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    backgroundColor: colors.panel,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
   tab: { flex: 1, alignItems: "center" },
   icon: { fontSize: 20 },
   label: { fontSize: 11, marginTop: 3, color: colors.dim },

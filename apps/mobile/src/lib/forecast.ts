@@ -44,9 +44,7 @@ export function buildDecisionForecast(
   const { mood, energy } = current;
 
   const recentEntries = entries.slice(0, 14);
-  const weatherMatchedEntries = recentEntries.filter(
-    (entry) => entry.weather.condition === currentWeather.condition,
-  );
+  const weatherMatchedEntries = recentEntries.filter((entry) => entry.weather.condition === currentWeather.condition);
   const historySample = weatherMatchedEntries.length >= 2 ? weatherMatchedEntries : recentEntries;
   const hasHistory = historySample.length >= 2;
   const categoryFocus = getDominantCategory(historySample.length > 0 ? historySample : recentEntries);
@@ -138,4 +136,3 @@ function getDominantCategory(entries: DecisionLogInput[]): DecisionCategory {
     "social" as DecisionCategory,
   );
 }
-

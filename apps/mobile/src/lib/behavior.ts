@@ -98,7 +98,8 @@ export function buildRecommendationNudges({
       {
         id: "nudge-spending-cooling-off",
         title: "Add a short cooling-off step",
-        message: "Good momentum can make purchases feel more obvious than they are. Give the choice a quick second look.",
+        message:
+          "Good momentum can make purchases feel more obvious than they are. Give the choice a quick second look.",
         actionLabel: "Wait 20 minutes before buying",
         tone: "reframe" as const,
       },
@@ -244,13 +245,19 @@ function buildPatternNudge({
 
   const averageMood = getAverageMood(sample);
   const lowEnergyCount = sample.filter((entry) => entry.energy === "low").length;
-  const avoidOrCancelCount = sample.filter((entry) => entry.decisionOutcome === "avoid" || entry.decisionOutcome === "cancel").length;
+  const avoidOrCancelCount = sample.filter(
+    (entry) => entry.decisionOutcome === "avoid" || entry.decisionOutcome === "cancel",
+  ).length;
   const evidenceLabel =
     exactMatches.length >= 2
       ? `${exactMatches.length} similar ${weather.condition}/${category} logs`
       : `${sample.length} recent ${category} logs`;
 
-  if (averageMood <= 5 || lowEnergyCount >= Math.ceil(sample.length / 2) || avoidOrCancelCount >= Math.ceil(sample.length / 2)) {
+  if (
+    averageMood <= 5 ||
+    lowEnergyCount >= Math.ceil(sample.length / 2) ||
+    avoidOrCancelCount >= Math.ceil(sample.length / 2)
+  ) {
     return {
       id: "nudge-pattern-caution",
       title: "Your pattern says slow down",

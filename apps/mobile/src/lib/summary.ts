@@ -28,38 +28,24 @@ export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
 
   const rainyCancels = weeklyEntries.filter(
     (item) =>
-      item.weather.condition === "rainy" &&
-      item.decisionCategory === "social" &&
-      item.decisionOutcome === "cancel",
+      item.weather.condition === "rainy" && item.decisionCategory === "social" && item.decisionOutcome === "cancel",
   ).length;
   const rainySocialTotal = weeklyEntries.filter(
     (item) => item.weather.condition === "rainy" && item.decisionCategory === "social",
   ).length;
   const sunnyWorkTotal = weeklyEntries.filter(
-    (item) =>
-      item.weather.condition === "sunny" &&
-      item.decisionCategory === "work" &&
-      item.decisionOutcome === "work",
+    (item) => item.weather.condition === "sunny" && item.decisionCategory === "work" && item.decisionOutcome === "work",
   ).length;
   const lowEnergyWorkSkips = weeklyEntries.filter(
-    (item) =>
-      item.energy === "low" &&
-      item.decisionCategory === "work" &&
-      item.decisionOutcome === "skip",
+    (item) => item.energy === "low" && item.decisionCategory === "work" && item.decisionOutcome === "skip",
   ).length;
   const highMoodSocialGoOut = weeklyEntries.filter(
-    (item) =>
-      item.mood >= 7 &&
-      item.decisionCategory === "social" &&
-      item.decisionOutcome === "go_out",
+    (item) => item.mood >= 7 && item.decisionCategory === "social" && item.decisionOutcome === "go_out",
   ).length;
 
   const lowMoodDays = weeklyEntries.filter((item) => item.mood <= 4).length;
   const lowMoodSocialCancels = weeklyEntries.filter(
-    (item) =>
-      item.mood <= 4 &&
-      item.decisionCategory === "social" &&
-      item.decisionOutcome === "cancel",
+    (item) => item.mood <= 4 && item.decisionCategory === "social" && item.decisionOutcome === "cancel",
   ).length;
 
   const topInsights: Insight[] = [];
@@ -69,8 +55,7 @@ export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
     topInsights.push({
       id: "weekly-rainy-social-cancel",
       title: "Rainy social hesitation",
-      message:
-        "Across this week, rainy conditions seem to coincide with more social cancellations than usual.",
+      message: "Across this week, rainy conditions seem to coincide with more social cancellations than usual.",
       confidence: rainySocialTotal >= 3 ? "medium" : "low",
     });
   }
@@ -79,8 +64,7 @@ export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
     topInsights.push({
       id: "weekly-low-mood-social",
       title: "Mood may be influencing social follow-through",
-      message:
-        "Lower-mood entries are showing a softer willingness to follow through on social plans.",
+      message: "Lower-mood entries are showing a softer willingness to follow through on social plans.",
       confidence: "medium",
     });
   }
@@ -89,8 +73,7 @@ export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
     topInsights.push({
       id: "weekly-sunny-work",
       title: "Clearer weather, steadier work decisions",
-      message:
-        "Sunny entries are leaning a bit more toward focused work decisions in your recent logs.",
+      message: "Sunny entries are leaning a bit more toward focused work decisions in your recent logs.",
       confidence: "low",
     });
   }

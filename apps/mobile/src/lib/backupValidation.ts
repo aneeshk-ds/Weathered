@@ -71,7 +71,8 @@ function normalizeEntry(value: unknown, index: number): DecisionLogInput | null 
     return null;
   }
 
-  const id = isBoundedString(value.id, MAX_ID_LENGTH) && value.id.trim() ? value.id : `restored-${value.timestamp}-${index}`;
+  const id =
+    isBoundedString(value.id, MAX_ID_LENGTH) && value.id.trim() ? value.id : `restored-${value.timestamp}-${index}`;
   const userId = isBoundedString(value.userId, MAX_USER_ID_LENGTH) && value.userId.trim() ? value.userId : "local";
   const note = value.note !== undefined && value.note.trim() ? value.note : undefined;
 

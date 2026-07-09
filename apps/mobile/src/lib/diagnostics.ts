@@ -76,10 +76,7 @@ export async function loadDiagnostics(): Promise<AppDiagnostics> {
   }
 }
 
-export async function recordDiagnosticEvent(
-  event: DiagnosticEvent,
-  message?: string,
-): Promise<AppDiagnostics> {
+export async function recordDiagnosticEvent(event: DiagnosticEvent, message?: string): Promise<AppDiagnostics> {
   const current = await loadDiagnostics();
   const updated = applyEvent(current, event, message);
 
@@ -121,11 +118,7 @@ export function summarizeHealth(diagnostics: AppDiagnostics) {
   };
 }
 
-function applyEvent(
-  diagnostics: AppDiagnostics,
-  event: DiagnosticEvent,
-  message?: string,
-): AppDiagnostics {
+function applyEvent(diagnostics: AppDiagnostics, event: DiagnosticEvent, message?: string): AppDiagnostics {
   const now = new Date().toISOString();
   const next: AppDiagnostics = normalizeDiagnostics(diagnostics);
   next.updatedAt = now;

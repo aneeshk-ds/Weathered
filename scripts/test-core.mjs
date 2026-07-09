@@ -147,22 +147,30 @@ assert.ok(
   "weekly guidance should include rainy social buffer when recent rainy cancellations exist",
 );
 
-const rainyForecast = buildDecisionForecast([], {
-  condition: "rainy",
-  temperatureC: 23,
-  humidity: 90,
-  locationLabel: "Local estimate",
-}, { mood: 4, energy: "low" });
+const rainyForecast = buildDecisionForecast(
+  [],
+  {
+    condition: "rainy",
+    temperatureC: 23,
+    humidity: 90,
+    locationLabel: "Local estimate",
+  },
+  { mood: 4, energy: "low" },
+);
 assert.equal(rainyForecast.id, "forecast-rain-social-buffer");
 assert.equal(rainyForecast.categoryFocus, "social");
 assert.equal(rainyForecast.confidence, "low");
 
-const sunnyForecast = buildDecisionForecast([], {
-  condition: "sunny",
-  temperatureC: 27,
-  humidity: 52,
-  locationLabel: "Local estimate",
-}, { mood: 7, energy: "high" });
+const sunnyForecast = buildDecisionForecast(
+  [],
+  {
+    condition: "sunny",
+    temperatureC: 27,
+    humidity: 52,
+    locationLabel: "Local estimate",
+  },
+  { mood: 7, energy: "high" },
+);
 assert.equal(sunnyForecast.id, "forecast-sunny-window");
 assert.equal(sunnyForecast.confidence, "medium");
 assert.ok(sunnyForecast.signalStrength >= 70, "sunny high-energy forecast should carry useful signal strength");
@@ -174,10 +182,12 @@ assert.equal(formatWeatherSource("live_ready"), "live");
 assert.equal(describeWeatherSource("live_ready").provider, "Open-Meteo");
 assert.equal(describeWeatherSource("daily_mock").readiness, "Prototype mode");
 
-const openMeteoUrl = new URL(buildOpenMeteoCurrentUrl({
-  latitude: 12.9716,
-  longitude: 77.5946,
-}));
+const openMeteoUrl = new URL(
+  buildOpenMeteoCurrentUrl({
+    latitude: 12.9716,
+    longitude: 77.5946,
+  }),
+);
 assert.equal(openMeteoUrl.origin, "https://api.open-meteo.com");
 assert.equal(openMeteoUrl.pathname, "/v1/forecast");
 assert.equal(openMeteoUrl.searchParams.get("latitude"), "12.9716");

@@ -30,10 +30,7 @@ export interface WeatherSourceStatus {
   fallback?: string;
 }
 
-export function buildLocalWeatherSnapshot(
-  mode: WeatherSourceMode,
-  date: Date = new Date(),
-): WeatherSnapshot {
+export function buildLocalWeatherSnapshot(mode: WeatherSourceMode, date: Date = new Date()): WeatherSnapshot {
   if (mode === "seasonal_mock" || mode === "live_ready") {
     return buildSeasonalSnapshot(date);
   }
@@ -54,7 +51,8 @@ export function describeWeatherSource(mode: WeatherSourceMode): WeatherSourceSta
     return {
       label: "Live",
       title: "Live weather is active",
-      message: "Weathered reads your current conditions from Open-Meteo using your device location, and falls back to a local estimate if it cannot reach the network.",
+      message:
+        "Weathered reads your current conditions from Open-Meteo using your device location, and falls back to a local estimate if it cannot reach the network.",
       readiness: "Live provider connected",
       provider: "Open-Meteo",
       fallback: "Local seasonal estimate",

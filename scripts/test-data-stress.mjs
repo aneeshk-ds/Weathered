@@ -59,13 +59,6 @@ function measure(label, fn) {
   return { label, value, durationMs };
 }
 
-async function measureAsync(label, fn) {
-  const startedAt = Date.now();
-  const value = await fn();
-  const durationMs = Date.now() - startedAt;
-  return { label, value, durationMs };
-}
-
 const entries = Array.from({ length: ENTRY_LIMIT }, (_, index) => makeEntry(index));
 const payload = {
   app: "weathered",
@@ -87,7 +80,9 @@ assert.ok(normalizedResult.value, "large valid backup should normalize");
 assert.equal(normalizedResult.value.entries.length, ENTRY_LIMIT);
 assert.equal(normalizedResult.value.feedback.length, 250);
 
-const summaryResult = measure("build weekly summary from 5000 entries", () => buildSummary(normalizedResult.value.entries));
+const summaryResult = measure("build weekly summary from 5000 entries", () =>
+  buildSummary(normalizedResult.value.entries),
+);
 results.push(summaryResult);
 assert.ok(summaryResult.value.totalEntries > 0, "stress summary should include recent entries");
 assert.ok(summaryResult.value.totalEntries < ENTRY_LIMIT, "stress summary should exclude old entries");
@@ -100,7 +95,9 @@ assert.ok(summaryResult.value.topInsights.length > 0);
 assert.ok(summaryResult.value.guidance.length > 0);
 
 const currentEntry = normalizedResult.value.entries[0];
-const insightResult = measure("build insight from 5000 entries", () => buildInsight(currentEntry, normalizedResult.value.entries));
+const insightResult = measure("build insight from 5000 entries", () =>
+  buildInsight(currentEntry, normalizedResult.value.entries),
+);
 results.push(insightResult);
 assert.ok(insightResult.value, "stress insight should return a safe result");
 assert.ok(["low", "medium", "high"].includes(insightResult.value.confidence));
@@ -155,7 +152,10 @@ assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), mood: 99 }], [seedEn
 assert.deepEqual(normalizeStoredEntries([null], [seedEntry]), [seedEntry]);
 assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), note: 7 }], [seedEntry]), [seedEntry]);
 assert.deepEqual(
-  normalizeStoredEntries(Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => makeEntry(index)), [seedEntry]),
+  normalizeStoredEntries(
+    Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => makeEntry(index)),
+    [seedEntry],
+  ),
   [seedEntry],
 );
 
@@ -166,14 +166,22 @@ assert.equal(migratedStoredEntry[0].userId, "local");
 assert.equal(migratedStoredEntry[0].note, undefined);
 
 assert.equal(normalizeStoredFeedback(payload.feedback).length, payload.feedback.length);
-assert.equal(normalizeStoredFeedback([...payload.feedback, { nudgeId: "", value: "helpful", timestamp: isoDaysAgo(1) }]).length, payload.feedback.length);
-assert.equal(normalizeStoredFeedback([{ nudgeId: "nudge", value: "helpful", timestamp: `${"2".repeat(80)}-01-01` }]).length, 0);
 assert.equal(
-  normalizeStoredFeedback(Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => ({
-    nudgeId: `nudge-${index}`,
-    value: "helpful",
-    timestamp: isoDaysAgo(1),
-  }))).length,
+  normalizeStoredFeedback([...payload.feedback, { nudgeId: "", value: "helpful", timestamp: isoDaysAgo(1) }]).length,
+  payload.feedback.length,
+);
+assert.equal(
+  normalizeStoredFeedback([{ nudgeId: "nudge", value: "helpful", timestamp: `${"2".repeat(80)}-01-01` }]).length,
+  0,
+);
+assert.equal(
+  normalizeStoredFeedback(
+    Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => ({
+      nudgeId: `nudge-${index}`,
+      value: "helpful",
+      timestamp: isoDaysAgo(1),
+    })),
+  ).length,
   0,
 );
 
