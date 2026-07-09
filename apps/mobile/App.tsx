@@ -23,6 +23,8 @@ import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/
 import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
+import { personalizeNudges } from "./src/lib/personalize";
+import { buildWeekMood } from "./src/lib/weekMood";
 import { buildSummary } from "./src/lib/summary";
 import { exportBackup, importBackup } from "./src/lib/backup";
 import {
@@ -42,37 +44,6 @@ import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
 const APP_VERSION = "2.0.1";
-
-function personalize(
-  nudges: ReturnType<typeof buildRecommendationNudges>,
-  feedback: RecommendationFeedback[],
-) {
-  const value = new Map(feedback.map((item) => [item.nudgeId, item.value]));
-  const score = (id: string) => {
-    const choice = value.get(id);
-    return choice === "helpful" ? 1 : choice === "not_now" ? -1 : 0;
-  };
-  return [...nudges].sort((left, right) => score(right.id) - score(left.id));
-}
-
-function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function buildWeekMood(entries: DecisionLogInput[]): number[] {
-  const today = new Date();
-  const week: number[] = [];
-  for (let offset = 6; offset >= 0; offset -= 1) {
-    const day = new Date(today);
-    day.setDate(today.getDate() - offset);
-    const dayEntries = entries.filter((entry) => sameDay(new Date(entry.timestamp), day));
-    const avg = dayEntries.length
-      ? dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length
-      : 0;
-    week.push(Math.round(avg * 10) / 10);
-  }
-  return week;
-}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -176,7 +147,7 @@ export default function App() {
   );
   const nudges = useMemo(
     () =>
-      personalize(
+      personalizeNudges(
         buildRecommendationNudges({ read: behavioralRead, category, mood, energy, weather: currentWeather, entries }),
         nudgeFeedback,
       ).slice(0, 3),
