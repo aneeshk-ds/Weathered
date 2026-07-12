@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet } from "react-native";
 import {
   DECISION_OPTIONS,
   type DecisionCategory,
@@ -40,7 +40,7 @@ import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
-const APP_VERSION = "2.1.0";
+const APP_VERSION = "2.1.1";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -299,79 +299,86 @@ export default function App() {
     <ThemeProvider mode={themeMode}>
       <SafeAreaView style={styles.safe}>
         <StatusBar barStyle={themeMode === "light" ? "dark-content" : "light-content"} backgroundColor={colors.bg} />
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {activeTab === "home" ? (
-            <>
-              {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
-              <HomeScreen
-                weather={currentWeather}
-                weatherSyncing={weatherSyncing}
-                forecast={forecast}
-                mood={mood}
-                onMood={setMood}
-                energy={energy}
-                onEnergy={setEnergy}
-                category={category}
-                onCategory={handleCategory}
-                outcome={outcome}
-                onOutcome={setOutcome}
-                note={note}
-                onNote={setNote}
-                onSave={handleSave}
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+            {activeTab === "home" ? (
+              <>
+                {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
+                <HomeScreen
+                  weather={currentWeather}
+                  weatherSyncing={weatherSyncing}
+                  forecast={forecast}
+                  mood={mood}
+                  onMood={setMood}
+                  energy={energy}
+                  onEnergy={setEnergy}
+                  category={category}
+                  onCategory={handleCategory}
+                  outcome={outcome}
+                  onOutcome={setOutcome}
+                  note={note}
+                  onNote={setNote}
+                  onSave={handleSave}
+                />
+              </>
+            ) : null}
+
+            {activeTab === "history" ? (
+              <HistoryScreen
+                entries={entries}
+                editing={editing}
+                onStartEdit={handleStartEdit}
+                onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
+                onSaveEdit={handleSaveEdit}
+                onCancelEdit={() => setEditing(null)}
+                onDelete={(id) => {
+                  setEntries((current) => current.filter((entry) => entry.id !== id));
+                  if (syncEnabled) void deleteRemoteCheckIn(id);
+                }}
+                onLoadSample={() => setEntries(seedEntries)}
+                onClear={handleClearAll}
               />
-            </>
-          ) : null}
+            ) : null}
 
-          {activeTab === "history" ? (
-            <HistoryScreen
-              entries={entries}
-              editing={editing}
-              onStartEdit={handleStartEdit}
-              onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
-              onSaveEdit={handleSaveEdit}
-              onCancelEdit={() => setEditing(null)}
-              onDelete={(id) => {
-                setEntries((current) => current.filter((entry) => entry.id !== id));
-                if (syncEnabled) void deleteRemoteCheckIn(id);
-              }}
-              onLoadSample={() => setEntries(seedEntries)}
-              onClear={handleClearAll}
-            />
-          ) : null}
+            {activeTab === "insights" ? (
+              <InsightsScreen
+                insight={insight}
+                summary={summary}
+                entries={entries}
+                weekMood={weekMood}
+                readiness={readiness}
+                behavioralRead={behavioralRead}
+                nudges={nudges}
+                nudgeFeedback={nudgeFeedback}
+                onNudgeFeedback={handleNudgeFeedback}
+                forecast={forecast}
+              />
+            ) : null}
 
-          {activeTab === "insights" ? (
-            <InsightsScreen
-              insight={insight}
-              summary={summary}
-              entries={entries}
-              weekMood={weekMood}
-              readiness={readiness}
-              behavioralRead={behavioralRead}
-              nudges={nudges}
-              nudgeFeedback={nudgeFeedback}
-              onNudgeFeedback={handleNudgeFeedback}
-              forecast={forecast}
-            />
-          ) : null}
-
-          {activeTab === "settings" ? (
-            <SettingsScreen
-              weatherSourceMode={weatherSourceMode}
-              onWeatherSourceChange={setWeatherSourceMode}
-              themeMode={themeMode}
-              onThemeChange={setThemeMode}
-              syncEnabled={syncEnabled}
-              onSyncChange={setSyncEnabled}
-              syncStatus={syncStatus}
-              entryCount={entries.length}
-              version={APP_VERSION}
-              diagnostics={diagnostics}
-              onBackup={handleBackup}
-              onRestore={handleRestore}
-              onClear={handleClearAll}
-            />
-          ) : null}
-        </ScrollView>
+            {activeTab === "settings" ? (
+              <SettingsScreen
+                weatherSourceMode={weatherSourceMode}
+                onWeatherSourceChange={setWeatherSourceMode}
+                themeMode={themeMode}
+                onThemeChange={setThemeMode}
+                syncEnabled={syncEnabled}
+                onSyncChange={setSyncEnabled}
+                syncStatus={syncStatus}
+                entryCount={entries.length}
+                version={APP_VERSION}
+                diagnostics={diagnostics}
+                onBackup={handleBackup}
+                onRestore={handleRestore}
+                onClear={handleClearAll}
+              />
+            ) : null}
+          </ScrollView>
+        </KeyboardAvoidingView>
         <TabBar active={activeTab} onChange={setActiveTab} />
       </SafeAreaView>
     </ThemeProvider>
@@ -381,6 +388,7 @@ export default function App() {
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg },
+    flex: { flex: 1 },
     scroll: { flex: 1 },
-    content: { padding: 18, paddingBottom: 28 },
+    content: { padding: 18, paddingBottom: 40 },
   });
