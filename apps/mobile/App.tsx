@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   DECISION_OPTIONS,
   type DecisionCategory,
@@ -40,7 +41,7 @@ import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
-const APP_VERSION = "2.1.1";
+const APP_VERSION = "2.1.2";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -296,92 +297,94 @@ export default function App() {
   const styles = makeStyles(colors);
 
   return (
-    <ThemeProvider mode={themeMode}>
-      <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle={themeMode === "light" ? "dark-content" : "light-content"} backgroundColor={colors.bg} />
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-          >
-            {activeTab === "home" ? (
-              <>
-                {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
-                <HomeScreen
-                  weather={currentWeather}
-                  weatherSyncing={weatherSyncing}
-                  forecast={forecast}
-                  mood={mood}
-                  onMood={setMood}
-                  energy={energy}
-                  onEnergy={setEnergy}
-                  category={category}
-                  onCategory={handleCategory}
-                  outcome={outcome}
-                  onOutcome={setOutcome}
-                  note={note}
-                  onNote={setNote}
-                  onSave={handleSave}
+    <SafeAreaProvider>
+      <ThemeProvider mode={themeMode}>
+        <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+          <StatusBar barStyle={themeMode === "light" ? "dark-content" : "light-content"} backgroundColor={colors.bg} />
+          <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.content}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+            >
+              {activeTab === "home" ? (
+                <>
+                  {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
+                  <HomeScreen
+                    weather={currentWeather}
+                    weatherSyncing={weatherSyncing}
+                    forecast={forecast}
+                    mood={mood}
+                    onMood={setMood}
+                    energy={energy}
+                    onEnergy={setEnergy}
+                    category={category}
+                    onCategory={handleCategory}
+                    outcome={outcome}
+                    onOutcome={setOutcome}
+                    note={note}
+                    onNote={setNote}
+                    onSave={handleSave}
+                  />
+                </>
+              ) : null}
+
+              {activeTab === "history" ? (
+                <HistoryScreen
+                  entries={entries}
+                  editing={editing}
+                  onStartEdit={handleStartEdit}
+                  onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={() => setEditing(null)}
+                  onDelete={(id) => {
+                    setEntries((current) => current.filter((entry) => entry.id !== id));
+                    if (syncEnabled) void deleteRemoteCheckIn(id);
+                  }}
+                  onLoadSample={() => setEntries(seedEntries)}
+                  onClear={handleClearAll}
                 />
-              </>
-            ) : null}
+              ) : null}
 
-            {activeTab === "history" ? (
-              <HistoryScreen
-                entries={entries}
-                editing={editing}
-                onStartEdit={handleStartEdit}
-                onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
-                onSaveEdit={handleSaveEdit}
-                onCancelEdit={() => setEditing(null)}
-                onDelete={(id) => {
-                  setEntries((current) => current.filter((entry) => entry.id !== id));
-                  if (syncEnabled) void deleteRemoteCheckIn(id);
-                }}
-                onLoadSample={() => setEntries(seedEntries)}
-                onClear={handleClearAll}
-              />
-            ) : null}
+              {activeTab === "insights" ? (
+                <InsightsScreen
+                  insight={insight}
+                  summary={summary}
+                  entries={entries}
+                  weekMood={weekMood}
+                  readiness={readiness}
+                  behavioralRead={behavioralRead}
+                  nudges={nudges}
+                  nudgeFeedback={nudgeFeedback}
+                  onNudgeFeedback={handleNudgeFeedback}
+                  forecast={forecast}
+                />
+              ) : null}
 
-            {activeTab === "insights" ? (
-              <InsightsScreen
-                insight={insight}
-                summary={summary}
-                entries={entries}
-                weekMood={weekMood}
-                readiness={readiness}
-                behavioralRead={behavioralRead}
-                nudges={nudges}
-                nudgeFeedback={nudgeFeedback}
-                onNudgeFeedback={handleNudgeFeedback}
-                forecast={forecast}
-              />
-            ) : null}
-
-            {activeTab === "settings" ? (
-              <SettingsScreen
-                weatherSourceMode={weatherSourceMode}
-                onWeatherSourceChange={setWeatherSourceMode}
-                themeMode={themeMode}
-                onThemeChange={setThemeMode}
-                syncEnabled={syncEnabled}
-                onSyncChange={setSyncEnabled}
-                syncStatus={syncStatus}
-                entryCount={entries.length}
-                version={APP_VERSION}
-                diagnostics={diagnostics}
-                onBackup={handleBackup}
-                onRestore={handleRestore}
-                onClear={handleClearAll}
-              />
-            ) : null}
-          </ScrollView>
-        </KeyboardAvoidingView>
-        <TabBar active={activeTab} onChange={setActiveTab} />
-      </SafeAreaView>
-    </ThemeProvider>
+              {activeTab === "settings" ? (
+                <SettingsScreen
+                  weatherSourceMode={weatherSourceMode}
+                  onWeatherSourceChange={setWeatherSourceMode}
+                  themeMode={themeMode}
+                  onThemeChange={setThemeMode}
+                  syncEnabled={syncEnabled}
+                  onSyncChange={setSyncEnabled}
+                  syncStatus={syncStatus}
+                  entryCount={entries.length}
+                  version={APP_VERSION}
+                  diagnostics={diagnostics}
+                  onBackup={handleBackup}
+                  onRestore={handleRestore}
+                  onClear={handleClearAll}
+                />
+              ) : null}
+            </ScrollView>
+          </KeyboardAvoidingView>
+          <TabBar active={activeTab} onChange={setActiveTab} />
+        </SafeAreaView>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
