@@ -22,7 +22,13 @@ export function Label({ children }: { children: React.ReactNode }) {
 
 export function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipOn]}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={label}
+      style={[styles.chip, selected && styles.chipOn]}
+    >
       <Text style={[styles.chipText, selected && styles.chipTextOn]}>{label}</Text>
     </Pressable>
   );
@@ -38,7 +44,12 @@ export function PrimaryButton({
   tone?: "solid" | "ghost";
 }) {
   return (
-    <Pressable onPress={onPress} style={[styles.btn, tone === "ghost" && styles.btnGhost]}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[styles.btn, tone === "ghost" && styles.btnGhost]}
+    >
       <Text style={[styles.btnText, tone === "ghost" && styles.btnGhostText]}>{label}</Text>
     </Pressable>
   );
@@ -47,9 +58,26 @@ export function PrimaryButton({
 export function MoodScale({ value, onChange }: { value: number; onChange: (next: number) => void }) {
   return (
     <View style={styles.moodRow}>
-      <View style={styles.moodTrack}>
+      <View
+        style={styles.moodTrack}
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel="Mood, 1 to 10"
+        accessibilityValue={{ min: 1, max: 10, now: value }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === "increment") onChange(Math.min(10, value + 1));
+          if (event.nativeEvent.actionName === "decrement") onChange(Math.max(1, value - 1));
+        }}
+      >
         {Array.from({ length: 10 }, (_, index) => index + 1).map((step) => (
-          <Pressable key={step} style={styles.moodCellWrap} onPress={() => onChange(step)}>
+          <Pressable
+            key={step}
+            style={styles.moodCellWrap}
+            onPress={() => onChange(step)}
+            accessibilityRole="button"
+            accessibilityLabel={`Set mood to ${step}`}
+          >
             <View style={[styles.moodCell, step <= value && styles.moodCellOn]} />
           </Pressable>
         ))}

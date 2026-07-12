@@ -7,6 +7,7 @@ import {
 import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
 import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
+import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
 
 const baseWeather = {
   condition: "cloudy",
@@ -156,6 +157,34 @@ function makeEntry(overrides = {}) {
 
   const untouched = personalizeNudges(nudges, []).map((n) => n.id);
   assert.deepEqual(untouched, ["a", "b", "c"], "no feedback should preserve original order");
+}
+
+// --- history.ts: category and query filtering ---
+{
+  const social = makeEntry({ decisionCategory: "social", decisionOutcome: "go_out", note: "beach walk" });
+  const work = makeEntry({ decisionCategory: "work", decisionOutcome: "work", note: "deadline" });
+  const all = [social, work];
+  const onlyWork = filterHistoryEntries(all, { category: "work", query: "" });
+  assert.equal(onlyWork.length, 1, "category filter narrows to one entry");
+  assert.equal(onlyWork[0].decisionCategory, "work");
+  assert.equal(filterHistoryEntries(all, { category: "all", query: "beach" }).length, 1, "note query matches");
+  assert.equal(filterHistoryEntries(all, { category: "all", query: "BEACH" }).length, 1, "query is case-insensitive");
+  assert.equal(filterHistoryEntries(all, { category: "all", query: "missing" }).length, 0, "no match returns none");
+  assert.equal(filterHistoryEntries(all, { category: "all", query: "" }).length, 2, "empty filter returns all");
+}
+
+// --- history.ts: day grouping with Today and Yesterday labels ---
+{
+  const today = new Date(2026, 6, 9, 12, 0, 0);
+  const t1 = makeEntry({ timestamp: new Date(2026, 6, 9, 9, 0, 0).toISOString() });
+  const t2 = makeEntry({ timestamp: new Date(2026, 6, 9, 8, 0, 0).toISOString() });
+  const y1 = makeEntry({ timestamp: new Date(2026, 6, 8, 20, 0, 0).toISOString() });
+  const groups = groupEntriesByDay([t1, t2, y1], today);
+  assert.equal(groups.length, 2, "two distinct days produce two groups");
+  assert.equal(groups[0].label, "Today");
+  assert.equal(groups[0].entries.length, 2, "both of today's entries land in one group");
+  assert.equal(groups[1].label, "Yesterday");
+  assert.equal(groups[1].entries.length, 1);
 }
 
 console.log("Behavior and helper tests passed.");

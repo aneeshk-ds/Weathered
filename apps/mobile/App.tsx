@@ -48,7 +48,7 @@ const APP_VERSION = "2.0.1";
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
-  const [weatherSourceMode] = useState<WeatherSourceMode>("live_ready");
+  const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("live_ready");
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -69,7 +69,7 @@ export default function App() {
   useEffect(() => {
     let mounted = true;
     async function hydrate() {
-      const [nextEntries, , nextFeedback, nextDiagnostics] = await Promise.all([
+      const [nextEntries, nextPreferences, nextFeedback, nextDiagnostics] = await Promise.all([
         loadEntries(seedEntries),
         loadPreferences(),
         loadRecommendationFeedback(),
@@ -77,6 +77,7 @@ export default function App() {
       ]);
       if (!mounted) return;
       setEntries(nextEntries);
+      setWeatherSourceMode(nextPreferences.weatherSourceMode);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -298,6 +299,8 @@ export default function App() {
 
         {activeTab === "settings" ? (
           <SettingsScreen
+            weatherSourceMode={weatherSourceMode}
+            onWeatherSourceChange={setWeatherSourceMode}
             entryCount={entries.length}
             version={APP_VERSION}
             diagnostics={diagnostics}

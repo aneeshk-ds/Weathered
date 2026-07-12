@@ -138,12 +138,18 @@ export function InsightsScreen({
               <Pressable
                 style={[styles.feedbackBtn, chosen === "helpful" && styles.feedbackOn]}
                 onPress={() => onNudgeFeedback(nudge.id, "helpful")}
+                accessibilityRole="button"
+                accessibilityState={{ selected: chosen === "helpful" }}
+                accessibilityLabel="Mark suggestion helpful"
               >
                 <Text style={[styles.feedbackText, chosen === "helpful" && styles.feedbackTextOn]}>Helpful</Text>
               </Pressable>
               <Pressable
                 style={[styles.feedbackBtn, chosen === "not_now" && styles.feedbackOn]}
                 onPress={() => onNudgeFeedback(nudge.id, "not_now")}
+                accessibilityRole="button"
+                accessibilityState={{ selected: chosen === "not_now" }}
+                accessibilityLabel="Dismiss suggestion for now"
               >
                 <Text style={[styles.feedbackText, chosen === "not_now" && styles.feedbackTextOn]}>Not now</Text>
               </Pressable>

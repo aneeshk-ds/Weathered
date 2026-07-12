@@ -17,7 +17,14 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (tab: Ta
       {TABS.map((tab) => {
         const on = tab.id === active;
         return (
-          <Pressable key={tab.id} style={styles.tab} onPress={() => onChange(tab.id)}>
+          <Pressable
+            key={tab.id}
+            style={styles.tab}
+            onPress={() => onChange(tab.id)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            accessibilityLabel={tab.label}
+          >
             <Text style={[styles.icon, { opacity: on ? 1 : 0.5 }]}>{tab.icon}</Text>
             <Text style={[styles.label, on && styles.labelOn]}>{tab.label}</Text>
           </Pressable>

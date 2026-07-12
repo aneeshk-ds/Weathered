@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { Alert, Linking, StyleSheet, Text, View } from "react-native";
+import type { WeatherSourceMode } from "@weathered/shared";
 import type { AppDiagnostics } from "../lib/diagnostics";
 import { summarizeHealth } from "../lib/diagnostics";
 import { colors } from "../theme";
-import { Card, PrimaryButton, ScreenHeader } from "../components/ui";
+import { WEATHER_SOURCE_OPTIONS, describeWeatherSource } from "../lib/weather";
+import { Card, Chip, PrimaryButton, ScreenHeader } from "../components/ui";
 
 const SUPPORT_URL = "https://github.com/aneeshk-ds/Weathered/issues";
 
 export function SettingsScreen({
+  weatherSourceMode,
+  onWeatherSourceChange,
   entryCount,
   version,
   diagnostics,
@@ -15,6 +19,8 @@ export function SettingsScreen({
   onRestore,
   onClear,
 }: {
+  weatherSourceMode: WeatherSourceMode;
+  onWeatherSourceChange: (mode: WeatherSourceMode) => void;
   entryCount: number;
   version: string;
   diagnostics: AppDiagnostics;
@@ -57,6 +63,21 @@ export function SettingsScreen({
         title="Backup & data"
         subtitle="Weathered keeps everything on this device. Back up to your cloud to move it to another."
       />
+
+      <Card>
+        <Text style={styles.cardTitle}>Weather source</Text>
+        <Text style={styles.cardBody}>{describeWeatherSource(weatherSourceMode).message}</Text>
+        <View style={styles.sourceRow}>
+          {WEATHER_SOURCE_OPTIONS.map((mode) => (
+            <Chip
+              key={mode}
+              label={describeWeatherSource(mode).label}
+              selected={mode === weatherSourceMode}
+              onPress={() => onWeatherSourceChange(mode)}
+            />
+          ))}
+        </View>
+      </Card>
 
       <Card>
         <Text style={styles.cardTitle}>Back up to your cloud</Text>
@@ -137,6 +158,7 @@ export function SettingsScreen({
 
 const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 },
+  sourceRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 10 },
   cardBody: { fontSize: 13, color: colors.muted, lineHeight: 19, marginBottom: 2 },
   status: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
   healthLabel: { fontSize: 18, fontWeight: "700", color: colors.accent, marginBottom: 4 },
