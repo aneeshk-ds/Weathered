@@ -79,7 +79,7 @@ export function InsightsScreen({
         <Card style={styles.ringCard}>
           <ProgressRing
             fraction={moodFrac}
-            value={summary.averageMood > 0 ? summary.averageMood.toFixed(1) : "–"}
+            value={summary.averageMood > 0 ? summary.averageMood.toFixed(1) : "-"}
             unit="/ 10"
           />
           <Text style={styles.ringLabel}>Avg mood</Text>

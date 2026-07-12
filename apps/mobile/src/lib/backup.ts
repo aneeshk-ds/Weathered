@@ -49,7 +49,7 @@ export async function exportBackup(
       dialogTitle: "Save your Weathered backup",
       UTI: "public.json",
     });
-    return { ok: true, message: "Backup ready — choose iCloud Drive or Google Drive to save it." };
+    return { ok: true, message: "Backup ready. Choose iCloud Drive or Google Drive to save it." };
   } catch {
     return { ok: false, message: "Could not create the backup." };
   }

@@ -86,7 +86,7 @@ export function buildInsight(entry: DecisionLogInput, entries: DecisionLogInput[
       insight: {
         id: "sunny-social-go-out",
         title: "Sunshine gets you out",
-        message: `Bright days line up with going out — ${sunnySocialGoOut} times so far. A good window to make plans.`,
+        message: `Bright days line up with going out, ${sunnySocialGoOut} times so far. A good window to make plans.`,
         confidence: confidenceFor(sunnySocialGoOut),
       },
     });
