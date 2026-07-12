@@ -259,6 +259,16 @@ assert.deepEqual(normalizeStoredEntries("not-an-array", [validEntry]), [validEnt
 assert.equal(normalizeStoredPreferences({ weatherSourceMode: "daily_mock" }).weatherSourceMode, "daily_mock");
 assert.equal(normalizeStoredPreferences({ weatherSourceMode: "bad-mode" }).weatherSourceMode, "live_ready");
 assert.equal(normalizeStoredPreferences(null).weatherSourceMode, "live_ready");
+assert.equal(
+  normalizeStoredPreferences({ weatherSourceMode: "live_ready" }).onboardingComplete,
+  false,
+  "onboardingComplete defaults to false",
+);
+assert.equal(
+  normalizeStoredPreferences({ weatherSourceMode: "live_ready", onboardingComplete: true }).onboardingComplete,
+  true,
+  "onboardingComplete is preserved when valid",
+);
 
 assert.equal(summarizeHealth(emptyDiagnostics).label, "Healthy");
 assert.equal(

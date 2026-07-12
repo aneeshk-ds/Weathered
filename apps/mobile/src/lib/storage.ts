@@ -26,10 +26,12 @@ interface AsyncStorageApi {
 
 export interface LocalPreferences {
   weatherSourceMode: WeatherSourceMode;
+  onboardingComplete: boolean;
 }
 
 const defaultPreferences: LocalPreferences = {
   weatherSourceMode: "live_ready",
+  onboardingComplete: false,
 };
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
@@ -94,6 +96,8 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
     weatherSourceMode: isWeatherSourceMode(value.weatherSourceMode)
       ? value.weatherSourceMode
       : defaultPreferences.weatherSourceMode,
+    onboardingComplete:
+      typeof value.onboardingComplete === "boolean" ? value.onboardingComplete : defaultPreferences.onboardingComplete,
   };
 }
 

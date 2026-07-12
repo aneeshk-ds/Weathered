@@ -38,6 +38,7 @@ import { colors } from "./src/theme";
 import { seedEntries } from "./src/seed";
 import { TabBar, type TabId } from "./src/components/TabBar";
 import { HomeScreen } from "./src/screens/HomeScreen";
+import { Onboarding } from "./src/components/Onboarding";
 import { HistoryScreen, type EditingState } from "./src/screens/HistoryScreen";
 import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
@@ -49,6 +50,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("live_ready");
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -78,6 +80,7 @@ export default function App() {
       if (!mounted) return;
       setEntries(nextEntries);
       setWeatherSourceMode(nextPreferences.weatherSourceMode);
+      setOnboardingComplete(nextPreferences.onboardingComplete);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -126,10 +129,10 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    savePreferences({ weatherSourceMode }).then((ok) => {
+    savePreferences({ weatherSourceMode, onboardingComplete }).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save local preferences.");
     });
-  }, [weatherSourceMode, isHydrating]);
+  }, [weatherSourceMode, onboardingComplete, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
@@ -247,22 +250,25 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {activeTab === "home" ? (
-          <HomeScreen
-            weather={currentWeather}
-            weatherSyncing={weatherSyncing}
-            forecast={forecast}
-            mood={mood}
-            onMood={setMood}
-            energy={energy}
-            onEnergy={setEnergy}
-            category={category}
-            onCategory={handleCategory}
-            outcome={outcome}
-            onOutcome={setOutcome}
-            note={note}
-            onNote={setNote}
-            onSave={handleSave}
-          />
+          <>
+            {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
+            <HomeScreen
+              weather={currentWeather}
+              weatherSyncing={weatherSyncing}
+              forecast={forecast}
+              mood={mood}
+              onMood={setMood}
+              energy={energy}
+              onEnergy={setEnergy}
+              category={category}
+              onCategory={handleCategory}
+              outcome={outcome}
+              onOutcome={setOutcome}
+              note={note}
+              onNote={setNote}
+              onSave={handleSave}
+            />
+          </>
         ) : null}
 
         {activeTab === "history" ? (
