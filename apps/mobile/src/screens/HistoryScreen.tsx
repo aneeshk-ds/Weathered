@@ -9,7 +9,7 @@ import {
   type DecisionOption,
   type EnergyLevel,
 } from "@weathered/shared";
-import { colors } from "../theme";
+import { useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, relativeTime } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
 import { filterHistoryEntries, groupEntriesByDay, type HistoryCategoryFilter } from "../lib/history";
@@ -44,6 +44,8 @@ export function HistoryScreen({
   onLoadSample: () => void;
   onClear: () => void;
 }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const [filter, setFilter] = useState<HistoryCategoryFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -204,44 +206,45 @@ export function HistoryScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  empty: { color: colors.dim, fontSize: 13, textAlign: "center" },
-  filters: { marginBottom: 6 },
-  search: {
-    backgroundColor: colors.card2,
-    borderRadius: 10,
-    color: colors.text,
-    fontSize: 13,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    marginBottom: 8,
-  },
-  dayHeader: {
-    fontSize: 12,
-    color: colors.dim,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
-    marginTop: 2,
-  },
-  editCard: { borderWidth: 1, borderColor: colors.accent },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
-  note: {
-    backgroundColor: colors.card2,
-    borderRadius: 10,
-    color: colors.text,
-    fontSize: 13,
-    padding: 10,
-    minHeight: 48,
-    textAlignVertical: "top",
-  },
-  entry: {},
-  entryTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  entryTags: { fontSize: 13, color: colors.text, fontWeight: "600" },
-  entryWhen: { fontSize: 12, color: colors.dim },
-  entryMeta: { fontSize: 12, color: colors.muted, lineHeight: 18 },
-  entryActions: { flexDirection: "row", gap: 8, marginTop: 10 },
-  actionBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
-  actionText: { fontSize: 12, color: colors.muted },
-  deleteText: { color: colors.danger },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    empty: { color: colors.dim, fontSize: 13, textAlign: "center" },
+    filters: { marginBottom: 6 },
+    search: {
+      backgroundColor: colors.card2,
+      borderRadius: 10,
+      color: colors.text,
+      fontSize: 13,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      marginBottom: 8,
+    },
+    dayHeader: {
+      fontSize: 12,
+      color: colors.dim,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 6,
+      marginTop: 2,
+    },
+    editCard: { borderWidth: 1, borderColor: colors.accent },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
+    note: {
+      backgroundColor: colors.card2,
+      borderRadius: 10,
+      color: colors.text,
+      fontSize: 13,
+      padding: 10,
+      minHeight: 48,
+      textAlignVertical: "top",
+    },
+    entry: {},
+    entryTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+    entryTags: { fontSize: 13, color: colors.text, fontWeight: "600" },
+    entryWhen: { fontSize: 12, color: colors.dim },
+    entryMeta: { fontSize: 12, color: colors.muted, lineHeight: 18 },
+    entryActions: { flexDirection: "row", gap: 8, marginTop: 10 },
+    actionBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
+    actionText: { fontSize: 12, color: colors.muted },
+    deleteText: { color: colors.danger },
+  });

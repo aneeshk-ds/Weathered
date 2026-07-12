@@ -1,10 +1,12 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "../theme";
+import { useColors, type Palette } from "../theme";
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
 export function WeekBars({ values }: { values: number[] }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const max = Math.max(10, ...values);
 
   return (
@@ -31,11 +33,12 @@ export function WeekBars({ values }: { values: number[] }) {
   );
 }
 
-const styles = StyleSheet.create({
-  bars: { flexDirection: "row", alignItems: "flex-end", height: 80, gap: 6 },
-  barTrack: { flex: 1, height: "100%", justifyContent: "flex-end" },
-  bar: { backgroundColor: colors.line, borderRadius: 3, width: "100%" },
-  barPeak: { backgroundColor: colors.accent },
-  labels: { flexDirection: "row", gap: 6, marginTop: 6 },
-  label: { flex: 1, textAlign: "center", fontSize: 10, color: colors.dim },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    bars: { flexDirection: "row", alignItems: "flex-end", height: 80, gap: 6 },
+    barTrack: { flex: 1, height: "100%", justifyContent: "flex-end" },
+    bar: { backgroundColor: colors.line, borderRadius: 3, width: "100%" },
+    barPeak: { backgroundColor: colors.accent },
+    labels: { flexDirection: "row", gap: 6, marginTop: 6 },
+    label: { flex: 1, textAlign: "center", fontSize: 10, color: colors.dim },
+  });

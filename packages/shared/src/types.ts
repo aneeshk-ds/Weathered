@@ -13,6 +13,7 @@ export type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
 export type DecisionOption = (typeof DECISION_OPTIONS)[DecisionCategory][number];
 export type WeatherCondition = "sunny" | "cloudy" | "rainy";
 export type WeatherSourceMode = "daily_mock" | "seasonal_mock" | "live_ready";
+export type ThemeMode = "dark" | "light";
 export type InsightConfidence = "low" | "medium" | "high";
 export type BehaviorSignalLevel = "low" | "moderate" | "strong";
 export type RecommendationTone = "encourage" | "caution" | "reframe";

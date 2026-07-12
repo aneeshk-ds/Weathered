@@ -10,7 +10,7 @@ import {
   type EnergyLevel,
   type WeatherSnapshot,
 } from "@weathered/shared";
-import { colors } from "../theme";
+import { useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, weatherEmoji } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
 
@@ -47,6 +47,8 @@ export function HomeScreen({
   onNote: (value: string) => void;
   onSave: () => void;
 }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const outcomes = DECISION_OPTIONS[category];
 
   return (
@@ -113,20 +115,21 @@ export function HomeScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  weatherCard: { flexDirection: "row", alignItems: "center", gap: 12 },
-  weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
-  weatherMain: { fontSize: 15, fontWeight: "600", color: colors.text },
-  weatherSub: { fontSize: 12, color: colors.muted, marginTop: 2 },
-  read: { fontSize: 13, color: colors.accent, marginBottom: 14 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
-  note: {
-    backgroundColor: colors.card2,
-    borderRadius: 10,
-    color: colors.text,
-    fontSize: 13,
-    padding: 10,
-    minHeight: 56,
-    textAlignVertical: "top",
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    weatherCard: { flexDirection: "row", alignItems: "center", gap: 12 },
+    weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
+    weatherMain: { fontSize: 15, fontWeight: "600", color: colors.text },
+    weatherSub: { fontSize: 12, color: colors.muted, marginTop: 2 },
+    read: { fontSize: 13, color: colors.accent, marginBottom: 14 },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
+    note: {
+      backgroundColor: colors.card2,
+      borderRadius: 10,
+      color: colors.text,
+      fontSize: 13,
+      padding: 10,
+      minHeight: 56,
+      textAlignVertical: "top",
+    },
+  });

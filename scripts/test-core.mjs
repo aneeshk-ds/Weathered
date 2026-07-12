@@ -269,6 +269,21 @@ assert.equal(
   true,
   "onboardingComplete is preserved when valid",
 );
+assert.equal(
+  normalizeStoredPreferences({ weatherSourceMode: "live_ready" }).themeMode,
+  "dark",
+  "themeMode defaults to dark",
+);
+assert.equal(
+  normalizeStoredPreferences({ weatherSourceMode: "live_ready", themeMode: "light" }).themeMode,
+  "light",
+  "themeMode is preserved when valid",
+);
+assert.equal(
+  normalizeStoredPreferences({ weatherSourceMode: "live_ready", themeMode: "neon" }).themeMode,
+  "dark",
+  "invalid themeMode falls back to dark",
+);
 
 assert.equal(summarizeHealth(emptyDiagnostics).label, "Healthy");
 assert.equal(

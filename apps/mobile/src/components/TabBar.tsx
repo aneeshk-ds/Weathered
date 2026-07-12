@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors } from "../theme";
+import { useColors, type Palette } from "../theme";
 
 export type TabId = "home" | "history" | "insights" | "settings";
 
@@ -12,6 +12,8 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
 ];
 
 export function TabBar({ active, onChange }: { active: TabId; onChange: (tab: TabId) => void }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   return (
     <View style={styles.bar}>
       {TABS.map((tab) => {
@@ -34,17 +36,18 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (tab: Ta
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: "row",
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.panel,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  tab: { flex: 1, alignItems: "center" },
-  icon: { fontSize: 20 },
-  label: { fontSize: 11, marginTop: 3, color: colors.dim },
-  labelOn: { color: colors.accent },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    bar: {
+      flexDirection: "row",
+      borderTopWidth: 1,
+      borderTopColor: colors.line,
+      backgroundColor: colors.panel,
+      paddingTop: 8,
+      paddingBottom: 12,
+    },
+    tab: { flex: 1, alignItems: "center" },
+    icon: { fontSize: 20 },
+    label: { fontSize: 11, marginTop: 3, color: colors.dim },
+    labelOn: { color: colors.accent },
+  });

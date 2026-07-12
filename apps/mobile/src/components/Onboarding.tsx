@@ -1,9 +1,11 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "../theme";
+import { useColors, type Palette } from "../theme";
 import { Card, PrimaryButton } from "./ui";
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   return (
     <Card style={styles.card}>
       <Text style={styles.eyebrow}>Welcome</Text>
@@ -24,11 +26,12 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderColor: colors.accent },
-  eyebrow: { fontSize: 11, letterSpacing: 1, color: colors.accent, textTransform: "uppercase", marginBottom: 4 },
-  title: { fontSize: 19, fontWeight: "600", color: colors.text, marginBottom: 8 },
-  body: { fontSize: 13, color: colors.muted, lineHeight: 20, marginBottom: 8 },
-  points: { marginVertical: 4, gap: 4 },
-  pointText: { fontSize: 13, color: colors.text, lineHeight: 20 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    card: { borderWidth: 1, borderColor: colors.accent },
+    eyebrow: { fontSize: 11, letterSpacing: 1, color: colors.accent, textTransform: "uppercase", marginBottom: 4 },
+    title: { fontSize: 19, fontWeight: "600", color: colors.text, marginBottom: 8 },
+    body: { fontSize: 13, color: colors.muted, lineHeight: 20, marginBottom: 8 },
+    points: { marginVertical: 4, gap: 4 },
+    pointText: { fontSize: 13, color: colors.text, lineHeight: 20 },
+  });

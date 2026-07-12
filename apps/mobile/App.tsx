@@ -34,7 +34,8 @@ import {
   type AppDiagnostics,
   type DiagnosticEvent,
 } from "./src/lib/diagnostics";
-import { colors } from "./src/theme";
+import { paletteFor, ThemeProvider, type Palette } from "./src/theme";
+import type { ThemeMode } from "@weathered/shared";
 import { seedEntries } from "./src/seed";
 import { TabBar, type TabId } from "./src/components/TabBar";
 import { HomeScreen } from "./src/screens/HomeScreen";
@@ -51,6 +52,7 @@ export default function App() {
   const [entries, setEntries] = useState<DecisionLogInput[]>([]);
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("live_ready");
   const [onboardingComplete, setOnboardingComplete] = useState(true);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -81,6 +83,7 @@ export default function App() {
       setEntries(nextEntries);
       setWeatherSourceMode(nextPreferences.weatherSourceMode);
       setOnboardingComplete(nextPreferences.onboardingComplete);
+      setThemeMode(nextPreferences.themeMode);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -129,10 +132,10 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    savePreferences({ weatherSourceMode, onboardingComplete }).then((ok) => {
+    savePreferences({ weatherSourceMode, onboardingComplete, themeMode }).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save local preferences.");
     });
-  }, [weatherSourceMode, onboardingComplete, isHydrating]);
+  }, [weatherSourceMode, onboardingComplete, themeMode, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
@@ -245,84 +248,92 @@ export default function App() {
     ]);
   }
 
+  const colors = paletteFor(themeMode);
+  const styles = makeStyles(colors);
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {activeTab === "home" ? (
-          <>
-            {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
-            <HomeScreen
-              weather={currentWeather}
-              weatherSyncing={weatherSyncing}
-              forecast={forecast}
-              mood={mood}
-              onMood={setMood}
-              energy={energy}
-              onEnergy={setEnergy}
-              category={category}
-              onCategory={handleCategory}
-              outcome={outcome}
-              onOutcome={setOutcome}
-              note={note}
-              onNote={setNote}
-              onSave={handleSave}
+    <ThemeProvider mode={themeMode}>
+      <SafeAreaView style={styles.safe}>
+        <StatusBar barStyle={themeMode === "light" ? "dark-content" : "light-content"} backgroundColor={colors.bg} />
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {activeTab === "home" ? (
+            <>
+              {onboardingComplete ? null : <Onboarding onDone={() => setOnboardingComplete(true)} />}
+              <HomeScreen
+                weather={currentWeather}
+                weatherSyncing={weatherSyncing}
+                forecast={forecast}
+                mood={mood}
+                onMood={setMood}
+                energy={energy}
+                onEnergy={setEnergy}
+                category={category}
+                onCategory={handleCategory}
+                outcome={outcome}
+                onOutcome={setOutcome}
+                note={note}
+                onNote={setNote}
+                onSave={handleSave}
+              />
+            </>
+          ) : null}
+
+          {activeTab === "history" ? (
+            <HistoryScreen
+              entries={entries}
+              editing={editing}
+              onStartEdit={handleStartEdit}
+              onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={() => setEditing(null)}
+              onDelete={(id) => setEntries((current) => current.filter((entry) => entry.id !== id))}
+              onLoadSample={() => setEntries(seedEntries)}
+              onClear={() => {
+                setEntries([]);
+                setNudgeFeedback([]);
+              }}
             />
-          </>
-        ) : null}
+          ) : null}
 
-        {activeTab === "history" ? (
-          <HistoryScreen
-            entries={entries}
-            editing={editing}
-            onStartEdit={handleStartEdit}
-            onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
-            onSaveEdit={handleSaveEdit}
-            onCancelEdit={() => setEditing(null)}
-            onDelete={(id) => setEntries((current) => current.filter((entry) => entry.id !== id))}
-            onLoadSample={() => setEntries(seedEntries)}
-            onClear={() => {
-              setEntries([]);
-              setNudgeFeedback([]);
-            }}
-          />
-        ) : null}
+          {activeTab === "insights" ? (
+            <InsightsScreen
+              insight={insight}
+              summary={summary}
+              entries={entries}
+              weekMood={weekMood}
+              readiness={readiness}
+              behavioralRead={behavioralRead}
+              nudges={nudges}
+              nudgeFeedback={nudgeFeedback}
+              onNudgeFeedback={handleNudgeFeedback}
+              forecast={forecast}
+            />
+          ) : null}
 
-        {activeTab === "insights" ? (
-          <InsightsScreen
-            insight={insight}
-            summary={summary}
-            entries={entries}
-            weekMood={weekMood}
-            readiness={readiness}
-            behavioralRead={behavioralRead}
-            nudges={nudges}
-            nudgeFeedback={nudgeFeedback}
-            onNudgeFeedback={handleNudgeFeedback}
-            forecast={forecast}
-          />
-        ) : null}
-
-        {activeTab === "settings" ? (
-          <SettingsScreen
-            weatherSourceMode={weatherSourceMode}
-            onWeatherSourceChange={setWeatherSourceMode}
-            entryCount={entries.length}
-            version={APP_VERSION}
-            diagnostics={diagnostics}
-            onBackup={handleBackup}
-            onRestore={handleRestore}
-            onClear={handleClearAll}
-          />
-        ) : null}
-      </ScrollView>
-      <TabBar active={activeTab} onChange={setActiveTab} />
-    </SafeAreaView>
+          {activeTab === "settings" ? (
+            <SettingsScreen
+              weatherSourceMode={weatherSourceMode}
+              onWeatherSourceChange={setWeatherSourceMode}
+              themeMode={themeMode}
+              onThemeChange={setThemeMode}
+              entryCount={entries.length}
+              version={APP_VERSION}
+              diagnostics={diagnostics}
+              onBackup={handleBackup}
+              onRestore={handleRestore}
+              onClear={handleClearAll}
+            />
+          ) : null}
+        </ScrollView>
+        <TabBar active={activeTab} onChange={setActiveTab} />
+      </SafeAreaView>
+    </ThemeProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  scroll: { flex: 1 },
-  content: { padding: 18, paddingBottom: 28 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    scroll: { flex: 1 },
+    content: { padding: 18, paddingBottom: 28 },
+  });

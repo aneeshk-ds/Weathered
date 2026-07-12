@@ -1,6 +1,6 @@
 import React from "react";
 import Svg, { Circle, Text as SvgText } from "react-native-svg";
-import { colors } from "../theme";
+import { useColors } from "../theme";
 
 export function ProgressRing({
   fraction,
@@ -17,6 +17,7 @@ export function ProgressRing({
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const cx = size / 2;
+  const colors = useColors();
   const clamped = Math.max(0, Math.min(1, fraction));
   const offset = c * (1 - clamped);
 
@@ -60,6 +61,7 @@ export function DonutRing({
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const cx = size / 2;
+  const colors = useColors();
   const total = segments.reduce((sum, segment) => sum + segment.value, 0) || 1;
   let acc = 0;
 

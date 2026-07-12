@@ -1,4 +1,4 @@
-import type { DecisionLogInput, RecommendationFeedback, WeatherSourceMode } from "@weathered/shared";
+import type { DecisionLogInput, RecommendationFeedback, ThemeMode, WeatherSourceMode } from "@weathered/shared";
 
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
@@ -27,11 +27,13 @@ interface AsyncStorageApi {
 export interface LocalPreferences {
   weatherSourceMode: WeatherSourceMode;
   onboardingComplete: boolean;
+  themeMode: ThemeMode;
 }
 
 const defaultPreferences: LocalPreferences = {
   weatherSourceMode: "live_ready",
   onboardingComplete: false,
+  themeMode: "dark",
 };
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
@@ -98,6 +100,8 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
       : defaultPreferences.weatherSourceMode,
     onboardingComplete:
       typeof value.onboardingComplete === "boolean" ? value.onboardingComplete : defaultPreferences.onboardingComplete,
+    themeMode:
+      value.themeMode === "light" || value.themeMode === "dark" ? value.themeMode : defaultPreferences.themeMode,
   };
 }
 

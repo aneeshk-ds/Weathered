@@ -12,7 +12,7 @@ import {
   type RecommendationNudge,
   type WeeklySummary,
 } from "@weathered/shared";
-import { categoryColors, colors } from "../theme";
+import { categoryColors, useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL } from "../format";
 import { Card, ScreenHeader } from "../components/ui";
 import { DonutRing, ProgressRing } from "../components/Rings";
@@ -44,6 +44,8 @@ export function InsightsScreen({
   onNudgeFeedback: (id: string, value: RecommendationFeedbackValue) => void;
   forecast: DecisionForecast;
 }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const weeklyEntries = filterEntriesWithinLast7Days(entries);
   const total = summary.totalEntries;
   const followed = weeklyEntries.filter((entry) => ACTED.includes(entry.decisionOutcome)).length;
@@ -168,42 +170,43 @@ export function InsightsScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  todayRead: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
-  insight: {
-    backgroundColor: colors.card,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
-    borderRadius: 0,
-    padding: 13,
-    marginBottom: 14,
-  },
-  insightTag: { fontSize: 12, color: colors.accent, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
-  insightMsg: { fontSize: 14, color: colors.text, lineHeight: 21 },
-  rings: { flexDirection: "row", gap: 10 },
-  ringCard: { flex: 1, alignItems: "center" },
-  ringLabel: { fontSize: 11, color: colors.muted, marginTop: 8 },
-  cardLabel: { fontSize: 13, color: colors.muted, marginBottom: 8 },
-  donutRow: { flexDirection: "row", alignItems: "center", gap: 16 },
-  legend: { flex: 1, gap: 6 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 7 },
-  dot: { width: 9, height: 9, borderRadius: 5 },
-  legendText: { fontSize: 12, color: colors.muted },
-  readinessRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  readinessLabel: { fontSize: 15, fontWeight: "600", color: colors.text },
-  readinessScore: { fontSize: 18, fontWeight: "600", color: colors.accent },
-  track: { height: 6, backgroundColor: colors.line, borderRadius: 3, overflow: "hidden" },
-  fill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
-  readinessMsg: { fontSize: 13, color: colors.muted, marginTop: 8, lineHeight: 19 },
-  sectionLabel: { fontSize: 13, color: colors.muted, marginBottom: 8, marginTop: 2 },
-  nudgeTitle: { fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 4 },
-  nudgeMsg: { fontSize: 13, color: colors.muted, lineHeight: 19 },
-  nudgeAction: { fontSize: 12, color: colors.accent, marginTop: 8 },
-  feedbackRow: { flexDirection: "row", gap: 8, marginTop: 10 },
-  feedbackBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
-  feedbackOn: { backgroundColor: colors.accent },
-  feedbackText: { fontSize: 12, color: colors.muted },
-  feedbackTextOn: { color: colors.accentText, fontWeight: "600" },
-  forecast: { borderWidth: 1, borderColor: colors.line },
-  forecastTag: { fontSize: 11, color: colors.dim, marginBottom: 6 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    todayRead: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
+    insight: {
+      backgroundColor: colors.card,
+      borderLeftWidth: 3,
+      borderLeftColor: colors.accent,
+      borderRadius: 0,
+      padding: 13,
+      marginBottom: 14,
+    },
+    insightTag: { fontSize: 12, color: colors.accent, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
+    insightMsg: { fontSize: 14, color: colors.text, lineHeight: 21 },
+    rings: { flexDirection: "row", gap: 10 },
+    ringCard: { flex: 1, alignItems: "center" },
+    ringLabel: { fontSize: 11, color: colors.muted, marginTop: 8 },
+    cardLabel: { fontSize: 13, color: colors.muted, marginBottom: 8 },
+    donutRow: { flexDirection: "row", alignItems: "center", gap: 16 },
+    legend: { flex: 1, gap: 6 },
+    legendItem: { flexDirection: "row", alignItems: "center", gap: 7 },
+    dot: { width: 9, height: 9, borderRadius: 5 },
+    legendText: { fontSize: 12, color: colors.muted },
+    readinessRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+    readinessLabel: { fontSize: 15, fontWeight: "600", color: colors.text },
+    readinessScore: { fontSize: 18, fontWeight: "600", color: colors.accent },
+    track: { height: 6, backgroundColor: colors.line, borderRadius: 3, overflow: "hidden" },
+    fill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
+    readinessMsg: { fontSize: 13, color: colors.muted, marginTop: 8, lineHeight: 19 },
+    sectionLabel: { fontSize: 13, color: colors.muted, marginBottom: 8, marginTop: 2 },
+    nudgeTitle: { fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 4 },
+    nudgeMsg: { fontSize: 13, color: colors.muted, lineHeight: 19 },
+    nudgeAction: { fontSize: 12, color: colors.accent, marginTop: 8 },
+    feedbackRow: { flexDirection: "row", gap: 8, marginTop: 10 },
+    feedbackBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
+    feedbackOn: { backgroundColor: colors.accent },
+    feedbackText: { fontSize: 12, color: colors.muted },
+    feedbackTextOn: { color: colors.accentText, fontWeight: "600" },
+    forecast: { borderWidth: 1, borderColor: colors.line },
+    forecastTag: { fontSize: 11, color: colors.dim, marginBottom: 6 },
+  });
