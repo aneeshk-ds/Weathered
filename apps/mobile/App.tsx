@@ -22,6 +22,7 @@ import { buildInsight } from "./src/lib/insights";
 import { personalizeNudges } from "./src/lib/personalize";
 import { buildWeekMood } from "./src/lib/weekMood";
 import { buildSummary } from "./src/lib/summary";
+import { computeStreak } from "./src/lib/homeStats";
 import { exportBackup, importBackup } from "./src/lib/backup";
 import {
   emptyDiagnostics,
@@ -211,6 +212,7 @@ export default function App() {
   const summary = useMemo(() => buildSummary(entries), [entries]);
   const insight = useMemo(() => (entries.length ? buildInsight(entries[0], entries) : null), [entries]);
   const weekMood = useMemo(() => buildWeekMood(entries), [entries]);
+  const streak = useMemo(() => computeStreak(entries), [entries]);
 
   function handleCategory(next: DecisionCategory) {
     setCategory(next);
@@ -326,6 +328,12 @@ export default function App() {
                     note={note}
                     onNote={setNote}
                     onSave={handleSave}
+                    weekStats={{
+                      averageMood: summary.averageMood,
+                      streak,
+                      weekMood,
+                      hasEntries: entries.length > 0,
+                    }}
                   />
                 </>
               ) : null}

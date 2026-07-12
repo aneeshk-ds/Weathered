@@ -8,6 +8,7 @@ import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
 import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
+import { computeStreak, supportiveMoodCaption } from "../apps/mobile/src/lib/homeStats.ts";
 
 const baseWeather = {
   condition: "cloudy",
@@ -186,5 +187,40 @@ function makeEntry(overrides = {}) {
   assert.equal(groups[1].label, "Yesterday");
   assert.equal(groups[1].entries.length, 1);
 }
+
+// --- homeStats.ts: check-in streak ---
+{
+  const today = new Date(2026, 6, 10, 12, 0, 0);
+  const at = (daysAgo, hour = 9) => new Date(2026, 6, 10 - daysAgo, hour, 0, 0).toISOString();
+  assert.equal(computeStreak([], today), 0, "no entries means no streak");
+  assert.equal(computeStreak([makeEntry({ timestamp: at(0) })], today), 1, "a check-in today is a 1-day streak");
+  assert.equal(
+    computeStreak(
+      [makeEntry({ timestamp: at(0) }), makeEntry({ timestamp: at(1) }), makeEntry({ timestamp: at(2) })],
+      today,
+    ),
+    3,
+    "three consecutive days is a 3-day streak",
+  );
+  assert.equal(
+    computeStreak([makeEntry({ timestamp: at(0, 8) }), makeEntry({ timestamp: at(0, 20) })], today),
+    1,
+    "two check-ins on the same day count as one day",
+  );
+  assert.equal(computeStreak([makeEntry({ timestamp: at(1) })], today), 1, "yesterday only still counts (grace)");
+  assert.equal(computeStreak([makeEntry({ timestamp: at(2) })], today), 0, "a two-day gap breaks the streak");
+  assert.equal(
+    computeStreak([makeEntry({ timestamp: at(0) }), makeEntry({ timestamp: at(2) })], today),
+    1,
+    "a missing yesterday stops the streak at today",
+  );
+}
+
+// --- homeStats.ts: supportive mood caption ---
+assert.match(supportiveMoodCaption(0), /Log a check-in/);
+assert.match(supportiveMoodCaption(8), /bright/);
+assert.match(supportiveMoodCaption(6.5), /steady/);
+assert.match(supportiveMoodCaption(5), /Be kind/);
+assert.match(supportiveMoodCaption(3), /Small steps/);
 
 console.log("Behavior and helper tests passed.");

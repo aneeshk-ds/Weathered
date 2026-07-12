@@ -13,6 +13,9 @@ import {
 import { useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, weatherEmoji } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
+import { ProgressRing } from "../components/Rings";
+import { Sparkline } from "../components/Sparkline";
+import { supportiveMoodCaption } from "../lib/homeStats";
 
 const NOTE_LIMIT = 120;
 
@@ -31,6 +34,7 @@ export function HomeScreen({
   note,
   onNote,
   onSave,
+  weekStats,
 }: {
   weather: WeatherSnapshot;
   weatherSyncing: boolean;
@@ -46,6 +50,7 @@ export function HomeScreen({
   note: string;
   onNote: (value: string) => void;
   onSave: () => void;
+  weekStats: { averageMood: number; streak: number; weekMood: number[]; hasEntries: boolean };
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
@@ -72,6 +77,24 @@ export function HomeScreen({
       </Card>
 
       <Text style={styles.read}>◆ {forecast.title}</Text>
+
+      {weekStats.hasEntries ? (
+        <Card style={styles.weekCard}>
+          <ProgressRing
+            fraction={weekStats.averageMood / 10}
+            value={weekStats.averageMood > 0 ? weekStats.averageMood.toFixed(1) : "-"}
+            unit="/ 10"
+            size={72}
+          />
+          <View style={styles.weekMid}>
+            <Text style={styles.weekStreak}>
+              {weekStats.streak > 0 ? `${weekStats.streak}-day streak` : "Start a streak today"}
+            </Text>
+            <Text style={styles.weekCaption}>{supportiveMoodCaption(weekStats.averageMood)}</Text>
+          </View>
+          <Sparkline values={weekStats.weekMood} />
+        </Card>
+      ) : null}
 
       <Label>Mood</Label>
       <MoodScale value={mood} onChange={onMood} />
@@ -118,6 +141,10 @@ export function HomeScreen({
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
     weatherCard: { flexDirection: "row", alignItems: "center", gap: 12 },
+    weekCard: { flexDirection: "row", alignItems: "center", gap: 12 },
+    weekMid: { flex: 1 },
+    weekStreak: { fontSize: 14, fontWeight: "600", color: colors.text },
+    weekCaption: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 17 },
     weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
     weatherMain: { fontSize: 15, fontWeight: "600", color: colors.text },
     weatherSub: { fontSize: 12, color: colors.muted, marginTop: 2 },
