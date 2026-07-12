@@ -40,7 +40,7 @@ import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
-const APP_VERSION = "2.0.1";
+const APP_VERSION = "2.1.0";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");

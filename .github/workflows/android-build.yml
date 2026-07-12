@@ -13,7 +13,7 @@ on:
           - production
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-build-${{ github.ref }}-${{ inputs.profile }}
@@ -58,7 +58,22 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Run EAS Android build
+        id: eas
         working-directory: apps/mobile
-        run: npx eas-cli@latest build --platform android --profile "${{ inputs.profile }}" --non-interactive
+        run: |
+          npx eas-cli@latest build --platform android --profile "${{ inputs.profile }}" --non-interactive --json > "$RUNNER_TEMP/eas-build.json"
+          node -e "const b=require(process.env.RUNNER_TEMP+'/eas-build.json');const a=Array.isArray(b)?b[0]:b;const u=(a.artifacts&&(a.artifacts.applicationArchiveUrl||a.artifacts.buildUrl))||'';require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'artifact_url='+u+'\n')"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Publish latest APK to GitHub Releases
+        if: ${{ inputs.profile == 'preview-apk' && steps.eas.outputs.artifact_url != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fL -o weathered-latest.apk "${{ steps.eas.outputs.artifact_url }}"
+          gh release delete latest-apk --cleanup-tag --yes || true
+          gh release create latest-apk weathered-latest.apk \
+            --title "Weathered latest Android APK" \
+            --notes "Automated preview APK built from ${{ github.sha }}." \
+            --latest

@@ -1,22 +1,29 @@
 # Weathered Build Results
 
-## Android Preview APK
+## Distribution
 
-- Status: passed
-- Workflow: Android Build
-- Profile: `preview-apk`
-- Commit: `a1373ed`
-- Run: https://github.com/aneeshk-ds/Weathered/actions/runs/28255393259
-- Started: 2026-06-26 17:47 UTC
-- Completed: 2026-06-26 17:58 UTC
-- GitHub artifact: none attached
-- APK artifact: https://expo.dev/artifacts/eas/a8B7JjQ7mA4XzmatpPPsYa.apk
+The Android preview APK is distributed through GitHub Releases. The Android Build
+workflow, run with the `preview-apk` profile, builds the APK on EAS, downloads
+the artifact, and publishes it to the `latest-apk` release. This gives a stable
+download link that always points to the newest build:
 
-The APK artifact link is also listed in `README.md` for quick access during device testing.
+https://github.com/aneeshk-ds/Weathered/releases/latest/download/weathered-latest.apk
+
+To produce a build:
+
+- Locally: `npm run build:android:apk` (runs `eas build`; `eas login` once).
+- Or run the **Android Build** GitHub Actions workflow with `preview-apk`
+  (requires the `EXPO_TOKEN` repository secret).
+
+## Current Position
+
+- App version `2.1.0`, Android `versionCode` 202.
+- The published APK reflects the latest workflow run. Earlier manual artifact
+  links are superseded by the `latest-apk` release link above.
 
 ## Next Required Validation
 
-- Install the APK on a physical Android device.
+- Install the latest APK on a physical Android device.
 - Run the release checklist smoke test.
-- Record results in `docs/android-smoke-test.md`.
-- Record the device, Android version, APK link, and pass/fail notes.
+- Record the device, Android version, APK link, and pass/fail notes in
+  `docs/android-smoke-test.md`.

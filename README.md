@@ -4,7 +4,9 @@ A local-first mobile app for understanding how weather, mood, and energy shape y
 
 Live app → https://aneeshk-ds.github.io/Weathered/
 
-Android APK preview → https://expo.dev/artifacts/eas/a8B7JjQ7mA4XzmatpPPsYa.apk
+Android APK (latest build) → https://github.com/aneeshk-ds/Weathered/releases/latest/download/weathered-latest.apk
+
+The APK link points to the newest build. It is published automatically to the `latest-apk` GitHub Release each time the Android Build workflow runs with the `preview-apk` profile. If the link 404s, no build has been published yet: run the workflow (or `npm run build:android:apk`) once. See build results -> [docs/build-results.md](docs/build-results.md).
 
 Built as a personal tool. Local-first and private by default: no account is required and data stays on the device. Optional cloud sync (anonymous, scoped per device with row-level security) can be turned on in Settings.
 
