@@ -26,6 +26,33 @@ export function computeStreak(entries: DecisionLogInput[], today: Date = new Dat
   return streak;
 }
 
+/**
+ * Compare the last 7 days of mood against the 7 days before that. Returns the
+ * rounded percentage change and whether both windows have enough data to compare.
+ */
+export function weeklyMoodDelta(
+  entries: DecisionLogInput[],
+  today: Date = new Date(),
+): { current: number; previous: number; deltaPct: number; hasComparison: boolean } {
+  const now = today.getTime();
+  const week = 7 * 24 * 60 * 60 * 1000;
+  const inWindow = (from: number, to: number) =>
+    entries.filter((entry) => {
+      const time = Date.parse(entry.timestamp);
+      return time > from && time <= to;
+    });
+  const average = (list: DecisionLogInput[]) =>
+    list.length ? list.reduce((sum, entry) => sum + entry.mood, 0) / list.length : 0;
+
+  const currentList = inWindow(now - week, now);
+  const previousList = inWindow(now - 2 * week, now - week);
+  const current = average(currentList);
+  const previous = average(previousList);
+  const hasComparison = currentList.length > 0 && previousList.length > 0 && previous > 0;
+  const deltaPct = hasComparison ? Math.round(((current - previous) / previous) * 100) : 0;
+  return { current, previous, deltaPct, hasComparison };
+}
+
 /** A short, supportive line describing the week's average mood. */
 export function supportiveMoodCaption(averageMood: number): string {
   if (averageMood <= 0) {

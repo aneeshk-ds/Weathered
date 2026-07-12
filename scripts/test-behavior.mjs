@@ -8,7 +8,7 @@ import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
 import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
-import { computeStreak, supportiveMoodCaption } from "../apps/mobile/src/lib/homeStats.ts";
+import { computeStreak, supportiveMoodCaption, weeklyMoodDelta } from "../apps/mobile/src/lib/homeStats.ts";
 
 const baseWeather = {
   condition: "cloudy",
@@ -222,5 +222,23 @@ assert.match(supportiveMoodCaption(8), /bright/);
 assert.match(supportiveMoodCaption(6.5), /steady/);
 assert.match(supportiveMoodCaption(5), /Be kind/);
 assert.match(supportiveMoodCaption(3), /Small steps/);
+
+// --- homeStats.ts: weekly mood delta vs the prior week ---
+{
+  const today = new Date(2026, 6, 20, 12, 0, 0);
+  const daysAgoIso = (d) => new Date(2026, 6, 20 - d, 9, 0, 0).toISOString();
+  // this week (0-6 days ago) average 8, previous week (7-13) average 5 -> +60%
+  const entries = [
+    makeEntry({ mood: 8, timestamp: daysAgoIso(1) }),
+    makeEntry({ mood: 8, timestamp: daysAgoIso(3) }),
+    makeEntry({ mood: 5, timestamp: daysAgoIso(8) }),
+    makeEntry({ mood: 5, timestamp: daysAgoIso(10) }),
+  ];
+  const delta = weeklyMoodDelta(entries, today);
+  assert.equal(delta.hasComparison, true, "both weeks have data");
+  assert.equal(delta.deltaPct, 60, "8 vs 5 is a +60% change");
+  const noPrev = weeklyMoodDelta([makeEntry({ mood: 7, timestamp: daysAgoIso(1) })], today);
+  assert.equal(noPrev.hasComparison, false, "no previous week means no comparison");
+}
 
 console.log("Behavior and helper tests passed.");

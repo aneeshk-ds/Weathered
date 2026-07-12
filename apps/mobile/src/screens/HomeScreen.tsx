@@ -14,7 +14,6 @@ import { useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, weatherEmoji } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
 import { ProgressRing } from "../components/Rings";
-import { Sparkline } from "../components/Sparkline";
 import { supportiveMoodCaption } from "../lib/homeStats";
 
 const NOTE_LIMIT = 120;
@@ -50,7 +49,13 @@ export function HomeScreen({
   note: string;
   onNote: (value: string) => void;
   onSave: () => void;
-  weekStats: { averageMood: number; streak: number; weekMood: number[]; hasEntries: boolean };
+  weekStats: {
+    averageMood: number;
+    streak: number;
+    deltaPct: number;
+    hasComparison: boolean;
+    hasEntries: boolean;
+  };
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
@@ -87,12 +92,23 @@ export function HomeScreen({
             size={72}
           />
           <View style={styles.weekMid}>
+            <Text style={styles.weekLabel}>This week</Text>
             <Text style={styles.weekStreak}>
               {weekStats.streak > 0 ? `${weekStats.streak}-day streak` : "Start a streak today"}
             </Text>
-            <Text style={styles.weekCaption}>{supportiveMoodCaption(weekStats.averageMood)}</Text>
+            {weekStats.hasComparison ? (
+              <Text style={styles.weekCaption}>
+                Mood{" "}
+                <Text style={{ color: weekStats.deltaPct >= 0 ? colors.accent : colors.muted }}>
+                  {weekStats.deltaPct >= 0 ? "↑" : "↓"}
+                  {Math.abs(weekStats.deltaPct)}%
+                </Text>{" "}
+                vs last week
+              </Text>
+            ) : (
+              <Text style={styles.weekCaption}>{supportiveMoodCaption(weekStats.averageMood)}</Text>
+            )}
           </View>
-          <Sparkline values={weekStats.weekMood} />
         </Card>
       ) : null}
 
@@ -143,6 +159,7 @@ const makeStyles = (colors: Palette) =>
     weatherCard: { flexDirection: "row", alignItems: "center", gap: 12 },
     weekCard: { flexDirection: "row", alignItems: "center", gap: 12 },
     weekMid: { flex: 1 },
+    weekLabel: { fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: colors.muted, marginBottom: 3 },
     weekStreak: { fontSize: 14, fontWeight: "600", color: colors.text },
     weekCaption: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 17 },
     weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
