@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet } from "react-native";
 import {
   DECISION_OPTIONS,
@@ -12,6 +12,8 @@ import {
   type WeatherSourceMode,
 } from "@weathered/shared";
 import { localRepository as repository } from "./src/lib/repository";
+import { mergeSnapshots } from "./src/lib/sync";
+import { clearRemoteData, deleteRemoteCheckIn, supabaseSync } from "./src/lib/supabaseSync";
 import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/lib/weather";
 import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
@@ -46,6 +48,9 @@ export default function App() {
   const [weatherSourceMode, setWeatherSourceMode] = useState<WeatherSourceMode>("live_ready");
   const [onboardingComplete, setOnboardingComplete] = useState(true);
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
+  const [syncEnabled, setSyncEnabled] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
+  const syncedRef = useRef(false);
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -78,6 +83,7 @@ export default function App() {
       setWeatherSourceMode(nextPreferences.weatherSourceMode);
       setOnboardingComplete(nextPreferences.onboardingComplete);
       setThemeMode(nextPreferences.themeMode);
+      setSyncEnabled(nextPreferences.syncEnabled);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -129,10 +135,50 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    repository.savePreferences({ weatherSourceMode, onboardingComplete, themeMode }).then((ok) => {
+    repository.savePreferences({ weatherSourceMode, onboardingComplete, themeMode, syncEnabled }).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save local preferences.");
     });
-  }, [weatherSourceMode, onboardingComplete, themeMode, isHydrating]);
+  }, [weatherSourceMode, onboardingComplete, themeMode, syncEnabled, isHydrating]);
+
+  // Initial cloud sync when the user opts in: pull remote, merge with local
+  // (last write wins), then push the merged result back. Runs once per enable.
+  useEffect(() => {
+    if (!syncEnabled) {
+      syncedRef.current = false;
+      setSyncStatus("");
+      return;
+    }
+    if (isHydrating || syncedRef.current) return;
+    let mounted = true;
+    setSyncStatus("Syncing…");
+    (async () => {
+      const remote = await supabaseSync.pull();
+      if (!mounted) return;
+      if (!remote) {
+        setSyncStatus("Sync unavailable right now. Working offline.");
+        return;
+      }
+      const merged = mergeSnapshots({ entries, feedback: nudgeFeedback }, remote);
+      setEntries(merged.entries);
+      setNudgeFeedback(merged.feedback);
+      const ok = await supabaseSync.push(merged);
+      if (!mounted) return;
+      syncedRef.current = true;
+      setSyncStatus(ok ? "Synced to your private cloud." : "Downloaded; upload will retry.");
+    })();
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncEnabled, isHydrating]);
+
+  // Push later local changes to the cloud once the initial sync has completed.
+  useEffect(() => {
+    if (!syncEnabled || isHydrating || !syncedRef.current) return;
+    supabaseSync.push({ entries, feedback: nudgeFeedback }).then((ok) => {
+      if (!ok) setSyncStatus("Some changes did not upload. Will retry.");
+    });
+  }, [entries, nudgeFeedback, syncEnabled, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
@@ -236,6 +282,7 @@ export default function App() {
   function handleClearAll() {
     setEntries([]);
     setNudgeFeedback([]);
+    if (syncEnabled) void clearRemoteData();
   }
 
   function handleNudgeFeedback(id: string, value: RecommendationFeedbackValue) {
@@ -283,12 +330,12 @@ export default function App() {
               onChangeEditing={(patch) => setEditing((current) => (current ? { ...current, ...patch } : current))}
               onSaveEdit={handleSaveEdit}
               onCancelEdit={() => setEditing(null)}
-              onDelete={(id) => setEntries((current) => current.filter((entry) => entry.id !== id))}
-              onLoadSample={() => setEntries(seedEntries)}
-              onClear={() => {
-                setEntries([]);
-                setNudgeFeedback([]);
+              onDelete={(id) => {
+                setEntries((current) => current.filter((entry) => entry.id !== id));
+                if (syncEnabled) void deleteRemoteCheckIn(id);
               }}
+              onLoadSample={() => setEntries(seedEntries)}
+              onClear={handleClearAll}
             />
           ) : null}
 
@@ -313,6 +360,9 @@ export default function App() {
               onWeatherSourceChange={setWeatherSourceMode}
               themeMode={themeMode}
               onThemeChange={setThemeMode}
+              syncEnabled={syncEnabled}
+              onSyncChange={setSyncEnabled}
+              syncStatus={syncStatus}
               entryCount={entries.length}
               version={APP_VERSION}
               diagnostics={diagnostics}

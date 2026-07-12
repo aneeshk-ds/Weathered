@@ -8,6 +8,12 @@ import {
   resolveStoredVersion,
 } from "../apps/mobile/src/lib/storage.ts";
 import { mergeSnapshots } from "../apps/mobile/src/lib/sync.ts";
+import {
+  fromRemoteCheckIn,
+  fromRemoteFeedback,
+  toRemoteCheckIn,
+  toRemoteFeedback,
+} from "../apps/mobile/src/lib/syncMappers.ts";
 import { buildSummary } from "../apps/mobile/src/lib/summary.ts";
 import {
   buildOpenMeteoCurrentUrl,
@@ -332,5 +338,31 @@ assert.equal(merged.entries.find((entry) => entry.id === "a").mood, 8, "newest t
 assert.equal(merged.entries[0].id, "a", "merged entries are sorted newest first");
 assert.equal(merged.feedback.length, 1, "feedback dedupes by nudgeId");
 assert.equal(merged.feedback[0].value, "helpful", "newest feedback wins");
+
+// --- syncMappers.ts: remote row round-trip ---
+const remoteEntry = toRemoteCheckIn(validEntry, "user-1");
+assert.equal(remoteEntry.user_id, "user-1");
+assert.equal(remoteEntry.decision_category, validEntry.decisionCategory, "camelCase maps to snake_case");
+assert.equal(remoteEntry.decision_outcome, validEntry.decisionOutcome);
+assert.equal(remoteEntry.note, validEntry.note);
+const roundTripEntry = fromRemoteCheckIn(remoteEntry);
+assert.equal(roundTripEntry.id, validEntry.id);
+assert.equal(roundTripEntry.decisionCategory, validEntry.decisionCategory, "snake_case maps back to camelCase");
+assert.equal(roundTripEntry.decisionOutcome, validEntry.decisionOutcome);
+assert.equal(roundTripEntry.userId, "local", "pulled rows use the local userId marker");
+assert.deepEqual(roundTripEntry.weather, validEntry.weather);
+
+const remoteNoNote = toRemoteCheckIn({ ...validEntry, note: undefined }, "user-1");
+assert.equal(remoteNoNote.note, null, "missing note becomes null for the database");
+assert.equal(fromRemoteCheckIn(remoteNoNote).note, undefined, "null note maps back to undefined");
+
+const remoteFeedback = toRemoteFeedback(
+  { nudgeId: "n1", value: "helpful", timestamp: "2026-07-01T00:00:00.000Z" },
+  "user-1",
+);
+assert.equal(remoteFeedback.nudge_id, "n1");
+assert.equal(remoteFeedback.user_id, "user-1");
+assert.equal(fromRemoteFeedback(remoteFeedback).nudgeId, "n1");
+assert.equal(fromRemoteFeedback(remoteFeedback).value, "helpful");
 
 console.log("Core smoke tests passed.");

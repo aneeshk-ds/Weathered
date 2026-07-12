@@ -40,13 +40,15 @@ the device. `mergeSnapshots()` is a pure, tested last-write-wins merge keyed by
 stable ids with the newest timestamp winning; it is the conflict strategy any
 real backend would reuse.
 
-Sync is off by default. Turning it on requires an explicit opt-in and a wired
-backend. Neither exists yet, by design.
+Sync is off by default. It is turned on by an explicit opt-in in Settings, which
+signs the device in anonymously and syncs through the Supabase backend below.
 
-## Supabase Adapter Plan (not yet built)
+## Supabase Adapter (implemented)
 
-A Supabase implementation of `SyncBackend` would need the following. None of it
-is provisioned in this repository.
+Cloud sync is implemented as an optional, off-by-default Supabase backend
+(`src/lib/supabase.ts`, `src/lib/supabaseSync.ts`, `src/lib/syncMappers.ts`),
+wired behind the `syncEnabled` preference and a Settings toggle. The provisioned
+project uses the following.
 
 ### Tables
 
@@ -65,9 +67,9 @@ the main safeguard against cross-user data exposure.
 
 ### Auth
 
-Sync requires a signed-in user so rows can be scoped. Options are Supabase email
-magic link or an OAuth provider. Auth setup, account creation, and credential
-handling are the user's responsibility and are not automated here.
+Sync requires a signed-in user so rows can be scoped. The app uses Supabase
+anonymous sign-in: each device gets a stable `auth.uid()` with no email or
+password. Named accounts can be layered on later for multi-device recovery.
 
 ### Keys
 

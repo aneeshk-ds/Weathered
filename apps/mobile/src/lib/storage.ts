@@ -32,12 +32,14 @@ export interface LocalPreferences {
   weatherSourceMode: WeatherSourceMode;
   onboardingComplete: boolean;
   themeMode: ThemeMode;
+  syncEnabled: boolean;
 }
 
 const defaultPreferences: LocalPreferences = {
   weatherSourceMode: "live_ready",
   onboardingComplete: false,
   themeMode: "dark",
+  syncEnabled: false,
 };
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
@@ -106,6 +108,7 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
       typeof value.onboardingComplete === "boolean" ? value.onboardingComplete : defaultPreferences.onboardingComplete,
     themeMode:
       value.themeMode === "light" || value.themeMode === "dark" ? value.themeMode : defaultPreferences.themeMode,
+    syncEnabled: typeof value.syncEnabled === "boolean" ? value.syncEnabled : defaultPreferences.syncEnabled,
   };
 }
 

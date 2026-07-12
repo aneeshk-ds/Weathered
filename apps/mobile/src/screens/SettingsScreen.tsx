@@ -14,6 +14,9 @@ export function SettingsScreen({
   onWeatherSourceChange,
   themeMode,
   onThemeChange,
+  syncEnabled,
+  onSyncChange,
+  syncStatus,
   entryCount,
   version,
   diagnostics,
@@ -25,6 +28,9 @@ export function SettingsScreen({
   onWeatherSourceChange: (mode: WeatherSourceMode) => void;
   themeMode: ThemeMode;
   onThemeChange: (mode: ThemeMode) => void;
+  syncEnabled: boolean;
+  onSyncChange: (enabled: boolean) => void;
+  syncStatus: string;
   entryCount: number;
   version: string;
   diagnostics: AppDiagnostics;
@@ -92,6 +98,19 @@ export function SettingsScreen({
           <Chip label="Dark" selected={themeMode === "dark"} onPress={() => onThemeChange("dark")} />
           <Chip label="Light" selected={themeMode === "light"} onPress={() => onThemeChange("light")} />
         </View>
+      </Card>
+
+      <Card>
+        <Text style={styles.cardTitle}>Cloud sync (beta)</Text>
+        <Text style={styles.cardBody}>
+          Off by default. When on, your check-ins sync to a private cloud space scoped to this device so you can move
+          between devices. Turn it off to keep everything on this device only.
+        </Text>
+        <View style={styles.sourceRow}>
+          <Chip label="Off" selected={!syncEnabled} onPress={() => onSyncChange(false)} />
+          <Chip label="On" selected={syncEnabled} onPress={() => onSyncChange(true)} />
+        </View>
+        {syncStatus ? <Text style={styles.cardBody}>{syncStatus}</Text> : null}
       </Card>
 
       <Card>

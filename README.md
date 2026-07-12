@@ -6,7 +6,7 @@ Live app → https://aneeshk-ds.github.io/Weathered/
 
 Android APK preview → https://expo.dev/artifacts/eas/a8B7JjQ7mA4XzmatpPPsYa.apk
 
-Built as a personal tool: no accounts, no cloud sync. All data stays on the device.
+Built as a personal tool. Local-first and private by default: no account is required and data stays on the device. Optional cloud sync (anonymous, scoped per device with row-level security) can be turned on in Settings.
 
 Privacy policy -> [docs/privacy-policy.md](docs/privacy-policy.md)
 
