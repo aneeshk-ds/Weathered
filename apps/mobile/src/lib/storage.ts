@@ -3,6 +3,10 @@ import type { DecisionLogInput, RecommendationFeedback, ThemeMode, WeatherSource
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
 const NUDGE_FEEDBACK_KEY = "weathered.local.nudge-feedback.v1";
+const SCHEMA_VERSION_KEY = "weathered.local.schema-version";
+
+/** Current on-device storage schema version. Bump when the stored shape changes. */
+export const STORAGE_SCHEMA_VERSION = 1;
 const ENERGY_LEVELS = ["low", "medium", "high"] as const;
 const DECISION_CATEGORIES = ["social", "work", "spending", "other"] as const;
 const DECISION_OPTIONS = {
@@ -178,6 +182,41 @@ export async function saveRecommendationFeedback(feedback: RecommendationFeedbac
     return true;
   } catch {
     return false;
+  }
+}
+
+/** Coerce a stored schema-version marker to a positive integer, defaulting to 1. */
+export function resolveStoredVersion(value: unknown): number {
+  if (typeof value === "number" && Number.isInteger(value) && value >= 1) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isInteger(parsed) && parsed >= 1) {
+      return parsed;
+    }
+  }
+  return 1;
+}
+
+/**
+ * Ensure stored data is at the latest schema version, applying any pending
+ * migrations in order. Existing installs with no marker are treated as v1.
+ * There are no migrations at v1; the runner and marker exist so future shape
+ * changes have a safe, ordered upgrade path.
+ */
+export async function ensureSchemaVersion(): Promise<number> {
+  try {
+    const AsyncStorage = await getAsyncStorage();
+    const raw = await AsyncStorage.getItem(SCHEMA_VERSION_KEY);
+    const current = raw === null ? STORAGE_SCHEMA_VERSION : resolveStoredVersion(JSON.parse(raw));
+    // Future migrations run here, from `current` up to STORAGE_SCHEMA_VERSION.
+    if (raw === null || current !== STORAGE_SCHEMA_VERSION) {
+      await AsyncStorage.setItem(SCHEMA_VERSION_KEY, JSON.stringify(STORAGE_SCHEMA_VERSION));
+    }
+    return STORAGE_SCHEMA_VERSION;
+  } catch {
+    return STORAGE_SCHEMA_VERSION;
   }
 }
 

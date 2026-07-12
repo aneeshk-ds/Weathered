@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { normalizeBackupPayload } from "../apps/mobile/src/lib/backupValidation.ts";
 import { summarizeHealth, emptyDiagnostics } from "../apps/mobile/src/lib/diagnostics.ts";
 import { buildDecisionForecast } from "../apps/mobile/src/lib/forecast.ts";
-import { normalizeStoredEntries, normalizeStoredPreferences } from "../apps/mobile/src/lib/storage.ts";
+import {
+  normalizeStoredEntries,
+  normalizeStoredPreferences,
+  resolveStoredVersion,
+} from "../apps/mobile/src/lib/storage.ts";
+import { mergeSnapshots } from "../apps/mobile/src/lib/sync.ts";
 import { buildSummary } from "../apps/mobile/src/lib/summary.ts";
 import {
   buildOpenMeteoCurrentUrl,
@@ -300,5 +305,32 @@ assert.equal(
   }).label,
   "Needs attention",
 );
+
+// --- storage.ts: schema version resolver ---
+assert.equal(resolveStoredVersion(null), 1, "missing version defaults to 1");
+assert.equal(resolveStoredVersion(2), 2, "integer version is kept");
+assert.equal(resolveStoredVersion("3"), 3, "numeric string version is parsed");
+assert.equal(resolveStoredVersion("bad"), 1, "non-numeric version falls back to 1");
+assert.equal(resolveStoredVersion(0), 1, "zero falls back to 1");
+assert.equal(resolveStoredVersion(-4), 1, "negative falls back to 1");
+
+// --- sync.ts: last-write-wins snapshot merge ---
+const mergeLocal = {
+  entries: [{ id: "a", timestamp: "2026-07-01T00:00:00.000Z", mood: 5 }],
+  feedback: [{ nudgeId: "n1", value: "not_now", timestamp: "2026-07-01T00:00:00.000Z" }],
+};
+const mergeRemote = {
+  entries: [
+    { id: "a", timestamp: "2026-07-05T00:00:00.000Z", mood: 8 },
+    { id: "b", timestamp: "2026-07-03T00:00:00.000Z", mood: 6 },
+  ],
+  feedback: [{ nudgeId: "n1", value: "helpful", timestamp: "2026-07-04T00:00:00.000Z" }],
+};
+const merged = mergeSnapshots(mergeLocal, mergeRemote);
+assert.equal(merged.entries.length, 2, "entries dedupe by id");
+assert.equal(merged.entries.find((entry) => entry.id === "a").mood, 8, "newest timestamp wins for a conflicting id");
+assert.equal(merged.entries[0].id, "a", "merged entries are sorted newest first");
+assert.equal(merged.feedback.length, 1, "feedback dedupes by nudgeId");
+assert.equal(merged.feedback[0].value, "helpful", "newest feedback wins");
 
 console.log("Core smoke tests passed.");

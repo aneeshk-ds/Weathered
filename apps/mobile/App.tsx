@@ -11,14 +11,7 @@ import {
   type WeatherSnapshot,
   type WeatherSourceMode,
 } from "@weathered/shared";
-import {
-  loadEntries,
-  loadPreferences,
-  loadRecommendationFeedback,
-  saveEntries,
-  savePreferences,
-  saveRecommendationFeedback,
-} from "./src/lib/storage";
+import { localRepository as repository } from "./src/lib/repository";
 import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/lib/weather";
 import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
@@ -73,10 +66,11 @@ export default function App() {
   useEffect(() => {
     let mounted = true;
     async function hydrate() {
+      await repository.ensureSchemaVersion();
       const [nextEntries, nextPreferences, nextFeedback, nextDiagnostics] = await Promise.all([
-        loadEntries(seedEntries),
-        loadPreferences(),
-        loadRecommendationFeedback(),
+        repository.loadEntries(seedEntries),
+        repository.loadPreferences(),
+        repository.loadFeedback(),
         loadDiagnostics(),
       ]);
       if (!mounted) return;
@@ -97,7 +91,10 @@ export default function App() {
   useEffect(() => {
     let mounted = true;
     setCurrentWeather(buildLocalWeatherSnapshot(weatherSourceMode));
-    if (weatherSourceMode !== "live_ready") return;
+    if (weatherSourceMode !== "live_ready") {
+      setWeatherSyncing(false);
+      return;
+    }
     setWeatherSyncing(true);
     fetchLiveReadyWeatherSnapshot()
       .then((snapshot) => {
@@ -125,21 +122,21 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    saveEntries(entries).then((ok) => {
+    repository.saveEntries(entries).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save check-ins locally.");
     });
   }, [entries, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
-    savePreferences({ weatherSourceMode, onboardingComplete, themeMode }).then((ok) => {
+    repository.savePreferences({ weatherSourceMode, onboardingComplete, themeMode }).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save local preferences.");
     });
   }, [weatherSourceMode, onboardingComplete, themeMode, isHydrating]);
 
   useEffect(() => {
     if (isHydrating) return;
-    saveRecommendationFeedback(nudgeFeedback).then((ok) => {
+    repository.saveFeedback(nudgeFeedback).then((ok) => {
       if (!ok) void track("storage_write_failure", "Could not save recommendation feedback.");
     });
   }, [nudgeFeedback, isHydrating]);
