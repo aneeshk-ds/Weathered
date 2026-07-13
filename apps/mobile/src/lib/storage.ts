@@ -34,6 +34,7 @@ export interface LocalPreferences {
   themeMode: ThemeMode;
   syncEnabled: boolean;
   remindersEnabled: boolean;
+  locationNudgeEnabled: boolean;
 }
 
 const defaultPreferences: LocalPreferences = {
@@ -42,6 +43,7 @@ const defaultPreferences: LocalPreferences = {
   themeMode: "dark",
   syncEnabled: false,
   remindersEnabled: false,
+  locationNudgeEnabled: false,
 };
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
@@ -113,6 +115,10 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
     syncEnabled: typeof value.syncEnabled === "boolean" ? value.syncEnabled : defaultPreferences.syncEnabled,
     remindersEnabled:
       typeof value.remindersEnabled === "boolean" ? value.remindersEnabled : defaultPreferences.remindersEnabled,
+    locationNudgeEnabled:
+      typeof value.locationNudgeEnabled === "boolean"
+        ? value.locationNudgeEnabled
+        : defaultPreferences.locationNudgeEnabled,
   };
 }
 

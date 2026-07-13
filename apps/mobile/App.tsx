@@ -16,6 +16,7 @@ import { localRepository as repository } from "./src/lib/repository";
 import { mergeSnapshots } from "./src/lib/sync";
 import { clearRemoteData, deleteRemoteCheckIn, supabaseSync } from "./src/lib/supabaseSync";
 import { cancelDailyReminders, scheduleDailyReminders } from "./src/lib/notifications";
+import { startLocationNudge, stopLocationNudge } from "./src/lib/locationNudge";
 import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/lib/weather";
 import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
@@ -43,7 +44,7 @@ import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
-const APP_VERSION = "2.1.3";
+const APP_VERSION = "2.1.4";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -56,6 +57,8 @@ export default function App() {
   const syncedRef = useRef(false);
   const [remindersEnabled, setRemindersEnabled] = useState(false);
   const [reminderStatus, setReminderStatus] = useState("");
+  const [locationNudgeEnabled, setLocationNudgeEnabled] = useState(false);
+  const [locationNudgeStatus, setLocationNudgeStatus] = useState("");
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -90,6 +93,7 @@ export default function App() {
       setThemeMode(nextPreferences.themeMode);
       setSyncEnabled(nextPreferences.syncEnabled);
       setRemindersEnabled(nextPreferences.remindersEnabled);
+      setLocationNudgeEnabled(nextPreferences.locationNudgeEnabled);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -142,11 +146,26 @@ export default function App() {
   useEffect(() => {
     if (isHydrating) return;
     repository
-      .savePreferences({ weatherSourceMode, onboardingComplete, themeMode, syncEnabled, remindersEnabled })
+      .savePreferences({
+        weatherSourceMode,
+        onboardingComplete,
+        themeMode,
+        syncEnabled,
+        remindersEnabled,
+        locationNudgeEnabled,
+      })
       .then((ok) => {
         if (!ok) void track("storage_write_failure", "Could not save local preferences.");
       });
-  }, [weatherSourceMode, onboardingComplete, themeMode, syncEnabled, remindersEnabled, isHydrating]);
+  }, [
+    weatherSourceMode,
+    onboardingComplete,
+    themeMode,
+    syncEnabled,
+    remindersEnabled,
+    locationNudgeEnabled,
+    isHydrating,
+  ]);
 
   // Initial cloud sync when the user opts in: pull remote, merge with local
   // (last write wins), then push the merged result back. Runs once per enable.
@@ -308,6 +327,25 @@ export default function App() {
     }
   }
 
+  async function handleLocationNudgeChange(enabled: boolean) {
+    setLocationNudgeEnabled(enabled);
+    if (Platform.OS === "web") {
+      setLocationNudgeStatus("The location nudge works on the installed app, not the web preview.");
+      return;
+    }
+    if (enabled) {
+      const ok = await startLocationNudge();
+      setLocationNudgeStatus(
+        ok
+          ? "Watching for a move to a new place."
+          : "Allow location access all the time in your system settings, then turn this on again.",
+      );
+    } else {
+      await stopLocationNudge();
+      setLocationNudgeStatus("");
+    }
+  }
+
   function handleClearAll() {
     setEntries([]);
     setNudgeFeedback([]);
@@ -409,6 +447,9 @@ export default function App() {
                   remindersEnabled={remindersEnabled}
                   onRemindersChange={handleRemindersChange}
                   reminderStatus={reminderStatus}
+                  locationNudgeEnabled={locationNudgeEnabled}
+                  onLocationNudgeChange={handleLocationNudgeChange}
+                  locationNudgeStatus={locationNudgeStatus}
                   entryCount={entries.length}
                   version={APP_VERSION}
                   diagnostics={diagnostics}

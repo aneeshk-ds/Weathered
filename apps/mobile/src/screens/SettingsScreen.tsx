@@ -20,6 +20,9 @@ export function SettingsScreen({
   remindersEnabled,
   onRemindersChange,
   reminderStatus,
+  locationNudgeEnabled,
+  onLocationNudgeChange,
+  locationNudgeStatus,
   entryCount,
   version,
   diagnostics,
@@ -37,6 +40,9 @@ export function SettingsScreen({
   remindersEnabled: boolean;
   onRemindersChange: (enabled: boolean) => void;
   reminderStatus: string;
+  locationNudgeEnabled: boolean;
+  onLocationNudgeChange: (enabled: boolean) => void;
+  locationNudgeStatus: string;
   entryCount: number;
   version: string;
   diagnostics: AppDiagnostics;
@@ -130,6 +136,19 @@ export function SettingsScreen({
           <Chip label="On" selected={syncEnabled} onPress={() => onSyncChange(true)} />
         </View>
         {syncStatus ? <Text style={styles.cardBody}>{syncStatus}</Text> : null}
+      </Card>
+
+      <Card>
+        <Text style={styles.cardTitle}>Location nudge (beta)</Text>
+        <Text style={styles.cardBody}>
+          Off by default. When on, Weathered watches for you moving to a new place and reminds you to check in there.
+          This needs background location permission and can be delayed by battery saver on some phones.
+        </Text>
+        <View style={styles.sourceRow}>
+          <Chip label="Off" selected={!locationNudgeEnabled} onPress={() => onLocationNudgeChange(false)} />
+          <Chip label="On" selected={locationNudgeEnabled} onPress={() => onLocationNudgeChange(true)} />
+        </View>
+        {locationNudgeStatus ? <Text style={styles.cardBody}>{locationNudgeStatus}</Text> : null}
       </Card>
 
       <Card>
