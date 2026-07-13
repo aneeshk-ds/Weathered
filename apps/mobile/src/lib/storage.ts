@@ -33,6 +33,7 @@ export interface LocalPreferences {
   onboardingComplete: boolean;
   themeMode: ThemeMode;
   syncEnabled: boolean;
+  remindersEnabled: boolean;
 }
 
 const defaultPreferences: LocalPreferences = {
@@ -40,6 +41,7 @@ const defaultPreferences: LocalPreferences = {
   onboardingComplete: false,
   themeMode: "dark",
   syncEnabled: false,
+  remindersEnabled: false,
 };
 
 type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
@@ -109,6 +111,8 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
     themeMode:
       value.themeMode === "light" || value.themeMode === "dark" ? value.themeMode : defaultPreferences.themeMode,
     syncEnabled: typeof value.syncEnabled === "boolean" ? value.syncEnabled : defaultPreferences.syncEnabled,
+    remindersEnabled:
+      typeof value.remindersEnabled === "boolean" ? value.remindersEnabled : defaultPreferences.remindersEnabled,
   };
 }
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Weathered",
     "slug": "weathered",
-    "version": "2.1.2",
+    "version": "2.1.3",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.aneeshkds.weathered",
-      "versionCode": 204,
+      "versionCode": 205,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0e1718"
@@ -34,7 +34,8 @@
           "locationAlwaysAndWhenInUsePermission": "Weathered uses your location to show current local weather alongside your check-ins."
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-notifications"
     ],
     "ios": {
       "infoPlist": {

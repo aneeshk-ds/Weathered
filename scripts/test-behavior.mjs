@@ -9,6 +9,7 @@ import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
 import { computeStreak, supportiveMoodCaption, weeklyMoodDelta } from "../apps/mobile/src/lib/homeStats.ts";
+import { reminderSchedule } from "../apps/mobile/src/lib/reminders.ts";
 
 const baseWeather = {
   condition: "cloudy",
@@ -239,6 +240,21 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   assert.equal(delta.deltaPct, 60, "8 vs 5 is a +60% change");
   const noPrev = weeklyMoodDelta([makeEntry({ mood: 7, timestamp: daysAgoIso(1) })], today);
   assert.equal(noPrev.hasComparison, false, "no previous week means no comparison");
+}
+
+// --- reminders.ts: four daily nudge slots ---
+{
+  const slots = reminderSchedule();
+  assert.equal(slots.length, 4, "there are four daily reminders");
+  assert.deepEqual(
+    slots.map((slot) => slot.hour),
+    [9, 13, 18, 21],
+    "reminders fire at 9am, 1pm, 6pm, and 9pm",
+  );
+  assert.ok(
+    slots.every((slot) => slot.title && slot.body && slot.minute === 0),
+    "every reminder has a title, a body, and lands on the hour",
+  );
 }
 
 console.log("Behavior and helper tests passed.");

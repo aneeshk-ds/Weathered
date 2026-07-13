@@ -17,6 +17,9 @@ export function SettingsScreen({
   syncEnabled,
   onSyncChange,
   syncStatus,
+  remindersEnabled,
+  onRemindersChange,
+  reminderStatus,
   entryCount,
   version,
   diagnostics,
@@ -31,6 +34,9 @@ export function SettingsScreen({
   syncEnabled: boolean;
   onSyncChange: (enabled: boolean) => void;
   syncStatus: string;
+  remindersEnabled: boolean;
+  onRemindersChange: (enabled: boolean) => void;
+  reminderStatus: string;
   entryCount: number;
   version: string;
   diagnostics: AppDiagnostics;
@@ -98,6 +104,19 @@ export function SettingsScreen({
           <Chip label="Dark" selected={themeMode === "dark"} onPress={() => onThemeChange("dark")} />
           <Chip label="Light" selected={themeMode === "light"} onPress={() => onThemeChange("light")} />
         </View>
+      </Card>
+
+      <Card>
+        <Text style={styles.cardTitle}>Daily reminders</Text>
+        <Text style={styles.cardBody}>
+          Off by default. When on, Weathered nudges you to check in at 9am, 1pm, 6pm, and 9pm. You can still check in
+          any time. Reminders work on the installed app, not the web preview.
+        </Text>
+        <View style={styles.sourceRow}>
+          <Chip label="Off" selected={!remindersEnabled} onPress={() => onRemindersChange(false)} />
+          <Chip label="On" selected={remindersEnabled} onPress={() => onRemindersChange(true)} />
+        </View>
+        {reminderStatus ? <Text style={styles.cardBody}>{reminderStatus}</Text> : null}
       </Card>
 
       <Card>

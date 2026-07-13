@@ -15,6 +15,7 @@ import {
 import { localRepository as repository } from "./src/lib/repository";
 import { mergeSnapshots } from "./src/lib/sync";
 import { clearRemoteData, deleteRemoteCheckIn, supabaseSync } from "./src/lib/supabaseSync";
+import { cancelDailyReminders, scheduleDailyReminders } from "./src/lib/notifications";
 import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/lib/weather";
 import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges } from "./src/lib/behavior";
 import { buildDecisionForecast } from "./src/lib/forecast";
@@ -42,7 +43,7 @@ import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 
-const APP_VERSION = "2.1.2";
+const APP_VERSION = "2.1.3";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -53,6 +54,8 @@ export default function App() {
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncStatus, setSyncStatus] = useState("");
   const syncedRef = useRef(false);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
+  const [reminderStatus, setReminderStatus] = useState("");
   const [currentWeather, setCurrentWeather] = useState<WeatherSnapshot>(() => buildLocalWeatherSnapshot("live_ready"));
   const [weatherSyncing, setWeatherSyncing] = useState(false);
   const [mood, setMood] = useState(6);
@@ -86,6 +89,7 @@ export default function App() {
       setOnboardingComplete(nextPreferences.onboardingComplete);
       setThemeMode(nextPreferences.themeMode);
       setSyncEnabled(nextPreferences.syncEnabled);
+      setRemindersEnabled(nextPreferences.remindersEnabled);
       setNudgeFeedback(nextFeedback);
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
@@ -137,10 +141,12 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrating) return;
-    repository.savePreferences({ weatherSourceMode, onboardingComplete, themeMode, syncEnabled }).then((ok) => {
-      if (!ok) void track("storage_write_failure", "Could not save local preferences.");
-    });
-  }, [weatherSourceMode, onboardingComplete, themeMode, syncEnabled, isHydrating]);
+    repository
+      .savePreferences({ weatherSourceMode, onboardingComplete, themeMode, syncEnabled, remindersEnabled })
+      .then((ok) => {
+        if (!ok) void track("storage_write_failure", "Could not save local preferences.");
+      });
+  }, [weatherSourceMode, onboardingComplete, themeMode, syncEnabled, remindersEnabled, isHydrating]);
 
   // Initial cloud sync when the user opts in: pull remote, merge with local
   // (last write wins), then push the merged result back. Runs once per enable.
@@ -283,6 +289,25 @@ export default function App() {
     return result.message;
   }
 
+  async function handleRemindersChange(enabled: boolean) {
+    setRemindersEnabled(enabled);
+    if (Platform.OS === "web") {
+      setReminderStatus("Reminders work on the installed app, not the web preview.");
+      return;
+    }
+    if (enabled) {
+      const ok = await scheduleDailyReminders();
+      setReminderStatus(
+        ok
+          ? "Reminders on: 9am, 1pm, 6pm, and 9pm."
+          : "Allow notifications in your system settings, then turn this on again.",
+      );
+    } else {
+      await cancelDailyReminders();
+      setReminderStatus("");
+    }
+  }
+
   function handleClearAll() {
     setEntries([]);
     setNudgeFeedback([]);
@@ -381,6 +406,9 @@ export default function App() {
                   syncEnabled={syncEnabled}
                   onSyncChange={setSyncEnabled}
                   syncStatus={syncStatus}
+                  remindersEnabled={remindersEnabled}
+                  onRemindersChange={handleRemindersChange}
+                  reminderStatus={reminderStatus}
                   entryCount={entries.length}
                   version={APP_VERSION}
                   diagnostics={diagnostics}
