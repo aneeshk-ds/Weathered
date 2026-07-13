@@ -5,7 +5,7 @@ import {
   buildRecommendationNudges,
 } from "../apps/mobile/src/lib/behavior.ts";
 import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
-import { buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
+import { buildWeekDays, buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
 import { computeStreak, supportiveMoodCaption, weeklyMoodDelta } from "../apps/mobile/src/lib/homeStats.ts";
@@ -255,6 +255,25 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
     slots.every((slot) => slot.title && slot.body && slot.minute === 0),
     "every reminder has a title, a body, and lands on the hour",
   );
+}
+
+// --- weekMood.ts: buildWeekDays real labels + today flag ---
+{
+  const today = new Date(2026, 6, 15, 12, 0, 0);
+  const days = buildWeekDays([makeEntry({ mood: 8, timestamp: new Date(2026, 6, 15, 9, 0, 0).toISOString() })], today);
+  assert.equal(days.length, 7, "seven day slots");
+  assert.equal(days[6].isToday, true, "the last slot is today");
+  assert.equal(days[6].value, 8, "today reflects today's check-in");
+  assert.ok(
+    days.slice(0, 6).every((day) => !day.isToday),
+    "only today is flagged",
+  );
+  const initials = ["S", "M", "T", "W", "T", "F", "S"];
+  days.forEach((day, index) => {
+    const d = new Date(2026, 6, 15);
+    d.setDate(15 - (6 - index));
+    assert.equal(day.label, initials[d.getDay()], "label matches the real weekday");
+  });
 }
 
 console.log("Behavior and helper tests passed.");

@@ -20,3 +20,35 @@ export function buildWeekMood(entries: DecisionLogInput[], today: Date = new Dat
   }
   return week;
 }
+
+export interface WeekDay {
+  key: string;
+  label: string;
+  value: number;
+  isToday: boolean;
+}
+
+const WEEKDAY_INITIAL = ["S", "M", "T", "W", "T", "F", "S"];
+
+function weekDayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+/**
+ * The trailing seven days ending today (oldest first) with the real weekday
+ * initial for each day and the current day flagged. Today's bucket reflects
+ * today's check-ins live. `today` is injectable for testing.
+ */
+export function buildWeekDays(entries: DecisionLogInput[], today: Date = new Date()): WeekDay[] {
+  const days: WeekDay[] = [];
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+    const dayEntries = entries.filter((entry) => sameDay(new Date(entry.timestamp), day));
+    const value = dayEntries.length
+      ? Math.round((dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length) * 10) / 10
+      : 0;
+    days.push({ key: weekDayKey(day), label: WEEKDAY_INITIAL[day.getDay()], value, isToday: offset === 0 });
+  }
+  return days;
+}

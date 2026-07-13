@@ -21,7 +21,7 @@ import { buildBehavioralRead, buildDecisionReadiness, buildRecommendationNudges 
 import { buildDecisionForecast } from "./src/lib/forecast";
 import { buildInsight } from "./src/lib/insights";
 import { personalizeNudges } from "./src/lib/personalize";
-import { buildWeekMood } from "./src/lib/weekMood";
+import { buildWeekDays } from "./src/lib/weekMood";
 import { buildSummary } from "./src/lib/summary";
 import { computeStreak, weeklyMoodDelta } from "./src/lib/homeStats";
 import { exportBackup, importBackup } from "./src/lib/backup";
@@ -217,7 +217,7 @@ export default function App() {
   );
   const summary = useMemo(() => buildSummary(entries), [entries]);
   const insight = useMemo(() => (entries.length ? buildInsight(entries[0], entries) : null), [entries]);
-  const weekMood = useMemo(() => buildWeekMood(entries), [entries]);
+  const weekDays = useMemo(() => buildWeekDays(entries), [entries]);
   const streak = useMemo(() => computeStreak(entries), [entries]);
   const moodDelta = useMemo(() => weeklyMoodDelta(entries), [entries]);
 
@@ -387,7 +387,7 @@ export default function App() {
                   insight={insight}
                   summary={summary}
                   entries={entries}
-                  weekMood={weekMood}
+                  weekDays={weekDays}
                   readiness={readiness}
                   behavioralRead={behavioralRead}
                   nudges={nudges}

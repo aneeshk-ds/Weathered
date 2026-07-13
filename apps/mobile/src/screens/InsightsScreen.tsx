@@ -17,6 +17,7 @@ import { CATEGORY_LABEL } from "../format";
 import { Card, ScreenHeader } from "../components/ui";
 import { DonutRing, ProgressRing } from "../components/Rings";
 import { WeekBars } from "../components/WeekBars";
+import type { WeekDay } from "../lib/weekMood";
 import { filterEntriesWithinLast7Days } from "../lib/summary";
 
 const ACTED: string[] = ["go_out", "work", "buy"];
@@ -25,7 +26,7 @@ export function InsightsScreen({
   insight,
   summary,
   entries,
-  weekMood,
+  weekDays,
   readiness,
   behavioralRead,
   nudges,
@@ -36,7 +37,7 @@ export function InsightsScreen({
   insight: Insight | null;
   summary: WeeklySummary;
   entries: DecisionLogInput[];
-  weekMood: number[];
+  weekDays: WeekDay[];
   readiness: DecisionReadiness;
   behavioralRead: BehavioralRead;
   nudges: RecommendationNudge[];
@@ -47,6 +48,7 @@ export function InsightsScreen({
   const colors = useColors();
   const styles = makeStyles(colors);
   const weeklyEntries = filterEntriesWithinLast7Days(entries);
+  const todayLabel = new Date().toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
   const total = summary.totalEntries;
   const followed = weeklyEntries.filter((entry) => ACTED.includes(entry.decisionOutcome)).length;
   const followFrac = total > 0 ? followed / total : 0;
@@ -113,7 +115,8 @@ export function InsightsScreen({
 
       <Card>
         <Text style={styles.cardLabel}>Mood this week</Text>
-        <WeekBars values={weekMood} />
+        <WeekBars days={weekDays} />
+        <Text style={styles.weekNote}>Last 7 days through today, {todayLabel}. Today is highlighted.</Text>
       </Card>
 
       <Card>
@@ -187,6 +190,7 @@ const makeStyles = (colors: Palette) =>
     ringCard: { flex: 1, alignItems: "center" },
     ringLabel: { fontSize: 11, color: colors.muted, marginTop: 8 },
     cardLabel: { fontSize: 13, color: colors.muted, marginBottom: 8 },
+    weekNote: { fontSize: 11, color: colors.dim, marginTop: 8 },
     donutRow: { flexDirection: "row", alignItems: "center", gap: 16 },
     legend: { flex: 1, gap: 6 },
     legendItem: { flexDirection: "row", alignItems: "center", gap: 7 },
