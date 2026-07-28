@@ -216,7 +216,10 @@ function makeEntry(overrides = {}) {
   assert.equal(week.length, 7, "week should always have seven slots");
   assert.equal(week[6], 7, "today slot should average moods 6 and 8");
   assert.equal(week[5], 4, "yesterday slot should hold the single mood");
-  assert.ok(week.slice(0, 5).every((value) => value === null), "days with no entries should be explicitly missing");
+  assert.ok(
+    week.slice(0, 5).every((value) => value === null),
+    "days with no entries should be explicitly missing",
+  );
 }
 
 // --- personalize.ts: helpful first, not_now last, stable in between ---
@@ -433,7 +436,11 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   );
   assert.equal(cooldown.shouldNotify, false, "travel alerts are rate-limited");
   assert.ok(cooldown.reasons.includes("cooldown"));
-  assert.equal(cooldown.nextState.lastSample.weather.locationLabel, "Mysuru", "the quiet sample becomes the new baseline");
+  assert.equal(
+    cooldown.nextState.lastSample.weather.locationLabel,
+    "Mysuru",
+    "the quiet sample becomes the new baseline",
+  );
 
   assert.deepEqual(normalizeTravelWeatherState({ lastSample: { nope: true }, lastNotifiedAt: "bad-date" }), {});
 }
@@ -500,10 +507,7 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   const recentSignal = recentReflectionReadinessSignal([goodReflection], now);
   assert.deepEqual(recentSignal, { score: 7, adjustment: 2, label: "Good" });
   assert.equal(
-    recentReflectionReadinessSignal(
-      [{ ...olderRoughReflection, timestamp: "2020-01-01T22:00:00.000Z" }],
-      now,
-    ),
+    recentReflectionReadinessSignal([{ ...olderRoughReflection, timestamp: "2020-01-01T22:00:00.000Z" }], now),
     null,
     "old reflections remain historical context and do not adjust current readiness",
   );
@@ -541,7 +545,10 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   assert.equal(days[6].isToday, true, "the last slot is today");
   assert.equal(days[6].value, 8, "today reflects today's check-in");
   assert.equal(days[6].hasData, true, "today is marked as tracked");
-  assert.ok(days.slice(0, 6).every((day) => day.value === null && !day.hasData), "missing days stay explicit");
+  assert.ok(
+    days.slice(0, 6).every((day) => day.value === null && !day.hasData),
+    "missing days stay explicit",
+  );
   assert.ok(
     days.slice(0, 6).every((day) => !day.isToday),
     "only today is flagged",

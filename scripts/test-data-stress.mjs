@@ -16,17 +16,7 @@ import {
 import { buildSummary, isWithinLast7Days } from "../apps/mobile/src/lib/summary.ts";
 import { buildReflectionSummary } from "../apps/mobile/src/lib/reflections.ts";
 
-const CATEGORIES = [
-  "social",
-  "work",
-  "spending",
-  "scrolling",
-  "watching_tv",
-  "gaming",
-  "exercise",
-  "eating",
-  "other",
-];
+const CATEGORIES = ["social", "work", "spending", "scrolling", "watching_tv", "gaming", "exercise", "eating", "other"];
 const OUTCOMES = {
   social: ["go_out", "stay_in", "message_someone", "later", "cancel"],
   work: ["work", "do_less", "take_break", "later", "skip"],
@@ -114,9 +104,7 @@ const reflectionSummaryResult = measure("build reflection summary from 5000 refl
 );
 results.push(reflectionSummaryResult);
 assert.equal(reflectionSummaryResult.value.count, ENTRY_LIMIT);
-assert.ok(
-  reflectionSummaryResult.value.averageScore >= 3 && reflectionSummaryResult.value.averageScore <= 9,
-);
+assert.ok(reflectionSummaryResult.value.averageScore >= 3 && reflectionSummaryResult.value.averageScore <= 9);
 
 const summaryResult = measure("build weekly summary from 5000 entries", () =>
   buildSummary(normalizedResult.value.entries),

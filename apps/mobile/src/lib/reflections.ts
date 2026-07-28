@@ -68,20 +68,14 @@ export function localDayKey(date: Date): string {
 
 export function reflectionForDay(reflections: DailyReflection[], day: Date = new Date()): DailyReflection | null {
   const target = localDayKey(day);
-  return (
-    reflections.find((reflection) => localDayKey(new Date(reflection.timestamp)) === target) ?? null
-  );
+  return reflections.find((reflection) => localDayKey(new Date(reflection.timestamp)) === target) ?? null;
 }
 
-export function upsertDailyReflection(
-  reflections: DailyReflection[],
-  reflection: DailyReflection,
-): DailyReflection[] {
+export function upsertDailyReflection(reflections: DailyReflection[], reflection: DailyReflection): DailyReflection[] {
   const target = localDayKey(new Date(reflection.timestamp));
-  return [
-    reflection,
-    ...reflections.filter((item) => localDayKey(new Date(item.timestamp)) !== target),
-  ].sort((left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp));
+  return [reflection, ...reflections.filter((item) => localDayKey(new Date(item.timestamp)) !== target)].sort(
+    (left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp),
+  );
 }
 
 export function buildReflectionSummary(reflections: DailyReflection[]): ReflectionSummary {
@@ -89,21 +83,14 @@ export function buildReflectionSummary(reflections: DailyReflection[]): Reflecti
     return { count: 0, averageScore: null, topFactor: null, latest: null };
   }
 
-  const ordered = [...reflections].sort(
-    (left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp),
-  );
+  const ordered = [...reflections].sort((left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp));
   const averageScore =
     Math.round(
-      (reflections.reduce((sum, reflection) => sum + dayRatingScore(reflection.rating), 0) /
-        reflections.length) *
-        10,
+      (reflections.reduce((sum, reflection) => sum + dayRatingScore(reflection.rating), 0) / reflections.length) * 10,
     ) / 10;
   const factorCounts = DAY_FACTORS.map((factor) => ({
     factor,
-    count: reflections.reduce(
-      (sum, reflection) => sum + (reflection.factors.includes(factor) ? 1 : 0),
-      0,
-    ),
+    count: reflections.reduce((sum, reflection) => sum + (reflection.factors.includes(factor) ? 1 : 0), 0),
   }));
   const strongestFactor = factorCounts.sort((a, b) => b.count - a.count)[0];
 

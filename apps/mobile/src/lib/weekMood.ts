@@ -15,9 +15,7 @@ export function buildWeekMood(entries: DecisionLogInput[], today: Date = new Dat
     const day = new Date(today);
     day.setDate(today.getDate() - offset);
     const dayEntries = entries.filter((entry) => sameDay(new Date(entry.timestamp), day));
-    const avg = dayEntries.length
-      ? dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length
-      : null;
+    const avg = dayEntries.length ? dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length : null;
     week.push(avg === null ? null : Math.round(avg * 10) / 10);
   }
   return week;

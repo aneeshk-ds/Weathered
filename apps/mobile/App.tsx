@@ -46,12 +46,7 @@ import { HistoryScreen, type EditingState } from "./src/screens/HistoryScreen";
 import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
-import {
-  dayRatingScore,
-  localDayKey,
-  reflectionForDay,
-  upsertDailyReflection,
-} from "./src/lib/reflections";
+import { dayRatingScore, localDayKey, reflectionForDay, upsertDailyReflection } from "./src/lib/reflections";
 
 const APP_VERSION = "2.1.4";
 
@@ -133,9 +128,7 @@ export default function App() {
     async function reconcileReminders() {
       if (Platform.OS === "web") {
         if (mounted) {
-          setReminderStatus(
-            remindersEnabled ? "Reminders work on the installed app, not the web preview." : "",
-          );
+          setReminderStatus(remindersEnabled ? "Reminders work on the installed app, not the web preview." : "");
         }
         return;
       }

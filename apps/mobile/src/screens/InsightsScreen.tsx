@@ -22,11 +22,7 @@ import type { WeekDay } from "../lib/weekMood";
 import { filterEntriesWithinLast7Days } from "../lib/summary";
 import { buildDayPartInsights } from "../lib/dayParts";
 import { DayPartVisual } from "../components/DayPartVisual";
-import {
-  buildReflectionSummary,
-  DAY_FACTOR_LABELS,
-  DAY_RATING_LABELS,
-} from "../lib/reflections";
+import { buildReflectionSummary, DAY_FACTOR_LABELS, DAY_RATING_LABELS } from "../lib/reflections";
 
 const ACTED: string[] = ["go_out", "work", "buy"];
 
@@ -193,9 +189,7 @@ export function InsightsScreen({
                 <Text style={styles.reflectionTitle}>
                   {reflectionSummary.count} reflected day{reflectionSummary.count === 1 ? "" : "s"}
                 </Text>
-                <Text style={styles.reflectionMeta}>
-                  Latest: {DAY_RATING_LABELS[reflectionSummary.latest!.rating]}
-                </Text>
+                <Text style={styles.reflectionMeta}>Latest: {DAY_RATING_LABELS[reflectionSummary.latest!.rating]}</Text>
                 <Text style={styles.reflectionMeta}>
                   {reflectionSummary.topFactor
                     ? `Most named influence: ${DAY_FACTOR_LABELS[reflectionSummary.topFactor]}`
@@ -289,7 +283,14 @@ const makeStyles = (colors: Palette) =>
     weekNote: { fontSize: 11, color: colors.dim, marginTop: 8 },
     rhythmHeadline: { fontSize: 13, color: colors.text, lineHeight: 19, marginBottom: 10 },
     dayPartGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    dayPartCell: { flexGrow: 1, flexBasis: "46%", minWidth: 130, backgroundColor: colors.card2, borderRadius: 10, padding: 10 },
+    dayPartCell: {
+      flexGrow: 1,
+      flexBasis: "46%",
+      minWidth: 130,
+      backgroundColor: colors.card2,
+      borderRadius: 10,
+      padding: 10,
+    },
     dayPartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 6 },
     dayPartLabel: { fontSize: 12, fontWeight: "600", color: colors.text },
     dayPartTime: { fontSize: 10, color: colors.dim },

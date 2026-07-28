@@ -52,16 +52,10 @@ export function assessTravelWeather(
     if (previous.weather.condition !== currentSample.weather.condition) {
       reasons.push("condition");
     }
-    if (
-      Math.abs(previous.weather.temperatureC - currentSample.weather.temperatureC) >=
-      TRAVEL_TEMPERATURE_CHANGE_C
-    ) {
+    if (Math.abs(previous.weather.temperatureC - currentSample.weather.temperatureC) >= TRAVEL_TEMPERATURE_CHANGE_C) {
       reasons.push("temperature");
     }
-    if (
-      Math.abs(previous.weather.humidity - currentSample.weather.humidity) >=
-      TRAVEL_HUMIDITY_CHANGE_PERCENT
-    ) {
+    if (Math.abs(previous.weather.humidity - currentSample.weather.humidity) >= TRAVEL_HUMIDITY_CHANGE_PERCENT) {
       reasons.push("humidity");
     }
   }

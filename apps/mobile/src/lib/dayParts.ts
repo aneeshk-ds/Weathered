@@ -45,8 +45,7 @@ export function buildDayPartInsights(entries: DecisionLogInput[]): DayPartInsigh
       return { ...part, averageMood: null, checkIns: 0, dominantWeather: null };
     }
 
-    const averageMood =
-      Math.round((matching.reduce((sum, entry) => sum + entry.mood, 0) / matching.length) * 10) / 10;
+    const averageMood = Math.round((matching.reduce((sum, entry) => sum + entry.mood, 0) / matching.length) * 10) / 10;
     const weatherCounts: Record<WeatherCondition, number> = { sunny: 0, cloudy: 0, rainy: 0 };
     matching.forEach((entry) => {
       weatherCounts[entry.weather.condition] += 1;

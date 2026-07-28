@@ -117,9 +117,9 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>Daily reminders</Text>
         <Text style={styles.cardBody}>
-          Four check-in notifications cover morning, afternoon, evening, and night: 9am, 1pm, 6pm, and 9pm.
-          Weathered restores them whenever the installed app opens. You can still check in any time; the web preview
-          cannot send these device notifications.
+          Four check-in notifications cover morning, afternoon, evening, and night: 9am, 1pm, 6pm, and 9pm. Weathered
+          restores them whenever the installed app opens. You can still check in any time; the web preview cannot send
+          these device notifications.
         </Text>
         <View style={styles.sourceRow}>
           <Chip label="Off" selected={!remindersEnabled} onPress={() => onRemindersChange(false)} />
@@ -144,9 +144,9 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>Travel weather alerts</Text>
         <Text style={styles.cardBody}>
-          Off by default. When on, Weathered notices travel beyond roughly 5 km, refreshes the destination weather,
-          and notifies you when the place or conditions meaningfully change. Alerts are limited to one every 90
-          minutes. This needs background location and notification permission on the installed app.
+          Off by default. When on, Weathered notices travel beyond roughly 5 km, refreshes the destination weather, and
+          notifies you when the place or conditions meaningfully change. Alerts are limited to one every 90 minutes.
+          This needs background location and notification permission on the installed app.
         </Text>
         <View style={styles.sourceRow}>
           <Chip label="Off" selected={!locationNudgeEnabled} onPress={() => onLocationNudgeChange(false)} />

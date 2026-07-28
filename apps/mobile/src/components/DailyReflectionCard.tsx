@@ -3,13 +3,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import type { DayFactor, DayRating } from "@weathered/shared";
 import { Card, Chip, Label, PrimaryButton } from "./ui";
 import { DayPartVisual } from "./DayPartVisual";
-import {
-  DAY_FACTORS,
-  DAY_FACTOR_LABELS,
-  DAY_RATINGS,
-  DAY_RATING_LABELS,
-  dayRatingScore,
-} from "../lib/reflections";
+import { DAY_FACTORS, DAY_FACTOR_LABELS, DAY_RATINGS, DAY_RATING_LABELS, dayRatingScore } from "../lib/reflections";
 import { useColors, type Palette } from "../theme";
 
 export const REFLECTION_NOTE_LIMIT = 240;
@@ -54,12 +48,7 @@ export function DailyReflectionCard({
       <Label>Overall</Label>
       <View style={styles.chipRow}>
         {DAY_RATINGS.map((item) => (
-          <Chip
-            key={item}
-            label={DAY_RATING_LABELS[item]}
-            selected={rating === item}
-            onPress={() => onRating(item)}
-          />
+          <Chip key={item} label={DAY_RATING_LABELS[item]} selected={rating === item} onPress={() => onRating(item)} />
         ))}
       </View>
       <Text style={styles.scoreNote}>
@@ -89,14 +78,9 @@ export function DailyReflectionCard({
         placeholderTextColor={colors.dim}
         accessibilityLabel="End-of-day reflection note"
       />
-      <Text style={styles.privacyNote}>
-        Your words stay as context; Weathered scores only the rating you chose.
-      </Text>
+      <Text style={styles.privacyNote}>Your words stay as context; Weathered scores only the rating you chose.</Text>
 
-      <PrimaryButton
-        label={savedToday ? "Update today's reflection" : "Save daily reflection"}
-        onPress={onSave}
-      />
+      <PrimaryButton label={savedToday ? "Update today's reflection" : "Save daily reflection"} onPress={onSave} />
       {status ? <Text style={styles.status}>{status}</Text> : null}
     </Card>
   );

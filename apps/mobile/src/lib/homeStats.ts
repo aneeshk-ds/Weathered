@@ -47,9 +47,7 @@ export function weeklyMoodDelta(
       const key = dayKey(new Date(entry.timestamp));
       byDay.set(key, [...(byDay.get(key) ?? []), entry.mood]);
     });
-    const dailyAverages = [...byDay.values()].map(
-      (moods) => moods.reduce((sum, mood) => sum + mood, 0) / moods.length,
-    );
+    const dailyAverages = [...byDay.values()].map((moods) => moods.reduce((sum, mood) => sum + mood, 0) / moods.length);
     return dailyAverages.length
       ? dailyAverages.reduce((sum, dailyAverage) => sum + dailyAverage, 0) / dailyAverages.length
       : 0;
@@ -65,10 +63,7 @@ export function weeklyMoodDelta(
 }
 
 /** Most frequently logged weather condition in the trailing seven days. */
-export function dominantWeeklyWeather(
-  entries: DecisionLogInput[],
-  today: Date = new Date(),
-): WeatherCondition | null {
+export function dominantWeeklyWeather(entries: DecisionLogInput[], today: Date = new Date()): WeatherCondition | null {
   const now = today.getTime();
   const from = now - 7 * 24 * 60 * 60 * 1000;
   const counts: Record<WeatherCondition, number> = { sunny: 0, cloudy: 0, rainy: 0 };
@@ -76,9 +71,7 @@ export function dominantWeeklyWeather(
     const timestamp = Date.parse(entry.timestamp);
     if (timestamp > from && timestamp <= now) counts[entry.weather.condition] += 1;
   });
-  const ranked = (Object.entries(counts) as [WeatherCondition, number][]).sort(
-    (left, right) => right[1] - left[1],
-  );
+  const ranked = (Object.entries(counts) as [WeatherCondition, number][]).sort((left, right) => right[1] - left[1]);
   return ranked[0][1] > 0 ? ranked[0][0] : null;
 }
 

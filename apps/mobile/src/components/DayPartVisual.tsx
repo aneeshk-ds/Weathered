@@ -1,14 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import Svg, {
-  Circle,
-  Defs,
-  LinearGradient,
-  Line,
-  Path,
-  Rect,
-  Stop,
-} from "react-native-svg";
+import Svg, { Circle, Defs, LinearGradient, Line, Path, Rect, Stop } from "react-native-svg";
 import type { DayPart } from "../lib/dayParts";
 
 export function DayPartVisual({

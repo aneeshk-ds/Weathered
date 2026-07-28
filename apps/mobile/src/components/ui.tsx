@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  type GestureResponderEvent,
-  type LayoutChangeEvent,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { type GestureResponderEvent, type LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
 import { useColors, type Palette } from "../theme";
 
 export function Card({ children, style }: { children: React.ReactNode; style?: object }) {
