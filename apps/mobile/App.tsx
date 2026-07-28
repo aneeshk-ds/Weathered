@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet } from "react-native";
+import { AppState, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   DECISION_OPTIONS,
+  type DailyReflection,
+  type DayFactor,
+  type DayRating,
   type DecisionCategory,
   type DecisionLogInput,
   type DecisionOption,
@@ -24,7 +27,7 @@ import { buildInsight } from "./src/lib/insights";
 import { personalizeNudges } from "./src/lib/personalize";
 import { buildWeekDays } from "./src/lib/weekMood";
 import { buildSummary } from "./src/lib/summary";
-import { computeStreak, weeklyMoodDelta } from "./src/lib/homeStats";
+import { computeStreak, dominantWeeklyWeather, weeklyMoodDelta } from "./src/lib/homeStats";
 import { exportBackup, importBackup } from "./src/lib/backup";
 import {
   emptyDiagnostics,
@@ -43,6 +46,12 @@ import { HistoryScreen, type EditingState } from "./src/screens/HistoryScreen";
 import { InsightsScreen } from "./src/screens/InsightsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
+import {
+  dayRatingScore,
+  localDayKey,
+  reflectionForDay,
+  upsertDailyReflection,
+} from "./src/lib/reflections";
 
 const APP_VERSION = "2.1.4";
 
@@ -67,6 +76,11 @@ export default function App() {
   const [outcome, setOutcome] = useState<DecisionOption>("go_out");
   const [note, setNote] = useState("");
   const [nudgeFeedback, setNudgeFeedback] = useState<RecommendationFeedback[]>([]);
+  const [reflections, setReflections] = useState<DailyReflection[]>([]);
+  const [dayRating, setDayRating] = useState<DayRating>("good");
+  const [dayFactors, setDayFactors] = useState<DayFactor[]>([]);
+  const [dayReflectionNote, setDayReflectionNote] = useState("");
+  const [reflectionStatus, setReflectionStatus] = useState("");
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
   const [diagnostics, setDiagnostics] = useState<AppDiagnostics>(emptyDiagnostics);
@@ -80,10 +94,11 @@ export default function App() {
     let mounted = true;
     async function hydrate() {
       await repository.ensureSchemaVersion();
-      const [nextEntries, nextPreferences, nextFeedback, nextDiagnostics] = await Promise.all([
+      const [nextEntries, nextPreferences, nextFeedback, nextReflections, nextDiagnostics] = await Promise.all([
         repository.loadEntries(seedEntries),
         repository.loadPreferences(),
         repository.loadFeedback(),
+        repository.loadReflections(),
         loadDiagnostics(),
       ]);
       if (!mounted) return;
@@ -95,6 +110,13 @@ export default function App() {
       setRemindersEnabled(nextPreferences.remindersEnabled);
       setLocationNudgeEnabled(nextPreferences.locationNudgeEnabled);
       setNudgeFeedback(nextFeedback);
+      setReflections(nextReflections);
+      const todayReflection = reflectionForDay(nextReflections);
+      if (todayReflection) {
+        setDayRating(todayReflection.rating);
+        setDayFactors(todayReflection.factors);
+        setDayReflectionNote(todayReflection.note ?? "");
+      }
       setDiagnostics(nextDiagnostics);
       setIsHydrating(false);
     }
@@ -103,6 +125,50 @@ export default function App() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (isHydrating) return;
+    let mounted = true;
+
+    async function reconcileReminders() {
+      if (Platform.OS === "web") {
+        if (mounted) {
+          setReminderStatus(
+            remindersEnabled ? "Reminders work on the installed app, not the web preview." : "",
+          );
+        }
+        return;
+      }
+
+      if (!remindersEnabled) {
+        await cancelDailyReminders();
+        if (mounted) setReminderStatus("");
+        return;
+      }
+
+      const ok = await scheduleDailyReminders();
+      if (mounted) {
+        setReminderStatus(
+          ok
+            ? "Reminders active: 9am, 1pm, 6pm, and 9pm."
+            : "Allow notifications in your system settings, then return to Weathered.",
+        );
+      }
+    }
+
+    void reconcileReminders();
+    const subscription =
+      Platform.OS === "web"
+        ? null
+        : AppState.addEventListener("change", (state) => {
+            if (state === "active" && remindersEnabled) void reconcileReminders();
+          });
+
+    return () => {
+      mounted = false;
+      subscription?.remove();
+    };
+  }, [isHydrating, remindersEnabled]);
 
   useEffect(() => {
     let mounted = true;
@@ -214,13 +280,29 @@ export default function App() {
     });
   }, [nudgeFeedback, isHydrating]);
 
+  useEffect(() => {
+    if (isHydrating) return;
+    repository.saveReflections(reflections).then((ok) => {
+      if (!ok) void track("storage_write_failure", "Could not save daily reflections.");
+    });
+  }, [reflections, isHydrating]);
+
   const behavioralRead = useMemo(
     () => buildBehavioralRead({ mood, energy, weather: currentWeather }),
     [mood, energy, currentWeather],
   );
   const readiness = useMemo(
-    () => buildDecisionReadiness({ read: behavioralRead, category, mood, energy, weather: currentWeather, entries }),
-    [behavioralRead, category, mood, energy, currentWeather, entries],
+    () =>
+      buildDecisionReadiness({
+        read: behavioralRead,
+        category,
+        mood,
+        energy,
+        weather: currentWeather,
+        entries,
+        reflections,
+      }),
+    [behavioralRead, category, mood, energy, currentWeather, entries, reflections],
   );
   const nudges = useMemo(
     () =>
@@ -239,6 +321,11 @@ export default function App() {
   const weekDays = useMemo(() => buildWeekDays(entries), [entries]);
   const streak = useMemo(() => computeStreak(entries), [entries]);
   const moodDelta = useMemo(() => weeklyMoodDelta(entries), [entries]);
+  const weeklyWeather = useMemo(
+    () => dominantWeeklyWeather(entries) ?? currentWeather.condition,
+    [entries, currentWeather.condition],
+  );
+  const todayReflection = useMemo(() => reflectionForDay(reflections), [reflections]);
 
   function handleCategory(next: DecisionCategory) {
     setCategory(next);
@@ -260,6 +347,29 @@ export default function App() {
     setEntries((current) => [entry, ...current]);
     setNote("");
     setActiveTab("insights");
+  }
+
+  function handleToggleDayFactor(factor: DayFactor) {
+    setDayFactors((current) =>
+      current.includes(factor) ? current.filter((item) => item !== factor) : [...current, factor],
+    );
+    setReflectionStatus("");
+  }
+
+  function handleSaveDailyReflection() {
+    const now = new Date();
+    const reflection: DailyReflection = {
+      id: `reflection-${localDayKey(now)}`,
+      userId: "local",
+      rating: dayRating,
+      factors: dayFactors,
+      note: dayReflectionNote.trim() || undefined,
+      timestamp: now.toISOString(),
+    };
+    setReflections((current) => upsertDailyReflection(current, reflection));
+    setReflectionStatus(
+      `Saved as ${dayRatingScore(dayRating)}/10. This reflection now informs readiness without overriding live signals.`,
+    );
   }
 
   function handleStartEdit(entry: DecisionLogInput) {
@@ -293,7 +403,7 @@ export default function App() {
   }
 
   async function handleBackup() {
-    const result = await exportBackup(entries, nudgeFeedback);
+    const result = await exportBackup(entries, nudgeFeedback, reflections);
     await track(result.ok ? "backup_export_success" : "backup_export_failure", result.message);
     return result.message;
   }
@@ -303,45 +413,38 @@ export default function App() {
     if (result.ok && result.entries) {
       setEntries(result.entries);
       setNudgeFeedback(result.feedback ?? []);
+      const restoredReflections = result.reflections ?? [];
+      setReflections(restoredReflections);
+      const restoredToday = reflectionForDay(restoredReflections);
+      setDayRating(restoredToday?.rating ?? "good");
+      setDayFactors(restoredToday?.factors ?? []);
+      setDayReflectionNote(restoredToday?.note ?? "");
     }
     await track(result.ok ? "backup_restore_success" : "backup_restore_failure", result.message);
     return result.message;
   }
 
-  async function handleRemindersChange(enabled: boolean) {
+  function handleRemindersChange(enabled: boolean) {
     setRemindersEnabled(enabled);
-    if (Platform.OS === "web") {
-      setReminderStatus("Reminders work on the installed app, not the web preview.");
-      return;
-    }
-    if (enabled) {
-      const ok = await scheduleDailyReminders();
-      setReminderStatus(
-        ok
-          ? "Reminders on: 9am, 1pm, 6pm, and 9pm."
-          : "Allow notifications in your system settings, then turn this on again.",
-      );
-    } else {
-      await cancelDailyReminders();
-      setReminderStatus("");
-    }
   }
 
   async function handleLocationNudgeChange(enabled: boolean) {
-    setLocationNudgeEnabled(enabled);
     if (Platform.OS === "web") {
-      setLocationNudgeStatus("The location nudge works on the installed app, not the web preview.");
+      setLocationNudgeEnabled(false);
+      setLocationNudgeStatus("Travel weather alerts work on the installed app, not the web preview.");
       return;
     }
     if (enabled) {
       const ok = await startLocationNudge();
+      setLocationNudgeEnabled(ok);
       setLocationNudgeStatus(
         ok
-          ? "Watching for a move to a new place."
-          : "Allow location access all the time in your system settings, then turn this on again.",
+          ? "Watching for meaningful place and weather changes while you travel."
+          : "Allow background location and notifications in system settings, then turn this on again.",
       );
     } else {
       await stopLocationNudge();
+      setLocationNudgeEnabled(false);
       setLocationNudgeStatus("");
     }
   }
@@ -349,6 +452,11 @@ export default function App() {
   function handleClearAll() {
     setEntries([]);
     setNudgeFeedback([]);
+    setReflections([]);
+    setDayRating("good");
+    setDayFactors([]);
+    setDayReflectionNote("");
+    setReflectionStatus("");
     if (syncEnabled) void clearRemoteData();
   }
 
@@ -394,10 +502,29 @@ export default function App() {
                     onSave={handleSave}
                     weekStats={{
                       averageMood: summary.averageMood,
+                      trackedDays: summary.trackedDays,
                       streak,
                       deltaPct: moodDelta.deltaPct,
                       hasComparison: moodDelta.hasComparison,
                       hasEntries: entries.length > 0,
+                      weatherCondition: weeklyWeather,
+                    }}
+                    reflection={{
+                      rating: dayRating,
+                      factors: dayFactors,
+                      note: dayReflectionNote,
+                      savedToday: todayReflection !== null,
+                      status: reflectionStatus,
+                      onRating: (rating) => {
+                        setDayRating(rating);
+                        setReflectionStatus("");
+                      },
+                      onToggleFactor: handleToggleDayFactor,
+                      onNote: (value) => {
+                        setDayReflectionNote(value);
+                        setReflectionStatus("");
+                      },
+                      onSave: handleSaveDailyReflection,
                     }}
                   />
                 </>
@@ -432,6 +559,7 @@ export default function App() {
                   nudgeFeedback={nudgeFeedback}
                   onNudgeFeedback={handleNudgeFeedback}
                   forecast={forecast}
+                  reflections={reflections}
                 />
               ) : null}
 
@@ -451,6 +579,7 @@ export default function App() {
                   onLocationNudgeChange={handleLocationNudgeChange}
                   locationNudgeStatus={locationNudgeStatus}
                   entryCount={entries.length}
+                  reflectionCount={reflections.length}
                   version={APP_VERSION}
                   diagnostics={diagnostics}
                   onBackup={handleBackup}

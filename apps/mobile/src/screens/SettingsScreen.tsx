@@ -24,6 +24,7 @@ export function SettingsScreen({
   onLocationNudgeChange,
   locationNudgeStatus,
   entryCount,
+  reflectionCount,
   version,
   diagnostics,
   onBackup,
@@ -44,6 +45,7 @@ export function SettingsScreen({
   onLocationNudgeChange: (enabled: boolean) => void;
   locationNudgeStatus: string;
   entryCount: number;
+  reflectionCount: number;
   version: string;
   diagnostics: AppDiagnostics;
   onBackup: () => Promise<string>;
@@ -115,8 +117,9 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>Daily reminders</Text>
         <Text style={styles.cardBody}>
-          Off by default. When on, Weathered nudges you to check in at 9am, 1pm, 6pm, and 9pm. You can still check in
-          any time. Reminders work on the installed app, not the web preview.
+          Four check-in notifications cover morning, afternoon, evening, and night: 9am, 1pm, 6pm, and 9pm.
+          Weathered restores them whenever the installed app opens. You can still check in any time; the web preview
+          cannot send these device notifications.
         </Text>
         <View style={styles.sourceRow}>
           <Chip label="Off" selected={!remindersEnabled} onPress={() => onRemindersChange(false)} />
@@ -139,10 +142,11 @@ export function SettingsScreen({
       </Card>
 
       <Card>
-        <Text style={styles.cardTitle}>Location nudge (beta)</Text>
+        <Text style={styles.cardTitle}>Travel weather alerts</Text>
         <Text style={styles.cardBody}>
-          Off by default. When on, Weathered watches for you moving to a new place and reminds you to check in there.
-          This needs background location permission and can be delayed by battery saver on some phones.
+          Off by default. When on, Weathered notices travel beyond roughly 5 km, refreshes the destination weather,
+          and notifies you when the place or conditions meaningfully change. Alerts are limited to one every 90
+          minutes. This needs background location and notification permission on the installed app.
         </Text>
         <View style={styles.sourceRow}>
           <Chip label="Off" selected={!locationNudgeEnabled} onPress={() => onLocationNudgeChange(false)} />
@@ -206,7 +210,8 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>Your data</Text>
         <Text style={styles.cardBody}>
-          {entryCount} check-in{entryCount === 1 ? "" : "s"} stored on this device.
+          {entryCount} check-in{entryCount === 1 ? "" : "s"} and {reflectionCount} daily reflection
+          {reflectionCount === 1 ? "" : "s"} stored on this device.
         </Text>
         <View style={{ height: 12 }} />
         <PrimaryButton label="Clear all data" onPress={confirmClear} tone="ghost" />

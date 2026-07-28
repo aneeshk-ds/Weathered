@@ -11,19 +11,38 @@ import {
   normalizeStoredEntries,
   normalizeStoredFeedback,
   normalizeStoredPreferences,
+  normalizeStoredReflections,
 } from "../apps/mobile/src/lib/storage.ts";
 import { buildSummary, isWithinLast7Days } from "../apps/mobile/src/lib/summary.ts";
+import { buildReflectionSummary } from "../apps/mobile/src/lib/reflections.ts";
 
-const CATEGORIES = ["social", "work", "spending", "other"];
+const CATEGORIES = [
+  "social",
+  "work",
+  "spending",
+  "scrolling",
+  "watching_tv",
+  "gaming",
+  "exercise",
+  "eating",
+  "other",
+];
 const OUTCOMES = {
-  social: ["go_out", "cancel"],
-  work: ["work", "skip"],
-  spending: ["buy", "avoid"],
-  other: ["note_only"],
+  social: ["go_out", "stay_in", "message_someone", "later", "cancel"],
+  work: ["work", "do_less", "take_break", "later", "skip"],
+  spending: ["buy", "compare", "later", "avoid"],
+  scrolling: ["do_now", "do_less", "later", "stop"],
+  watching_tv: ["do_now", "do_less", "later", "stop"],
+  gaming: ["do_now", "do_less", "later", "stop"],
+  exercise: ["do_now", "do_less", "later", "rest"],
+  eating: ["do_now", "do_less", "later", "skip"],
+  other: ["do_now", "do_less", "later", "skip", "note_only"],
 };
 const ENERGIES = ["low", "medium", "high"];
 const CONDITIONS = ["sunny", "cloudy", "rainy"];
 const ENTRY_LIMIT = 5000;
+const REFLECTION_RATINGS = ["rough", "mixed", "good", "great"];
+const REFLECTION_FACTORS = ["weather", "work", "people", "screen_time", "movement", "food", "rest"];
 const nowMs = Date.now();
 
 function isoDaysAgo(days, offsetMinutes = 0) {
@@ -60,9 +79,17 @@ function measure(label, fn) {
 }
 
 const entries = Array.from({ length: ENTRY_LIMIT }, (_, index) => makeEntry(index));
+const reflections = Array.from({ length: ENTRY_LIMIT }, (_, index) => ({
+  id: `reflection-stress-${index}`,
+  userId: "local",
+  rating: REFLECTION_RATINGS[index % REFLECTION_RATINGS.length],
+  factors: [REFLECTION_FACTORS[index % REFLECTION_FACTORS.length]],
+  note: index % 7 === 0 ? `reflection note ${index}` : undefined,
+  timestamp: isoDaysAgo(index, index % 60),
+}));
 const payload = {
   app: "weathered",
-  version: 1,
+  version: 2,
   exportedAt: new Date(nowMs).toISOString(),
   entries,
   feedback: Array.from({ length: 250 }, (_, index) => ({
@@ -70,6 +97,7 @@ const payload = {
     value: index % 2 === 0 ? "helpful" : "not_now",
     timestamp: isoDaysAgo(index % 10),
   })),
+  reflections,
 };
 
 const results = [];
@@ -79,6 +107,16 @@ results.push(normalizedResult);
 assert.ok(normalizedResult.value, "large valid backup should normalize");
 assert.equal(normalizedResult.value.entries.length, ENTRY_LIMIT);
 assert.equal(normalizedResult.value.feedback.length, 250);
+assert.equal(normalizedResult.value.reflections.length, ENTRY_LIMIT);
+
+const reflectionSummaryResult = measure("build reflection summary from 5000 reflections", () =>
+  buildReflectionSummary(normalizedResult.value.reflections),
+);
+results.push(reflectionSummaryResult);
+assert.equal(reflectionSummaryResult.value.count, ENTRY_LIMIT);
+assert.ok(
+  reflectionSummaryResult.value.averageScore >= 3 && reflectionSummaryResult.value.averageScore <= 9,
+);
 
 const summaryResult = measure("build weekly summary from 5000 entries", () =>
   buildSummary(normalizedResult.value.entries),
@@ -124,6 +162,7 @@ const readinessResult = measure("build readiness from 5000 entries", () =>
     energy: currentEntry.energy,
     weather: currentEntry.weather,
     entries: normalizedResult.value.entries,
+    reflections: normalizedResult.value.reflections,
   }),
 );
 results.push(readinessResult);
@@ -166,6 +205,7 @@ assert.equal(migratedStoredEntry[0].userId, "local");
 assert.equal(migratedStoredEntry[0].note, undefined);
 
 assert.equal(normalizeStoredFeedback(payload.feedback).length, payload.feedback.length);
+assert.equal(normalizeStoredReflections(reflections).length, ENTRY_LIMIT);
 assert.equal(
   normalizeStoredFeedback([...payload.feedback, { nudgeId: "", value: "helpful", timestamp: isoDaysAgo(1) }]).length,
   payload.feedback.length,

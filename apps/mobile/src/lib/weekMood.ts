@@ -6,17 +6,19 @@ export function sameDay(a: Date, b: Date): boolean {
 
 /**
  * Average mood per day for the trailing seven days, oldest first. Days with no
- * entries return 0 so the week chart always keeps a fixed seven-slot shape.
+ * entries return null so absence is never mistaken for a zero mood.
  * `today` is injectable to keep the function deterministic under test.
  */
-export function buildWeekMood(entries: DecisionLogInput[], today: Date = new Date()): number[] {
-  const week: number[] = [];
+export function buildWeekMood(entries: DecisionLogInput[], today: Date = new Date()): Array<number | null> {
+  const week: Array<number | null> = [];
   for (let offset = 6; offset >= 0; offset -= 1) {
     const day = new Date(today);
     day.setDate(today.getDate() - offset);
     const dayEntries = entries.filter((entry) => sameDay(new Date(entry.timestamp), day));
-    const avg = dayEntries.length ? dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length : 0;
-    week.push(Math.round(avg * 10) / 10);
+    const avg = dayEntries.length
+      ? dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length
+      : null;
+    week.push(avg === null ? null : Math.round(avg * 10) / 10);
   }
   return week;
 }
@@ -24,7 +26,8 @@ export function buildWeekMood(entries: DecisionLogInput[], today: Date = new Dat
 export interface WeekDay {
   key: string;
   label: string;
-  value: number;
+  value: number | null;
+  hasData: boolean;
   isToday: boolean;
 }
 
@@ -47,8 +50,14 @@ export function buildWeekDays(entries: DecisionLogInput[], today: Date = new Dat
     const dayEntries = entries.filter((entry) => sameDay(new Date(entry.timestamp), day));
     const value = dayEntries.length
       ? Math.round((dayEntries.reduce((sum, entry) => sum + entry.mood, 0) / dayEntries.length) * 10) / 10
-      : 0;
-    days.push({ key: weekDayKey(day), label: WEEKDAY_INITIAL[day.getDay()], value, isToday: offset === 0 });
+      : null;
+    days.push({
+      key: weekDayKey(day),
+      label: WEEKDAY_INITIAL[day.getDay()],
+      value,
+      hasData: value !== null,
+      isToday: offset === 0,
+    });
   }
   return days;
 }

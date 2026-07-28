@@ -1,6 +1,10 @@
-import type { GuidanceCard, DecisionLogInput, Insight, WeeklySummary } from "@weathered/shared";
-
-const DECISION_CATEGORIES: DecisionLogInput["decisionCategory"][] = ["social", "work", "spending", "other"];
+import {
+  DECISION_CATEGORIES,
+  type GuidanceCard,
+  type DecisionLogInput,
+  type Insight,
+  type WeeklySummary,
+} from "@weathered/shared";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function isWithinLast7Days(timestamp: string, nowMs = Date.now()) {
@@ -16,10 +20,20 @@ export function filterEntriesWithinLast7Days(entries: DecisionLogInput[], nowMs 
 export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
   const weeklyEntries = filterEntriesWithinLast7Days(entries);
   const totalEntries = weeklyEntries.length;
+  const dailyMood = new Map<string, number[]>();
+  weeklyEntries.forEach((entry) => {
+    const date = new Date(entry.timestamp);
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    dailyMood.set(key, [...(dailyMood.get(key) ?? []), entry.mood]);
+  });
+  const dailyAverages = [...dailyMood.values()].map(
+    (moods) => moods.reduce((sum, mood) => sum + mood, 0) / moods.length,
+  );
+  const trackedDays = dailyAverages.length;
   const averageMood =
-    totalEntries === 0
+    trackedDays === 0
       ? 0
-      : Number((weeklyEntries.reduce((sum, item) => sum + item.mood, 0) / totalEntries).toFixed(1));
+      : Number((dailyAverages.reduce((sum, dailyAverage) => sum + dailyAverage, 0) / trackedDays).toFixed(1));
 
   const decisionCounts = DECISION_CATEGORIES.reduce<Record<string, number>>((acc, category) => {
     acc[category] = weeklyEntries.filter((item) => item.decisionCategory === category).length;
@@ -126,6 +140,7 @@ export function buildSummary(entries: DecisionLogInput[]): WeeklySummary {
 
   return {
     totalEntries,
+    trackedDays,
     averageMood,
     decisionCounts,
     topInsights,

@@ -8,8 +8,27 @@ import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
 import { buildWeekDays, buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
 import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
-import { computeStreak, supportiveMoodCaption, weeklyMoodDelta } from "../apps/mobile/src/lib/homeStats.ts";
+import {
+  computeStreak,
+  dominantWeeklyWeather,
+  supportiveMoodCaption,
+  weeklyMoodDelta,
+} from "../apps/mobile/src/lib/homeStats.ts";
 import { reminderSchedule } from "../apps/mobile/src/lib/reminders.ts";
+import { buildDayPartInsights, dayPartFor } from "../apps/mobile/src/lib/dayParts.ts";
+import {
+  buildReflectionSummary,
+  dayRatingScore,
+  recentReflectionReadinessSignal,
+  reflectionForDay,
+  upsertDailyReflection,
+} from "../apps/mobile/src/lib/reflections.ts";
+import {
+  assessTravelWeather,
+  normalizeTravelWeatherState,
+  TRAVEL_GEOFENCE_RADIUS_M,
+  TRAVEL_NOTIFICATION_COOLDOWN_MS,
+} from "../apps/mobile/src/lib/travelWeather.ts";
 
 const baseWeather = {
   condition: "cloudy",
@@ -91,6 +110,63 @@ function makeEntry(overrides = {}) {
   assert.equal(nudges[0].id, "nudge-low-energy-version", "low energy should lead with the lighter-version nudge");
 }
 
+// --- behavior.ts: sparse old patterns remain predictive ---
+{
+  const weather = { ...baseWeather, condition: "cloudy" };
+  const read = buildBehavioralRead({ mood: 6, energy: "medium", weather });
+  const unrelated = Array.from({ length: 25 }, (_, index) =>
+    makeEntry({
+      id: `unrelated-${index}`,
+      decisionCategory: "social",
+      decisionOutcome: "go_out",
+      mood: 4,
+      timestamp: new Date(2026, 6, 28 - index, 9, 0, 0).toISOString(),
+    }),
+  );
+  const oldWorkPattern = [
+    makeEntry({
+      id: "old-work-1",
+      decisionCategory: "work",
+      decisionOutcome: "work",
+      mood: 9,
+      weather,
+      timestamp: "2020-01-01T09:00:00.000Z",
+    }),
+    makeEntry({
+      id: "old-work-2",
+      decisionCategory: "work",
+      decisionOutcome: "work",
+      mood: 9,
+      weather,
+      timestamp: "2022-01-01T09:00:00.000Z",
+    }),
+  ];
+  const entries = [...unrelated, ...oldWorkPattern];
+  const readiness = buildDecisionReadiness({
+    read,
+    category: "work",
+    mood: 6,
+    energy: "medium",
+    weather,
+    entries,
+  });
+  assert.ok(
+    readiness.drivers.includes("pattern mood 9.0"),
+    "readiness should use matching old history beyond the former 20-entry window",
+  );
+  const nudges = buildRecommendationNudges({
+    read,
+    category: "work",
+    mood: 6,
+    energy: "medium",
+    weather,
+    entries,
+  });
+  const patternNudge = nudges.find((nudge) => nudge.id === "nudge-pattern-encourage");
+  assert.ok(patternNudge, "recommendations should use sparse old matching patterns");
+  assert.match(patternNudge.evidenceLabel, /2 similar cloudy\/work logs/);
+}
+
 // --- insights.ts: rainy social cancel pattern surfaces ---
 {
   const rainyCancel = makeEntry({
@@ -140,11 +216,7 @@ function makeEntry(overrides = {}) {
   assert.equal(week.length, 7, "week should always have seven slots");
   assert.equal(week[6], 7, "today slot should average moods 6 and 8");
   assert.equal(week[5], 4, "yesterday slot should hold the single mood");
-  assert.equal(
-    week.slice(0, 5).reduce((sum, v) => sum + v, 0),
-    0,
-    "days with no entries should be zero",
-  );
+  assert.ok(week.slice(0, 5).every((value) => value === null), "days with no entries should be explicitly missing");
 }
 
 // --- personalize.ts: helpful first, not_now last, stable in between ---
@@ -240,6 +312,33 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   assert.equal(delta.deltaPct, 60, "8 vs 5 is a +60% change");
   const noPrev = weeklyMoodDelta([makeEntry({ mood: 7, timestamp: daysAgoIso(1) })], today);
   assert.equal(noPrev.hasComparison, false, "no previous week means no comparison");
+
+  const balancedByDay = weeklyMoodDelta(
+    [
+      makeEntry({ mood: 10, timestamp: daysAgoIso(1) }),
+      makeEntry({ mood: 10, timestamp: new Date(2026, 6, 19, 18, 0, 0).toISOString() }),
+      makeEntry({ mood: 2, timestamp: daysAgoIso(2) }),
+      makeEntry({ mood: 4, timestamp: daysAgoIso(8) }),
+    ],
+    today,
+  );
+  assert.equal(balancedByDay.current, 6, "each tracked day has equal weight even when one day has multiple logs");
+}
+
+// --- homeStats.ts: weekly weather signal ---
+{
+  const today = new Date(2026, 6, 20, 12, 0, 0);
+  const recent = (daysAgo, condition) =>
+    makeEntry({
+      timestamp: new Date(2026, 6, 20 - daysAgo, 9, 0, 0).toISOString(),
+      weather: { ...baseWeather, condition },
+    });
+  assert.equal(
+    dominantWeeklyWeather([recent(1, "rainy"), recent(2, "rainy"), recent(3, "sunny")], today),
+    "rainy",
+    "the most frequently logged weekly weather is returned",
+  );
+  assert.equal(dominantWeeklyWeather([], today), null, "no weekly entries means no dominant weather");
 }
 
 // --- reminders.ts: four daily nudge slots ---
@@ -257,6 +356,183 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   );
 }
 
+// --- travelWeather.ts: destination weather alerts with cooldown safeguards ---
+{
+  const capturedAt = "2026-07-20T08:00:00.000Z";
+  const sample = (overrides = {}) => ({
+    latitude: 12.9716,
+    longitude: 77.5946,
+    capturedAt,
+    weather: {
+      condition: "cloudy",
+      temperatureC: 24,
+      humidity: 60,
+      locationLabel: "Bengaluru",
+      ...(overrides.weather || {}),
+    },
+    ...overrides,
+  });
+  const now = new Date("2026-07-20T10:00:00.000Z");
+
+  assert.equal(TRAVEL_GEOFENCE_RADIUS_M, 5000, "travel monitoring ignores ordinary short-distance movement");
+
+  const firstDestination = assessTravelWeather({}, sample(), now);
+  assert.equal(firstDestination.shouldNotify, true, "the first destination sample produces a useful weather alert");
+  assert.match(firstDestination.title, /Weather in Bengaluru/);
+  assert.match(firstDestination.body, /Cloudy, 24°C/);
+
+  const unchanged = assessTravelWeather(
+    { lastSample: sample({ capturedAt: "2026-07-20T07:00:00.000Z" }) },
+    sample(),
+    now,
+  );
+  assert.equal(unchanged.shouldNotify, false, "unchanged weather in the same labelled place stays quiet");
+
+  const changedCondition = assessTravelWeather(
+    {
+      lastSample: sample({
+        capturedAt: "2026-07-20T07:00:00.000Z",
+        weather: { condition: "sunny", temperatureC: 28, humidity: 48, locationLabel: "Bengaluru" },
+      }),
+    },
+    sample({
+      weather: { condition: "rainy", temperatureC: 23, humidity: 82, locationLabel: "Mysuru" },
+    }),
+    now,
+  );
+  assert.equal(changedCondition.shouldNotify, true);
+  assert.ok(changedCondition.reasons.includes("condition"));
+  assert.ok(changedCondition.reasons.includes("new_place"));
+  assert.match(changedCondition.title, /Weather changed in Mysuru/);
+  assert.match(changedCondition.body, /sunny to rainy/);
+
+  const temperatureOnly = assessTravelWeather(
+    { lastSample: sample() },
+    sample({ weather: { condition: "cloudy", temperatureC: 29, humidity: 60, locationLabel: "Bengaluru" } }),
+    now,
+  );
+  assert.equal(temperatureOnly.shouldNotify, true, "a five-degree shift is meaningful without a condition change");
+  assert.deepEqual(temperatureOnly.reasons, ["temperature"]);
+  assert.match(temperatureOnly.body, /5° warmer/);
+
+  const placeOnly = assessTravelWeather(
+    { lastSample: sample() },
+    sample({ weather: { condition: "cloudy", temperatureC: 24, humidity: 60, locationLabel: "Mysuru" } }),
+    now,
+  );
+  assert.equal(placeOnly.shouldNotify, true, "a clearly labelled new place receives its current weather");
+  assert.deepEqual(placeOnly.reasons, ["new_place"]);
+
+  const cooldown = assessTravelWeather(
+    {
+      lastSample: sample(),
+      lastNotifiedAt: new Date(now.getTime() - TRAVEL_NOTIFICATION_COOLDOWN_MS + 60_000).toISOString(),
+    },
+    sample({ weather: { condition: "rainy", temperatureC: 20, humidity: 85, locationLabel: "Mysuru" } }),
+    now,
+  );
+  assert.equal(cooldown.shouldNotify, false, "travel alerts are rate-limited");
+  assert.ok(cooldown.reasons.includes("cooldown"));
+  assert.equal(cooldown.nextState.lastSample.weather.locationLabel, "Mysuru", "the quiet sample becomes the new baseline");
+
+  assert.deepEqual(normalizeTravelWeatherState({ lastSample: { nope: true }, lastNotifiedAt: "bad-date" }), {});
+}
+
+// --- dayParts.ts: reminder-aligned time boundaries and full-history aggregation ---
+{
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 5, 0, 0)), "morning");
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 11, 59, 0)), "morning");
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 12, 0, 0)), "afternoon");
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 17, 0, 0)), "evening");
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 21, 0, 0)), "night");
+  assert.equal(dayPartFor(new Date(2026, 6, 20, 4, 59, 0)), "night");
+
+  const entries = [
+    makeEntry({ mood: 8, timestamp: new Date(2020, 0, 1, 9, 0, 0).toISOString(), weather: { condition: "sunny" } }),
+    makeEntry({ mood: 6, timestamp: new Date(2026, 6, 20, 10, 0, 0).toISOString(), weather: { condition: "sunny" } }),
+    makeEntry({ mood: 4, timestamp: new Date(2026, 6, 20, 13, 0, 0).toISOString(), weather: { condition: "rainy" } }),
+    makeEntry({ mood: 9, timestamp: new Date(2026, 6, 20, 22, 0, 0).toISOString(), weather: { condition: "cloudy" } }),
+  ];
+  const insights = buildDayPartInsights(entries);
+  assert.equal(insights.length, 4, "all four parts of the day are always represented");
+  assert.equal(insights[0].averageMood, 7, "morning averages include old and recent history");
+  assert.equal(insights[0].checkIns, 2);
+  assert.equal(insights[0].dominantWeather, "sunny");
+  assert.equal(insights[1].averageMood, 4);
+  assert.equal(insights[2].averageMood, null, "a missing time period remains explicitly empty");
+  assert.equal(insights[2].checkIns, 0);
+  assert.equal(insights[3].averageMood, 9);
+}
+
+// --- reflections.ts: one transparent, bounded qualitative signal per day ---
+{
+  const now = new Date(2026, 6, 20, 22, 0, 0);
+  const goodReflection = {
+    id: "reflection-2026-07-20",
+    userId: "local",
+    rating: "good",
+    factors: ["work", "movement"],
+    note: "Focused work and a walk helped.",
+    timestamp: now.toISOString(),
+  };
+  const olderRoughReflection = {
+    id: "reflection-2026-07-19",
+    userId: "local",
+    rating: "rough",
+    factors: ["screen_time", "rest"],
+    timestamp: new Date(2026, 6, 19, 22, 0, 0).toISOString(),
+  };
+
+  assert.equal(dayRatingScore("rough"), 3);
+  assert.equal(dayRatingScore("great"), 9);
+  assert.equal(reflectionForDay([goodReflection], now)?.note, "Focused work and a walk helped.");
+
+  const replacement = { ...goodReflection, rating: "great", timestamp: new Date(2026, 6, 20, 23, 0, 0).toISOString() };
+  const upserted = upsertDailyReflection([goodReflection, olderRoughReflection], replacement);
+  assert.equal(upserted.length, 2, "saving again replaces the same local day");
+  assert.equal(upserted[0].rating, "great");
+
+  const summary = buildReflectionSummary([goodReflection, olderRoughReflection]);
+  assert.equal(summary.count, 2);
+  assert.equal(summary.averageScore, 5, "good 7 and rough 3 average to 5");
+  assert.equal(summary.topFactor, "work", "factor ties use the stable displayed order");
+
+  const recentSignal = recentReflectionReadinessSignal([goodReflection], now);
+  assert.deepEqual(recentSignal, { score: 7, adjustment: 2, label: "Good" });
+  assert.equal(
+    recentReflectionReadinessSignal(
+      [{ ...olderRoughReflection, timestamp: "2020-01-01T22:00:00.000Z" }],
+      now,
+    ),
+    null,
+    "old reflections remain historical context and do not adjust current readiness",
+  );
+
+  const read = buildBehavioralRead({ mood: 6, energy: "medium", weather: baseWeather });
+  const baseline = buildDecisionReadiness({
+    read,
+    category: "work",
+    mood: 6,
+    energy: "medium",
+    weather: baseWeather,
+    entries: [],
+  });
+  const withRecentReflection = buildDecisionReadiness({
+    read,
+    category: "work",
+    mood: 6,
+    energy: "medium",
+    weather: baseWeather,
+    entries: [],
+    reflections: [{ ...goodReflection, timestamp: new Date().toISOString() }],
+  });
+  assert.equal(withRecentReflection.score, baseline.score + 2, "a good recent day adds only its bounded adjustment");
+  assert.ok(
+    withRecentReflection.drivers.some((driver) => driver.includes("latest day reflection 7/10 (+2)")),
+    "readiness discloses exactly how the reflection was quantified",
+  );
+}
+
 // --- weekMood.ts: buildWeekDays real labels + today flag ---
 {
   const today = new Date(2026, 6, 15, 12, 0, 0);
@@ -264,6 +540,8 @@ assert.match(supportiveMoodCaption(3), /Small steps/);
   assert.equal(days.length, 7, "seven day slots");
   assert.equal(days[6].isToday, true, "the last slot is today");
   assert.equal(days[6].value, 8, "today reflects today's check-in");
+  assert.equal(days[6].hasData, true, "today is marked as tracked");
+  assert.ok(days.slice(0, 6).every((day) => day.value === null && !day.hasData), "missing days stay explicit");
   assert.ok(
     days.slice(0, 6).every((day) => !day.isToday),
     "only today is flagged",

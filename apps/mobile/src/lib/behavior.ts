@@ -1,6 +1,7 @@
 import type {
   BehavioralRead,
   BehaviorSignal,
+  DailyReflection,
   DecisionCategory,
   DecisionLogInput,
   DecisionReadiness,
@@ -8,6 +9,7 @@ import type {
   RecommendationNudge,
   WeatherSnapshot,
 } from "@weathered/shared";
+import { recentReflectionReadinessSignal } from "./reflections.ts";
 
 export function buildBehavioralRead({
   mood,
@@ -142,6 +144,7 @@ export function buildDecisionReadiness({
   energy,
   weather,
   entries = [],
+  reflections = [],
 }: {
   read: BehavioralRead;
   category: DecisionCategory;
@@ -149,11 +152,13 @@ export function buildDecisionReadiness({
   energy: EnergyLevel;
   weather: WeatherSnapshot;
   entries?: DecisionLogInput[];
+  reflections?: DailyReflection[];
 }): DecisionReadiness {
   const riskSignal = read.signals.find((signal) => signal.label === "Decision Risk");
   const focusSignal = read.signals.find((signal) => signal.label === "Focus");
   const patternSample = getPatternSample(entries, category, weather);
   const patternMood = patternSample.length >= 2 ? getAverageMood(patternSample) : null;
+  const reflectionSignal = recentReflectionReadinessSignal(reflections);
   const drivers = [`Mood ${mood}/10`, `${formatEnergyLabel(energy)} energy`, `${weather.condition} context`];
   let score = 50 + (mood - 5) * 5;
 
@@ -187,6 +192,13 @@ export function buildDecisionReadiness({
     drivers.push(`pattern mood ${patternMood.toFixed(1)}`);
   }
 
+  if (reflectionSignal) {
+    score += reflectionSignal.adjustment;
+    drivers.push(
+      `latest day reflection ${reflectionSignal.score}/10 (${reflectionSignal.adjustment >= 0 ? "+" : ""}${reflectionSignal.adjustment})`,
+    );
+  }
+
   const normalizedScore = clampScore(Math.round(score));
 
   if (normalizedScore >= 75) {
@@ -216,12 +228,11 @@ export function buildDecisionReadiness({
 }
 
 function getPatternSample(entries: DecisionLogInput[], category: DecisionCategory, weather: WeatherSnapshot) {
-  const recentEntries = entries.slice(0, 20);
-  const exactMatches = recentEntries.filter(
+  const exactMatches = entries.filter(
     (entry) => entry.decisionCategory === category && entry.weather.condition === weather.condition,
   );
 
-  return exactMatches.length >= 2 ? exactMatches : recentEntries.filter((entry) => entry.decisionCategory === category);
+  return exactMatches.length >= 2 ? exactMatches : entries.filter((entry) => entry.decisionCategory === category);
 }
 
 function buildPatternNudge({
@@ -233,8 +244,7 @@ function buildPatternNudge({
   category: DecisionCategory;
   weather: WeatherSnapshot;
 }): RecommendationNudge | null {
-  const recentEntries = entries.slice(0, 20);
-  const exactMatches = recentEntries.filter(
+  const exactMatches = entries.filter(
     (entry) => entry.decisionCategory === category && entry.weather.condition === weather.condition,
   );
   const sample = getPatternSample(entries, category, weather);
@@ -251,7 +261,7 @@ function buildPatternNudge({
   const evidenceLabel =
     exactMatches.length >= 2
       ? `${exactMatches.length} similar ${weather.condition}/${category} logs`
-      : `${sample.length} recent ${category} logs`;
+      : `${sample.length} historical ${category} logs`;
 
   if (
     averageMood <= 5 ||
@@ -272,7 +282,7 @@ function buildPatternNudge({
     return {
       id: "nudge-pattern-encourage",
       title: "Your pattern supports action",
-      message: "Recent matching decisions tended to land in a steadier mood range.",
+      message: "Matching decisions in your history tended to land in a steadier mood range.",
       actionLabel: "Proceed, but keep it reversible",
       tone: "encourage",
       evidenceLabel: `${evidenceLabel} • avg mood ${averageMood.toFixed(1)}`,
@@ -316,6 +326,26 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       title: "Separate wanting from timing",
       message: "The purchase may still be right; the nudge is to make timing part of the decision.",
       actionLabel: "Check need, budget, and timing",
+      tone,
+    };
+  }
+
+  if (category === "scrolling" || category === "watching_tv" || category === "gaming") {
+    return {
+      id: `nudge-${tone}-screen-time`,
+      title: "Choose the amount before you start",
+      message: "Screen time feels better when the stopping point is part of the decision.",
+      actionLabel: "Pick now, less, later, or stop",
+      tone,
+    };
+  }
+
+  if (category === "exercise" || category === "eating") {
+    return {
+      id: `nudge-${tone}-body-care`,
+      title: "Match the choice to your body",
+      message: "Energy and mood can help you choose a full version, a lighter version, or rest.",
+      actionLabel: "Choose the kindest useful option",
       tone,
     };
   }

@@ -1,26 +1,28 @@
-import type { DecisionLogInput, RecommendationFeedback } from "@weathered/shared";
+import {
+  DECISION_CATEGORIES,
+  DECISION_OPTIONS,
+  type DailyReflection,
+  type DecisionCategory,
+  type DecisionLogInput,
+  type RecommendationFeedback,
+} from "@weathered/shared";
+import { DAY_FACTORS, DAY_RATINGS } from "./reflections.ts";
 
 const ENERGY_LEVELS = ["low", "medium", "high"] as const;
-const DECISION_CATEGORIES = ["social", "work", "spending", "other"] as const;
-const DECISION_OPTIONS = {
-  social: ["go_out", "cancel"],
-  work: ["work", "skip"],
-  spending: ["buy", "avoid"],
-  other: ["note_only"],
-} as const;
 const MAX_BACKUP_ENTRIES = 5000;
 const MAX_BACKUP_FEEDBACK = 5000;
+const MAX_BACKUP_REFLECTIONS = 5000;
 const MAX_ID_LENGTH = 160;
 const MAX_USER_ID_LENGTH = 80;
 const MAX_NOTE_LENGTH = 120;
+const MAX_REFLECTION_NOTE_LENGTH = 240;
 const MAX_LOCATION_LABEL_LENGTH = 120;
 const MAX_TIMESTAMP_LENGTH = 40;
-
-type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
 
 export interface NormalizedBackup {
   entries: DecisionLogInput[];
   feedback: RecommendationFeedback[];
+  reflections: DailyReflection[];
 }
 
 export function normalizeBackupPayload(value: unknown): NormalizedBackup | null {
@@ -35,6 +37,9 @@ export function normalizeBackupPayload(value: unknown): NormalizedBackup | null 
   if (Array.isArray(value.feedback) && value.feedback.length > MAX_BACKUP_FEEDBACK) {
     return null;
   }
+  if (Array.isArray(value.reflections) && value.reflections.length > MAX_BACKUP_REFLECTIONS) {
+    return null;
+  }
 
   const entries = value.entries.map(normalizeEntry).filter((entry): entry is DecisionLogInput => entry !== null);
 
@@ -46,6 +51,9 @@ export function normalizeBackupPayload(value: unknown): NormalizedBackup | null 
     entries,
     feedback: Array.isArray(value.feedback)
       ? value.feedback.map(normalizeFeedback).filter((item): item is RecommendationFeedback => item !== null)
+      : [],
+    reflections: Array.isArray(value.reflections)
+      ? value.reflections.map(normalizeReflection).filter((item): item is DailyReflection => item !== null)
       : [],
   };
 }
@@ -105,6 +113,36 @@ function normalizeFeedback(value: unknown): RecommendationFeedback | null {
   return {
     nudgeId: value.nudgeId,
     value: value.value,
+    timestamp: value.timestamp,
+  };
+}
+
+function normalizeReflection(value: unknown): DailyReflection | null {
+  if (!isRecord(value)) return null;
+
+  if (
+    !isBoundedString(value.id, MAX_ID_LENGTH) ||
+    !value.id.trim() ||
+    !isBoundedString(value.userId, MAX_USER_ID_LENGTH) ||
+    !value.userId.trim() ||
+    !DAY_RATINGS.includes(value.rating as DailyReflection["rating"]) ||
+    !Array.isArray(value.factors) ||
+    value.factors.length > DAY_FACTORS.length ||
+    !value.factors.every((factor) => DAY_FACTORS.includes(factor as DailyReflection["factors"][number])) ||
+    new Set(value.factors).size !== value.factors.length ||
+    (value.note !== undefined && !isBoundedString(value.note, MAX_REFLECTION_NOTE_LENGTH)) ||
+    !isBoundedString(value.timestamp, MAX_TIMESTAMP_LENGTH) ||
+    Number.isNaN(Date.parse(value.timestamp))
+  ) {
+    return null;
+  }
+
+  return {
+    id: value.id,
+    userId: value.userId,
+    rating: value.rating as DailyReflection["rating"],
+    factors: value.factors as DailyReflection["factors"],
+    note: value.note === undefined || !value.note.trim() ? undefined : value.note,
     timestamp: value.timestamp,
   };
 }

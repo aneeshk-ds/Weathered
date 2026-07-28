@@ -41,6 +41,11 @@ export const categoryColors: Record<string, string> = {
   social: "#8fb7a1",
   work: "#7fb3e0",
   spending: "#cdb676",
+  scrolling: "#8aa4c8",
+  watching_tv: "#9b8fd1",
+  gaming: "#d18fa8",
+  exercise: "#7fc5a0",
+  eating: "#d49b72",
   other: "#c98bd6",
 };
 

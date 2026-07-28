@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   DECISION_CATEGORIES,
+  type DailyReflection,
   type DecisionForecast,
   type DecisionLogInput,
   type BehavioralRead,
@@ -19,6 +20,13 @@ import { DonutRing, ProgressRing } from "../components/Rings";
 import { WeekBars } from "../components/WeekBars";
 import type { WeekDay } from "../lib/weekMood";
 import { filterEntriesWithinLast7Days } from "../lib/summary";
+import { buildDayPartInsights } from "../lib/dayParts";
+import { DayPartVisual } from "../components/DayPartVisual";
+import {
+  buildReflectionSummary,
+  DAY_FACTOR_LABELS,
+  DAY_RATING_LABELS,
+} from "../lib/reflections";
 
 const ACTED: string[] = ["go_out", "work", "buy"];
 
@@ -33,6 +41,7 @@ export function InsightsScreen({
   nudgeFeedback,
   onNudgeFeedback,
   forecast,
+  reflections,
 }: {
   insight: Insight | null;
   summary: WeeklySummary;
@@ -44,6 +53,7 @@ export function InsightsScreen({
   nudgeFeedback: RecommendationFeedback[];
   onNudgeFeedback: (id: string, value: RecommendationFeedbackValue) => void;
   forecast: DecisionForecast;
+  reflections: DailyReflection[];
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
@@ -53,6 +63,12 @@ export function InsightsScreen({
   const followed = weeklyEntries.filter((entry) => ACTED.includes(entry.decisionOutcome)).length;
   const followFrac = total > 0 ? followed / total : 0;
   const moodFrac = summary.averageMood > 0 ? summary.averageMood / 10 : 0;
+  const dayPartInsights = buildDayPartInsights(entries);
+  const strongestDayPart = dayPartInsights
+    .filter((part) => part.averageMood !== null)
+    .sort((a, b) => (b.averageMood ?? 0) - (a.averageMood ?? 0))[0];
+  const reflectionSummary = buildReflectionSummary(reflections);
+  const reflectionDriver = readiness.drivers.find((driver) => driver.startsWith("latest day reflection"));
 
   const segments = DECISION_CATEGORIES.map((category) => ({
     value: summary.decisionCounts[category] || 0,
@@ -116,7 +132,87 @@ export function InsightsScreen({
       <Card>
         <Text style={styles.cardLabel}>Mood this week</Text>
         <WeekBars days={weekDays} />
-        <Text style={styles.weekNote}>Last 7 days through today, {todayLabel}. Today is highlighted.</Text>
+        <Text style={styles.weekNote}>
+          {summary.trackedDays} of 7 days tracked through {todayLabel}. Dashes mean no check-in, not a low mood.
+        </Text>
+      </Card>
+
+      <Card>
+        <Text style={styles.cardLabel}>Day rhythm</Text>
+        <Text style={styles.rhythmHeadline}>
+          {strongestDayPart
+            ? `${strongestDayPart.label} is your highest tracked mood window at ${strongestDayPart.averageMood?.toFixed(1)}.`
+            : "Check in across the day to reveal your time-of-day pattern."}
+        </Text>
+        <View style={styles.dayPartGrid}>
+          {dayPartInsights.map((part) => (
+            <View key={part.key} style={styles.dayPartCell}>
+              <View style={styles.dayPartHeader}>
+                <Text style={styles.dayPartLabel}>{part.label}</Text>
+                <Text style={styles.dayPartTime}>{part.timeLabel}</Text>
+              </View>
+              <DayPartVisual part={part.key} height={46} />
+              <Text style={styles.dayPartMood}>
+                {part.averageMood === null ? "—" : part.averageMood.toFixed(1)}
+                {part.averageMood === null ? "" : " / 10"}
+              </Text>
+              <View style={styles.dayPartTrack}>
+                {part.averageMood !== null ? (
+                  <View style={[styles.dayPartFill, { width: `${part.averageMood * 10}%` }]} />
+                ) : null}
+              </View>
+              <Text style={styles.dayPartMeta}>
+                {part.checkIns === 0
+                  ? "No check-ins yet"
+                  : `${part.checkIns} check-in${part.checkIns === 1 ? "" : "s"} · ${part.dominantWeather}`}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.weekNote}>
+          Based on all saved check-ins in your local time. Empty periods mean no data, not low mood.
+        </Text>
+      </Card>
+
+      <Card>
+        <Text style={styles.cardLabel}>How your days land</Text>
+        {reflectionSummary.averageScore === null ? (
+          <Text style={styles.rhythmHeadline}>
+            Your end-of-day reflections will appear here as a transparent decision signal.
+          </Text>
+        ) : (
+          <>
+            <View style={styles.reflectionSummaryRow}>
+              <ProgressRing
+                size={80}
+                fraction={reflectionSummary.averageScore / 10}
+                value={reflectionSummary.averageScore.toFixed(1)}
+                unit="/ 10"
+              />
+              <View style={styles.reflectionCopy}>
+                <Text style={styles.reflectionTitle}>
+                  {reflectionSummary.count} reflected day{reflectionSummary.count === 1 ? "" : "s"}
+                </Text>
+                <Text style={styles.reflectionMeta}>
+                  Latest: {DAY_RATING_LABELS[reflectionSummary.latest!.rating]}
+                </Text>
+                <Text style={styles.reflectionMeta}>
+                  {reflectionSummary.topFactor
+                    ? `Most named influence: ${DAY_FACTOR_LABELS[reflectionSummary.topFactor]}`
+                    : "No contributing factor named yet"}
+                </Text>
+              </View>
+            </View>
+            {reflectionSummary.latest?.note ? (
+              <Text style={styles.reflectionQuote}>“{reflectionSummary.latest.note}”</Text>
+            ) : null}
+            <Text style={styles.weekNote}>
+              {reflectionDriver
+                ? `Current readiness includes ${reflectionDriver}.`
+                : "Older reflections remain in your pattern summary but do not override today's live signals."}
+            </Text>
+          </>
+        )}
       </Card>
 
       <Card>
@@ -191,6 +287,29 @@ const makeStyles = (colors: Palette) =>
     ringLabel: { fontSize: 11, color: colors.muted, marginTop: 8 },
     cardLabel: { fontSize: 13, color: colors.muted, marginBottom: 8 },
     weekNote: { fontSize: 11, color: colors.dim, marginTop: 8 },
+    rhythmHeadline: { fontSize: 13, color: colors.text, lineHeight: 19, marginBottom: 10 },
+    dayPartGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    dayPartCell: { flexGrow: 1, flexBasis: "46%", minWidth: 130, backgroundColor: colors.card2, borderRadius: 10, padding: 10 },
+    dayPartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 6 },
+    dayPartLabel: { fontSize: 12, fontWeight: "600", color: colors.text },
+    dayPartTime: { fontSize: 10, color: colors.dim },
+    dayPartMood: { fontSize: 17, fontWeight: "600", color: colors.accent, marginTop: 7 },
+    dayPartTrack: { height: 4, backgroundColor: colors.line, borderRadius: 2, overflow: "hidden", marginTop: 6 },
+    dayPartFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+    dayPartMeta: { fontSize: 10, color: colors.muted, marginTop: 6, textTransform: "capitalize" },
+    reflectionSummaryRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+    reflectionCopy: { flex: 1 },
+    reflectionTitle: { fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 5 },
+    reflectionMeta: { fontSize: 12, color: colors.muted, lineHeight: 18 },
+    reflectionQuote: {
+      fontSize: 12,
+      color: colors.text,
+      lineHeight: 18,
+      backgroundColor: colors.card2,
+      borderRadius: 8,
+      padding: 10,
+      marginTop: 10,
+    },
     donutRow: { flexDirection: "row", alignItems: "center", gap: 16 },
     legend: { flex: 1, gap: 6 },
     legendItem: { flexDirection: "row", alignItems: "center", gap: 7 },

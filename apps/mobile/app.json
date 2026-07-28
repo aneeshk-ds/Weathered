@@ -31,7 +31,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Weathered can use your location in the background to notice when you move to a new place and remind you to check in.",
+          "locationAlwaysAndWhenInUsePermission": "Weathered can use your location in the background to notice travel, refresh destination weather, and alert you when conditions change.",
           "isAndroidBackgroundLocationEnabled": true
         }
       ],
@@ -40,7 +40,8 @@
     ],
     "ios": {
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Weathered uses your location to show current local weather alongside your check-ins."
+        "NSLocationWhenInUseUsageDescription": "Weathered uses your location to show current weather and refresh conditions when you travel.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Weathered uses background location to detect meaningful travel and notify you when destination weather changes."
       }
     },
     "web": {

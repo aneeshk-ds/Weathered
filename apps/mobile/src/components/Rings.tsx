@@ -1,6 +1,9 @@
 import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Text as SvgText } from "react-native-svg";
 import { useColors } from "../theme";
+import { weatherEmoji } from "../format";
+import type { WeatherCondition } from "@weathered/shared";
 
 export function ProgressRing({
   fraction,
@@ -45,6 +48,59 @@ export function ProgressRing({
     </Svg>
   );
 }
+
+export function WeatherMoodRing({
+  mood,
+  weather,
+  size = 84,
+}: {
+  mood: number;
+  weather: WeatherCondition;
+  size?: number;
+}) {
+  const stroke = 8;
+  const radius = (size - stroke * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const center = size / 2;
+  const colors = useColors();
+  const fraction = Math.max(0, Math.min(1, mood / 10));
+
+  return (
+    <View
+      style={{ width: size, height: size }}
+      accessible
+      accessibilityLabel={`Weekly mood ${mood.toFixed(1)} out of 10, mostly ${weather} weather`}
+    >
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        <Circle cx={center} cy={center} r={radius} stroke={colors.line} strokeWidth={stroke} fill="none" />
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke={colors.accent}
+          strokeWidth={stroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={circumference * (1 - fraction)}
+          transform={`rotate(-90 ${center} ${center})`}
+        />
+      </Svg>
+      <View style={ringStyles.center}>
+        <Text style={ringStyles.weather}>{weatherEmoji(weather)}</Text>
+        <Text style={[ringStyles.mood, { color: colors.text }]}>{mood > 0 ? mood.toFixed(1) : "–"}</Text>
+        <Text style={[ringStyles.unit, { color: colors.muted }]}>mood</Text>
+      </View>
+    </View>
+  );
+}
+
+const ringStyles = StyleSheet.create({
+  center: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
+  weather: { fontSize: 14, lineHeight: 16, marginBottom: -1 },
+  mood: { fontSize: 17, lineHeight: 19, fontWeight: "700" },
+  unit: { fontSize: 8, lineHeight: 10, textTransform: "uppercase", letterSpacing: 0.7 },
+});
 
 export function DonutRing({
   segments,

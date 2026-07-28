@@ -1,9 +1,11 @@
-import type { DecisionLogInput, RecommendationFeedback } from "@weathered/shared";
+import type { DailyReflection, DecisionLogInput, RecommendationFeedback } from "@weathered/shared";
 import {
   ensureSchemaVersion,
+  loadDailyReflections,
   loadEntries,
   loadPreferences,
   loadRecommendationFeedback,
+  saveDailyReflections,
   saveEntries,
   savePreferences,
   saveRecommendationFeedback,
@@ -24,6 +26,8 @@ export interface WeatheredRepository {
   savePreferences(preferences: LocalPreferences): Promise<boolean>;
   loadFeedback(): Promise<RecommendationFeedback[]>;
   saveFeedback(feedback: RecommendationFeedback[]): Promise<boolean>;
+  loadReflections(): Promise<DailyReflection[]>;
+  saveReflections(reflections: DailyReflection[]): Promise<boolean>;
 }
 
 /** Local-first implementation backed by on-device AsyncStorage. */
@@ -35,4 +39,6 @@ export const localRepository: WeatheredRepository = {
   savePreferences,
   loadFeedback: loadRecommendationFeedback,
   saveFeedback: saveRecommendationFeedback,
+  loadReflections: loadDailyReflections,
+  saveReflections: saveDailyReflections,
 };

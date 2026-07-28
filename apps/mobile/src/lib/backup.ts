@@ -1,10 +1,10 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
-import type { DecisionLogInput, RecommendationFeedback } from "@weathered/shared";
+import type { DailyReflection, DecisionLogInput, RecommendationFeedback } from "@weathered/shared";
 import { normalizeBackupPayload } from "./backupValidation";
 
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
 
 export interface BackupPayload {
   app: "weathered";
@@ -12,6 +12,7 @@ export interface BackupPayload {
   exportedAt: string;
   entries: DecisionLogInput[];
   feedback: RecommendationFeedback[];
+  reflections: DailyReflection[];
 }
 
 export interface BackupResult {
@@ -22,11 +23,13 @@ export interface BackupResult {
 export interface RestoreResult extends BackupResult {
   entries?: DecisionLogInput[];
   feedback?: RecommendationFeedback[];
+  reflections?: DailyReflection[];
 }
 
 export async function exportBackup(
   entries: DecisionLogInput[],
   feedback: RecommendationFeedback[],
+  reflections: DailyReflection[],
 ): Promise<BackupResult> {
   try {
     const payload: BackupPayload = {
@@ -35,6 +38,7 @@ export async function exportBackup(
       exportedAt: new Date().toISOString(),
       entries,
       feedback,
+      reflections,
     };
     const stamp = new Date().toISOString().slice(0, 10);
     const uri = `${FileSystem.cacheDirectory}weathered-backup-${stamp}.json`;
@@ -77,9 +81,12 @@ export async function importBackup(): Promise<RestoreResult> {
 
     return {
       ok: true,
-      message: `Restored ${normalized.entries.length} check-in${normalized.entries.length === 1 ? "" : "s"}.`,
+      message:
+        `Restored ${normalized.entries.length} check-in${normalized.entries.length === 1 ? "" : "s"} and ` +
+        `${normalized.reflections.length} daily reflection${normalized.reflections.length === 1 ? "" : "s"}.`,
       entries: normalized.entries,
       feedback: normalized.feedback,
+      reflections: normalized.reflections,
     };
   } catch {
     return { ok: false, message: "Could not read that file." };

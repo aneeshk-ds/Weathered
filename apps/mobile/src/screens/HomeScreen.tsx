@@ -7,14 +7,17 @@ import {
   type DecisionCategory,
   type DecisionForecast,
   type DecisionOption,
+  type DayFactor,
+  type DayRating,
   type EnergyLevel,
   type WeatherSnapshot,
 } from "@weathered/shared";
 import { useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, weatherEmoji } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
-import { ProgressRing } from "../components/Rings";
+import { WeatherMoodRing } from "../components/Rings";
 import { supportiveMoodCaption } from "../lib/homeStats";
+import { DailyReflectionCard } from "../components/DailyReflectionCard";
 
 const NOTE_LIMIT = 120;
 
@@ -34,6 +37,7 @@ export function HomeScreen({
   onNote,
   onSave,
   weekStats,
+  reflection,
 }: {
   weather: WeatherSnapshot;
   weatherSyncing: boolean;
@@ -49,12 +53,25 @@ export function HomeScreen({
   note: string;
   onNote: (value: string) => void;
   onSave: () => void;
+  reflection: {
+    rating: DayRating;
+    factors: DayFactor[];
+    note: string;
+    savedToday: boolean;
+    status: string;
+    onRating: (rating: DayRating) => void;
+    onToggleFactor: (factor: DayFactor) => void;
+    onNote: (note: string) => void;
+    onSave: () => void;
+  };
   weekStats: {
     averageMood: number;
+    trackedDays: number;
     streak: number;
     deltaPct: number;
     hasComparison: boolean;
     hasEntries: boolean;
+    weatherCondition: WeatherSnapshot["condition"];
   };
 }) {
   const colors = useColors();
@@ -85,16 +102,12 @@ export function HomeScreen({
 
       {weekStats.hasEntries ? (
         <Card style={styles.weekCard}>
-          <ProgressRing
-            fraction={weekStats.averageMood / 10}
-            value={weekStats.averageMood > 0 ? weekStats.averageMood.toFixed(1) : "-"}
-            unit="/ 10"
-            size={72}
-          />
+          <WeatherMoodRing mood={weekStats.averageMood} weather={weekStats.weatherCondition} />
           <View style={styles.weekMid}>
             <Text style={styles.weekLabel}>This week</Text>
-            <Text style={styles.weekStreak}>
-              {weekStats.streak > 0 ? `${weekStats.streak}-day streak` : "Start a streak today"}
+            <Text style={styles.weekStreak}>{weekStats.trackedDays} of 7 days tracked</Text>
+            <Text style={styles.weekWeather}>
+              {weatherEmoji(weekStats.weatherCondition)} Mostly {weekStats.weatherCondition}
             </Text>
             {weekStats.hasComparison ? (
               <Text style={styles.weekCaption}>
@@ -104,9 +117,13 @@ export function HomeScreen({
                   {Math.abs(weekStats.deltaPct)}%
                 </Text>{" "}
                 vs last week
+                {weekStats.streak > 1 ? ` · ${weekStats.streak}-day rhythm` : ""}
               </Text>
             ) : (
-              <Text style={styles.weekCaption}>{supportiveMoodCaption(weekStats.averageMood)}</Text>
+              <Text style={styles.weekCaption}>
+                {supportiveMoodCaption(weekStats.averageMood)}
+                {weekStats.streak > 1 ? ` ${weekStats.streak}-day rhythm.` : ""}
+              </Text>
             )}
           </View>
         </Card>
@@ -149,6 +166,19 @@ export function HomeScreen({
 
       <View style={{ height: 14 }} />
       <PrimaryButton label="Save check-in" onPress={onSave} />
+      <View style={{ height: 16 }} />
+
+      <DailyReflectionCard
+        rating={reflection.rating}
+        factors={reflection.factors}
+        note={reflection.note}
+        savedToday={reflection.savedToday}
+        status={reflection.status}
+        onRating={reflection.onRating}
+        onToggleFactor={reflection.onToggleFactor}
+        onNote={reflection.onNote}
+        onSave={reflection.onSave}
+      />
       <View style={{ height: 8 }} />
     </View>
   );
@@ -161,6 +191,7 @@ const makeStyles = (colors: Palette) =>
     weekMid: { flex: 1 },
     weekLabel: { fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: colors.muted, marginBottom: 3 },
     weekStreak: { fontSize: 14, fontWeight: "600", color: colors.text },
+    weekWeather: { fontSize: 11, color: colors.accent, marginTop: 2, textTransform: "capitalize" },
     weekCaption: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 17 },
     weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
     weatherMain: { fontSize: 15, fontWeight: "600", color: colors.text },

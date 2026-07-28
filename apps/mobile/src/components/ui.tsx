@@ -1,5 +1,12 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useColors, type Palette } from "../theme";
 
 export function Card({ children, style }: { children: React.ReactNode; style?: object }) {
@@ -62,10 +69,24 @@ export function PrimaryButton({
 
 export function MoodScale({ value, onChange }: { value: number; onChange: (next: number) => void }) {
   const styles = makeStyles(useColors());
+  const [trackWidth, setTrackWidth] = useState(0);
+  const fraction = (value - 1) / 9;
+  const setFromPosition = (event: GestureResponderEvent) => {
+    if (!trackWidth) return;
+    const nextFraction = Math.max(0, Math.min(1, event.nativeEvent.locationX / trackWidth));
+    onChange(Math.round(nextFraction * 9) + 1);
+  };
+  const onLayout = (event: LayoutChangeEvent) => setTrackWidth(event.nativeEvent.layout.width);
+
   return (
     <View style={styles.moodRow}>
       <View
         style={styles.moodTrack}
+        onLayout={onLayout}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={setFromPosition}
+        onResponderMove={setFromPosition}
         accessible
         accessibilityRole="adjustable"
         accessibilityLabel="Mood, 1 to 10"
@@ -76,17 +97,9 @@ export function MoodScale({ value, onChange }: { value: number; onChange: (next:
           if (event.nativeEvent.actionName === "decrement") onChange(Math.max(1, value - 1));
         }}
       >
-        {Array.from({ length: 10 }, (_, index) => index + 1).map((step) => (
-          <Pressable
-            key={step}
-            style={styles.moodCellWrap}
-            onPress={() => onChange(step)}
-            accessibilityRole="button"
-            accessibilityLabel={`Set mood to ${step}`}
-          >
-            <View style={[styles.moodCell, step <= value && styles.moodCellOn]} />
-          </Pressable>
-        ))}
+        <View style={styles.moodRail} />
+        <View style={[styles.moodFill, { width: `${fraction * 100}%` }]} />
+        <View style={[styles.moodThumb, { left: `${fraction * 100}%` }]} />
       </View>
       <Text style={styles.moodValue}>{value}</Text>
     </View>
@@ -127,10 +140,32 @@ const makeStyles = (colors: Palette) =>
     btnText: { fontSize: 15, fontWeight: "600", color: colors.accentText },
     btnGhostText: { color: colors.muted },
     moodRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
-    moodTrack: { flex: 1, flexDirection: "row", gap: 4 },
-    moodCellWrap: { flex: 1, paddingVertical: 6 },
-    moodCell: { height: 6, borderRadius: 3, backgroundColor: colors.line },
-    moodCellOn: { backgroundColor: colors.accent },
+    moodTrack: { flex: 1, height: 30, justifyContent: "center", position: "relative" },
+    moodRail: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      height: 8,
+      borderRadius: 999,
+      backgroundColor: colors.line,
+    },
+    moodFill: {
+      position: "absolute",
+      left: 0,
+      height: 8,
+      borderRadius: 999,
+      backgroundColor: colors.accent,
+    },
+    moodThumb: {
+      position: "absolute",
+      width: 18,
+      height: 18,
+      marginLeft: -9,
+      borderRadius: 9,
+      backgroundColor: colors.text,
+      borderWidth: 4,
+      borderColor: colors.accent,
+    },
     moodValue: { fontSize: 16, fontWeight: "600", color: colors.text, minWidth: 26, textAlign: "right" },
     metric: {
       flex: 1,

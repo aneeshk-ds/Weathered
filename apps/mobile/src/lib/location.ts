@@ -13,6 +13,21 @@ export class LocationPermissionError extends Error {
   }
 }
 
+export async function resolveLocationLabel(latitude: number, longitude: number): Promise<string> {
+  try {
+    const places = await Location.reverseGeocodeAsync({ latitude, longitude });
+    const place = places[0];
+
+    if (place) {
+      return place.city || place.subregion || place.region || place.country || "Current location";
+    }
+  } catch {
+    // Reverse geocoding is best-effort; coordinates still drive the weather lookup.
+  }
+
+  return "Current location";
+}
+
 export async function resolveDeviceLocation(): Promise<ResolvedLocation> {
   const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -25,18 +40,7 @@ export async function resolveDeviceLocation(): Promise<ResolvedLocation> {
   });
 
   const { latitude, longitude } = position.coords;
-  let label = "Current location";
-
-  try {
-    const places = await Location.reverseGeocodeAsync({ latitude, longitude });
-    const place = places[0];
-
-    if (place) {
-      label = place.city || place.subregion || place.region || place.country || label;
-    }
-  } catch {
-    // Reverse geocoding is best-effort; coordinates still drive the weather lookup.
-  }
+  const label = await resolveLocationLabel(latitude, longitude);
 
   return { latitude, longitude, label };
 }

@@ -8,3 +8,4 @@ build
 .env
 .env.*
 coverage
+/.codex-web-check

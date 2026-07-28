@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
 });
 
 /** Ask for notification permission. Returns whether it is granted. */
-export async function ensureRemindersPermission(): Promise<boolean> {
+export async function ensureNotificationPermission(): Promise<boolean> {
   if (Platform.OS === "web") {
     return false;
   }
@@ -43,24 +43,28 @@ export async function scheduleDailyReminders(): Promise<boolean> {
   if (Platform.OS === "web") {
     return false;
   }
-  const granted = await ensureRemindersPermission();
-  if (!granted) {
+  try {
+    const granted = await ensureNotificationPermission();
+    if (!granted) {
+      return false;
+    }
+    await ensureAndroidChannel();
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    for (const slot of reminderSchedule()) {
+      await Notifications.scheduleNotificationAsync({
+        content: { title: slot.title, body: slot.body },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: slot.hour,
+          minute: slot.minute,
+          channelId: CHANNEL_ID,
+        },
+      });
+    }
+    return true;
+  } catch {
     return false;
   }
-  await ensureAndroidChannel();
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  for (const slot of reminderSchedule()) {
-    await Notifications.scheduleNotificationAsync({
-      content: { title: slot.title, body: slot.body },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
-        hour: slot.hour,
-        minute: slot.minute,
-        channelId: CHANNEL_ID,
-      },
-    });
-  }
-  return true;
 }
 
 /** Cancel all scheduled reminders. */
@@ -68,5 +72,5 @@ export async function cancelDailyReminders(): Promise<void> {
   if (Platform.OS === "web") {
     return;
   }
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  await Notifications.cancelAllScheduledNotificationsAsync().catch(() => undefined);
 }

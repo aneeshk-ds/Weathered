@@ -1,25 +1,31 @@
-import type { DecisionLogInput, RecommendationFeedback, ThemeMode, WeatherSourceMode } from "@weathered/shared";
+import {
+  DECISION_CATEGORIES,
+  DECISION_OPTIONS,
+  type DailyReflection,
+  type DecisionCategory,
+  type DecisionLogInput,
+  type RecommendationFeedback,
+  type ThemeMode,
+  type WeatherSourceMode,
+} from "@weathered/shared";
+import { DAY_FACTORS, DAY_RATINGS } from "./reflections.ts";
 
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
 const NUDGE_FEEDBACK_KEY = "weathered.local.nudge-feedback.v1";
+const REFLECTIONS_KEY = "weathered.local.daily-reflections.v1";
 const SCHEMA_VERSION_KEY = "weathered.local.schema-version";
 
 /** Current on-device storage schema version. Bump when the stored shape changes. */
 export const STORAGE_SCHEMA_VERSION = 1;
 const ENERGY_LEVELS = ["low", "medium", "high"] as const;
-const DECISION_CATEGORIES = ["social", "work", "spending", "other"] as const;
-const DECISION_OPTIONS = {
-  social: ["go_out", "cancel"],
-  work: ["work", "skip"],
-  spending: ["buy", "avoid"],
-  other: ["note_only"],
-} as const;
 const MAX_STORED_ENTRIES = 5000;
 const MAX_STORED_FEEDBACK = 5000;
+const MAX_STORED_REFLECTIONS = 5000;
 const MAX_ID_LENGTH = 160;
 const MAX_USER_ID_LENGTH = 80;
 const MAX_NOTE_LENGTH = 120;
+const MAX_REFLECTION_NOTE_LENGTH = 240;
 const MAX_LOCATION_LABEL_LENGTH = 120;
 const MAX_TIMESTAMP_LENGTH = 40;
 
@@ -45,8 +51,6 @@ const defaultPreferences: LocalPreferences = {
   remindersEnabled: false,
   locationNudgeEnabled: false,
 };
-
-type DecisionCategory = (typeof DECISION_CATEGORIES)[number];
 
 function withLocalDefaults(entries: unknown[]): unknown[] {
   return entries.map((entry, index) => {
@@ -97,6 +101,14 @@ export function normalizeStoredFeedback(value: unknown): RecommendationFeedback[
   }
 
   return value.filter(isRecommendationFeedback);
+}
+
+export function normalizeStoredReflections(value: unknown): DailyReflection[] {
+  if (!Array.isArray(value) || value.length > MAX_STORED_REFLECTIONS) {
+    return [];
+  }
+
+  return value.filter(isDailyReflection);
 }
 
 export function normalizeStoredPreferences(value: unknown): LocalPreferences {
@@ -192,6 +204,30 @@ export async function saveRecommendationFeedback(feedback: RecommendationFeedbac
   try {
     const AsyncStorage = await getAsyncStorage();
     await AsyncStorage.setItem(NUDGE_FEEDBACK_KEY, JSON.stringify(feedback));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function loadDailyReflections(): Promise<DailyReflection[]> {
+  try {
+    const AsyncStorage = await getAsyncStorage();
+    const raw = await AsyncStorage.getItem(REFLECTIONS_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    return normalizeStoredReflections(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDailyReflections(reflections: DailyReflection[]): Promise<boolean> {
+  try {
+    const AsyncStorage = await getAsyncStorage();
+    await AsyncStorage.setItem(REFLECTIONS_KEY, JSON.stringify(reflections));
     return true;
   } catch {
     return false;
@@ -318,4 +354,28 @@ function isRecommendationFeedback(value: unknown): value is RecommendationFeedba
     isBoundedString(value.timestamp, MAX_TIMESTAMP_LENGTH) &&
     !Number.isNaN(Date.parse(value.timestamp))
   );
+}
+
+function isDailyReflection(value: unknown): value is DailyReflection {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (
+    !isBoundedString(value.id, MAX_ID_LENGTH) ||
+    !value.id.trim() ||
+    !isBoundedString(value.userId, MAX_USER_ID_LENGTH) ||
+    !value.userId.trim() ||
+    !DAY_RATINGS.includes(value.rating as DailyReflection["rating"]) ||
+    !Array.isArray(value.factors) ||
+    value.factors.length > DAY_FACTORS.length ||
+    !value.factors.every((factor) => DAY_FACTORS.includes(factor as DailyReflection["factors"][number])) ||
+    new Set(value.factors).size !== value.factors.length ||
+    !isBoundedString(value.timestamp, MAX_TIMESTAMP_LENGTH) ||
+    Number.isNaN(Date.parse(value.timestamp))
+  ) {
+    return false;
+  }
+
+  return value.note === undefined || isBoundedString(value.note, MAX_REFLECTION_NOTE_LENGTH);
 }

@@ -1,11 +1,26 @@
 export const ENERGY_LEVELS = ["low", "medium", "high"] as const;
-export const DECISION_CATEGORIES = ["social", "work", "spending", "other"] as const;
+export const DECISION_CATEGORIES = [
+  "social",
+  "work",
+  "spending",
+  "scrolling",
+  "watching_tv",
+  "gaming",
+  "exercise",
+  "eating",
+  "other",
+] as const;
 
 export const DECISION_OPTIONS = {
-  social: ["go_out", "cancel"],
-  work: ["work", "skip"],
-  spending: ["buy", "avoid"],
-  other: ["note_only"],
+  social: ["go_out", "stay_in", "message_someone", "later", "cancel"],
+  work: ["work", "do_less", "take_break", "later", "skip"],
+  spending: ["buy", "compare", "later", "avoid"],
+  scrolling: ["do_now", "do_less", "later", "stop"],
+  watching_tv: ["do_now", "do_less", "later", "stop"],
+  gaming: ["do_now", "do_less", "later", "stop"],
+  exercise: ["do_now", "do_less", "later", "rest"],
+  eating: ["do_now", "do_less", "later", "skip"],
+  other: ["do_now", "do_less", "later", "skip", "note_only"],
 } as const;
 
 export type EnergyLevel = (typeof ENERGY_LEVELS)[number];
@@ -18,6 +33,8 @@ export type InsightConfidence = "low" | "medium" | "high";
 export type BehaviorSignalLevel = "low" | "moderate" | "strong";
 export type RecommendationTone = "encourage" | "caution" | "reframe";
 export type RecommendationFeedbackValue = "helpful" | "not_now";
+export type DayRating = "rough" | "mixed" | "good" | "great";
+export type DayFactor = "weather" | "work" | "people" | "screen_time" | "movement" | "food" | "rest";
 
 export interface WeatherSnapshot {
   condition: WeatherCondition;
@@ -97,8 +114,18 @@ export interface RecommendationFeedback {
   timestamp: string;
 }
 
+export interface DailyReflection {
+  id: string;
+  userId: string;
+  rating: DayRating;
+  factors: DayFactor[];
+  note?: string;
+  timestamp: string;
+}
+
 export interface WeeklySummary {
   totalEntries: number;
+  trackedDays: number;
   averageMood: number;
   decisionCounts: Record<string, number>;
   topInsights: Insight[];

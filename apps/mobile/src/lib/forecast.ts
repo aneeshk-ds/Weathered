@@ -6,8 +6,7 @@ import type {
   InsightConfidence,
   WeatherSnapshot,
 } from "@weathered/shared";
-
-const DECISION_CATEGORIES: DecisionCategory[] = ["social", "work", "spending", "other"];
+import { DECISION_CATEGORIES } from "@weathered/shared";
 
 interface CurrentState {
   mood: number;
@@ -33,8 +32,8 @@ function confidenceFromStrength(strength: number, hasHistory: boolean): InsightC
 /**
  * Produces a decision forecast that is useful even with little or no history.
  * Today's mood, energy, and weather always provide a grounded present-moment
- * read; matching past logs raise the signal strength and confidence rather than
- * being required for any read at all.
+ * read. Every matching historical log remains eligible evidence regardless of
+ * when it was recorded or how regularly the user checks in.
  */
 export function buildDecisionForecast(
   entries: DecisionLogInput[],
@@ -43,11 +42,10 @@ export function buildDecisionForecast(
 ): DecisionForecast {
   const { mood, energy } = current;
 
-  const recentEntries = entries.slice(0, 14);
-  const weatherMatchedEntries = recentEntries.filter((entry) => entry.weather.condition === currentWeather.condition);
-  const historySample = weatherMatchedEntries.length >= 2 ? weatherMatchedEntries : recentEntries;
+  const weatherMatchedEntries = entries.filter((entry) => entry.weather.condition === currentWeather.condition);
+  const historySample = weatherMatchedEntries.length >= 2 ? weatherMatchedEntries : entries;
   const hasHistory = historySample.length >= 2;
-  const categoryFocus = getDominantCategory(historySample.length > 0 ? historySample : recentEntries);
+  const categoryFocus = getDominantCategory(historySample.length > 0 ? historySample : entries);
 
   const socialCancels = historySample.filter(
     (entry) => entry.decisionCategory === "social" && entry.decisionOutcome === "cancel",
@@ -72,7 +70,7 @@ export function buildDecisionForecast(
   const confidence = confidenceFromStrength(signalStrength, hasHistory);
 
   const backing = hasHistory
-    ? `Backed by ${historySample.length} similar log${historySample.length === 1 ? "" : "s"}`
+    ? `Backed by ${historySample.length} historical log${historySample.length === 1 ? "" : "s"}`
     : "Based on today's conditions";
 
   if (currentWeather.condition === "rainy" && (energy === "low" || mood <= 5 || socialCancels >= 1)) {
@@ -127,7 +125,7 @@ export function buildDecisionForecast(
 }
 
 function getDominantCategory(entries: DecisionLogInput[]): DecisionCategory {
-  return DECISION_CATEGORIES.reduce(
+  return DECISION_CATEGORIES.reduce<DecisionCategory>(
     (best, category) =>
       entries.filter((entry) => entry.decisionCategory === category).length >
       entries.filter((entry) => entry.decisionCategory === best).length

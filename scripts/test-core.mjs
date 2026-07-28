@@ -5,6 +5,7 @@ import { buildDecisionForecast } from "../apps/mobile/src/lib/forecast.ts";
 import {
   normalizeStoredEntries,
   normalizeStoredPreferences,
+  normalizeStoredReflections,
   resolveStoredVersion,
 } from "../apps/mobile/src/lib/storage.ts";
 import { mergeSnapshots } from "../apps/mobile/src/lib/sync.ts";
@@ -55,6 +56,15 @@ const validPayload = {
   ],
 };
 
+const validReflection = {
+  id: "reflection-2026-06-21",
+  userId: "local",
+  rating: "good",
+  factors: ["work", "weather"],
+  note: "A focused day with a slower evening.",
+  timestamp: "2026-06-21T21:00:00.000Z",
+};
+
 function daysAgo(days) {
   const date = new Date();
   date.setDate(date.getDate() - days);
@@ -79,6 +89,17 @@ assert.ok(normalized, "valid backup payload should normalize");
 assert.equal(normalized.entries.length, 1);
 assert.equal(normalized.entries[0].decisionOutcome, "go_out");
 assert.equal(normalized.feedback.length, 1);
+assert.equal(normalized.reflections.length, 0, "older backups without reflections remain compatible");
+
+const normalizedWithReflection = normalizeBackupPayload({
+  ...validPayload,
+  version: 2,
+  reflections: [validReflection],
+});
+assert.ok(normalizedWithReflection, "a backup with daily reflections should normalize");
+assert.equal(normalizedWithReflection.reflections.length, 1);
+assert.equal(normalizedWithReflection.reflections[0].rating, "good");
+assert.deepEqual(normalizedWithReflection.reflections[0].factors, ["work", "weather"]);
 
 const missingIdentityPayload = {
   ...validPayload,
@@ -111,6 +132,13 @@ const invalidFeedbackPayload = {
 const normalizedInvalidFeedback = normalizeBackupPayload(invalidFeedbackPayload);
 assert.ok(normalizedInvalidFeedback, "invalid feedback should not invalidate valid entries");
 assert.equal(normalizedInvalidFeedback.feedback.length, 0);
+
+const normalizedInvalidReflection = normalizeBackupPayload({
+  ...validPayload,
+  reflections: [{ ...validReflection, rating: "perfect" }],
+});
+assert.ok(normalizedInvalidReflection, "an invalid reflection should not invalidate valid check-ins");
+assert.equal(normalizedInvalidReflection.reflections.length, 0);
 
 const weeklySummary = buildSummary([
   entry({
@@ -148,6 +176,7 @@ const weeklySummary = buildSummary([
   }),
 ]);
 assert.equal(weeklySummary.totalEntries, 3, "weekly summary should ignore entries older than 7 days");
+assert.equal(weeklySummary.trackedDays, 3, "weekly summary should report distinct tracked days");
 assert.equal(weeklySummary.averageMood, 5.7, "weekly summary should average recent moods");
 assert.equal(weeklySummary.decisionCounts.social, 2);
 assert.equal(weeklySummary.decisionCounts.work, 1);
@@ -185,6 +214,43 @@ const sunnyForecast = buildDecisionForecast(
 assert.equal(sunnyForecast.id, "forecast-sunny-window");
 assert.equal(sunnyForecast.confidence, "medium");
 assert.ok(sunnyForecast.signalStrength >= 70, "sunny high-energy forecast should carry useful signal strength");
+
+const newerUnrelatedLogs = Array.from({ length: 25 }, (_, index) =>
+  entry({
+    id: `newer-unrelated-${index}`,
+    decisionCategory: "gaming",
+    decisionOutcome: "do_less",
+    weather: { condition: "cloudy", temperatureC: 24, humidity: 60, locationLabel: "Local estimate" },
+    timestamp: daysAgo(index + 1),
+  }),
+);
+const oldRainyPattern = [
+  entry({
+    id: "old-rainy-cancel-1",
+    decisionCategory: "social",
+    decisionOutcome: "cancel",
+    weather: { condition: "rainy", temperatureC: 22, humidity: 88, locationLabel: "Local estimate" },
+    timestamp: "2021-07-01T09:00:00.000Z",
+  }),
+  entry({
+    id: "old-rainy-cancel-2",
+    decisionCategory: "social",
+    decisionOutcome: "cancel",
+    weather: { condition: "rainy", temperatureC: 23, humidity: 85, locationLabel: "Local estimate" },
+    timestamp: "2022-07-01T09:00:00.000Z",
+  }),
+];
+const oldPatternForecast = buildDecisionForecast(
+  [...newerUnrelatedLogs, ...oldRainyPattern],
+  { condition: "rainy", temperatureC: 24, humidity: 80, locationLabel: "Local estimate" },
+  { mood: 8, energy: "high" },
+);
+assert.equal(
+  oldPatternForecast.id,
+  "forecast-rain-social-buffer",
+  "old matching patterns should affect prediction even after many newer unrelated logs",
+);
+assert.match(oldPatternForecast.message, /2 historical logs/, "prediction should disclose old history as evidence");
 
 const monsoonEstimate = buildLocalWeatherSnapshot("seasonal_mock", new Date("2026-07-01T00:00:00.000Z"));
 assert.equal(monsoonEstimate.condition, "rainy");
@@ -294,6 +360,17 @@ assert.equal(
   normalizeStoredPreferences({ weatherSourceMode: "live_ready", themeMode: "neon" }).themeMode,
   "dark",
   "invalid themeMode falls back to dark",
+);
+assert.deepEqual(normalizeStoredReflections([validReflection]), [validReflection]);
+assert.deepEqual(
+  normalizeStoredReflections([{ ...validReflection, factors: ["work", "work"] }]),
+  [],
+  "duplicate reflection factors are rejected",
+);
+assert.deepEqual(
+  normalizeStoredReflections([{ ...validReflection, note: "x".repeat(241) }]),
+  [],
+  "overlong qualitative notes are rejected",
 );
 
 assert.equal(summarizeHealth(emptyDiagnostics).label, "Healthy");

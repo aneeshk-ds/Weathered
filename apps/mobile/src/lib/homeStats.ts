@@ -1,4 +1,4 @@
-import type { DecisionLogInput } from "@weathered/shared";
+import type { DecisionLogInput, WeatherCondition } from "@weathered/shared";
 
 function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
@@ -41,8 +41,19 @@ export function weeklyMoodDelta(
       const time = Date.parse(entry.timestamp);
       return time > from && time <= to;
     });
-  const average = (list: DecisionLogInput[]) =>
-    list.length ? list.reduce((sum, entry) => sum + entry.mood, 0) / list.length : 0;
+  const average = (list: DecisionLogInput[]) => {
+    const byDay = new Map<string, number[]>();
+    list.forEach((entry) => {
+      const key = dayKey(new Date(entry.timestamp));
+      byDay.set(key, [...(byDay.get(key) ?? []), entry.mood]);
+    });
+    const dailyAverages = [...byDay.values()].map(
+      (moods) => moods.reduce((sum, mood) => sum + mood, 0) / moods.length,
+    );
+    return dailyAverages.length
+      ? dailyAverages.reduce((sum, dailyAverage) => sum + dailyAverage, 0) / dailyAverages.length
+      : 0;
+  };
 
   const currentList = inWindow(now - week, now);
   const previousList = inWindow(now - 2 * week, now - week);
@@ -51,6 +62,24 @@ export function weeklyMoodDelta(
   const hasComparison = currentList.length > 0 && previousList.length > 0 && previous > 0;
   const deltaPct = hasComparison ? Math.round(((current - previous) / previous) * 100) : 0;
   return { current, previous, deltaPct, hasComparison };
+}
+
+/** Most frequently logged weather condition in the trailing seven days. */
+export function dominantWeeklyWeather(
+  entries: DecisionLogInput[],
+  today: Date = new Date(),
+): WeatherCondition | null {
+  const now = today.getTime();
+  const from = now - 7 * 24 * 60 * 60 * 1000;
+  const counts: Record<WeatherCondition, number> = { sunny: 0, cloudy: 0, rainy: 0 };
+  entries.forEach((entry) => {
+    const timestamp = Date.parse(entry.timestamp);
+    if (timestamp > from && timestamp <= now) counts[entry.weather.condition] += 1;
+  });
+  const ranked = (Object.entries(counts) as [WeatherCondition, number][]).sort(
+    (left, right) => right[1] - left[1],
+  );
+  return ranked[0][1] > 0 ? ranked[0][0] : null;
 }
 
 /** A short, supportive line describing the week's average mood. */
