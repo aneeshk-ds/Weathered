@@ -18,6 +18,7 @@ import {
 import { localRepository as repository } from "./src/lib/repository";
 import { mergeSnapshots } from "./src/lib/sync";
 import { clearRemoteData, deleteRemoteCheckIn, supabaseSync } from "./src/lib/supabaseSync";
+import { isSupabaseConfigured } from "./src/lib/supabase";
 import { cancelDailyReminders, scheduleDailyReminders } from "./src/lib/notifications";
 import { startLocationNudge, stopLocationNudge } from "./src/lib/locationNudge";
 import { buildLocalWeatherSnapshot, fetchLiveReadyWeatherSnapshot } from "./src/lib/weather";
@@ -101,7 +102,7 @@ export default function App() {
       setWeatherSourceMode(nextPreferences.weatherSourceMode);
       setOnboardingComplete(nextPreferences.onboardingComplete);
       setThemeMode(nextPreferences.themeMode);
-      setSyncEnabled(nextPreferences.syncEnabled);
+      setSyncEnabled(nextPreferences.syncEnabled && isSupabaseConfigured);
       setRemindersEnabled(nextPreferences.remindersEnabled);
       setLocationNudgeEnabled(nextPreferences.locationNudgeEnabled);
       setNudgeFeedback(nextFeedback);
@@ -563,7 +564,8 @@ export default function App() {
                   themeMode={themeMode}
                   onThemeChange={setThemeMode}
                   syncEnabled={syncEnabled}
-                  onSyncChange={setSyncEnabled}
+                  syncAvailable={isSupabaseConfigured}
+                  onSyncChange={(enabled) => setSyncEnabled(enabled && isSupabaseConfigured)}
                   syncStatus={syncStatus}
                   remindersEnabled={remindersEnabled}
                   onRemindersChange={handleRemindersChange}

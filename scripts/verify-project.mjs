@@ -4,6 +4,16 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
+const ignoredDirectories = new Set([
+  ".git",
+  ".expo",
+  ".codex-web-check",
+  "node_modules",
+  "dist",
+  "dist-web",
+  "build",
+  "coverage",
+]);
 
 function readText(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -17,21 +27,15 @@ function exists(relativePath) {
   return fs.existsSync(path.join(root, relativePath));
 }
 
-function walkFiles(relativeDirectory) {
+function walkFiles(relativeDirectory = ".") {
   const directory = path.join(root, relativeDirectory);
-  const entries = fs.readdirSync(directory, { withFileTypes: true });
-  const files = [];
+  if (!fs.existsSync(directory)) return [];
 
-  for (const entry of entries) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.isDirectory() && ignoredDirectories.has(entry.name)) return [];
     const relativePath = path.join(relativeDirectory, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...walkFiles(relativePath));
-    } else {
-      files.push(relativePath);
-    }
-  }
-
-  return files;
+    return entry.isDirectory() ? walkFiles(relativePath) : [relativePath];
+  });
 }
 
 function check(condition, message) {
@@ -42,14 +46,18 @@ const rootPackage = readJson("package.json");
 const lockfile = readJson("package-lock.json");
 const appConfig = readJson("apps/mobile/app.json");
 const easConfig = readJson("apps/mobile/eas.json");
-const workflow = readText(".github/workflows/deploy-web.yml");
+const deployWorkflow = readText(".github/workflows/deploy-web.yml");
 const androidWorkflow = readText(".github/workflows/android-build.yml");
 const readme = readText("README.md");
+const securityPolicy = readText("SECURITY.md");
+const releaseGuide = readText("docs/release.md");
+const gitignore = readText(".gitignore");
 const backupModule = readText("apps/mobile/src/lib/backup.ts");
 const backupValidationModule = readText("apps/mobile/src/lib/backupValidation.ts");
 const diagnosticsModule = readText("apps/mobile/src/lib/diagnostics.ts");
 const weatherModule = readText("apps/mobile/src/lib/weather.ts");
 const storageModule = readText("apps/mobile/src/lib/storage.ts");
+const supabaseModule = readText("apps/mobile/src/lib/supabase.ts");
 const settingsScreen = readText("apps/mobile/src/screens/SettingsScreen.tsx");
 
 const workspacePackages = Object.keys(lockfile.packages).filter(
@@ -65,137 +73,172 @@ check(
   rootPackage.scripts?.["verify:project"] === "node scripts/verify-project.mjs",
   "Root verify:project script is missing.",
 );
-check(
-  rootPackage.scripts?.["test:core"] === "node --no-warnings --experimental-strip-types scripts/test-core.mjs",
-  "Root test:core script is missing.",
-);
-check(
-  rootPackage.scripts?.["test:data"] === "node --no-warnings --experimental-strip-types scripts/test-data-stress.mjs",
-  "Root data stress script is missing.",
-);
+check(rootPackage.scripts?.validate?.includes("npm run verify:project"), "Validate should run repository checks.");
+check(rootPackage.scripts?.validate?.includes("npm run lint"), "Validate should run lint.");
+check(rootPackage.scripts?.validate?.includes("npm run format:check"), "Validate should run formatting checks.");
+check(rootPackage.scripts?.validate?.includes("npm run typecheck"), "Validate should run TypeScript checks.");
+check(rootPackage.scripts?.validate?.includes("npm run test:core"), "Validate should run core tests.");
+check(rootPackage.scripts?.validate?.includes("npm run test:data"), "Validate should run data stress tests.");
+check(rootPackage.scripts?.validate?.includes("npm run test:behavior"), "Validate should run behavior tests.");
 check(
   rootPackage.scripts?.["build:android:apk"]?.includes("--profile preview-apk"),
-  "Root APK build script should use the preview-apk profile.",
+  "Root APK script should use the preview-apk profile.",
 );
 check(
   rootPackage.scripts?.["build:android:production"]?.includes("--profile production"),
-  "Root production Android build script is missing.",
+  "Root production Android script is missing.",
 );
 check(workspacePackages.includes("apps/mobile"), "Lockfile should include apps/mobile.");
 check(workspacePackages.includes("packages/shared"), "Lockfile should include packages/shared.");
-check(!workspacePackages.includes("apps/api"), "Lockfile should not include removed apps/api workspace.");
 check(
   workspacePackages.every((workspace) => exists(`${workspace}/package.json`)),
-  "Every lockfile workspace should exist on disk.",
+  "Every lockfile workspace should exist.",
 );
 
-const typecheckIndex = workflow.indexOf("npm run typecheck");
-const exportIndex = workflow.indexOf("npm run export:web");
-check(typecheckIndex !== -1, "Deploy workflow should run npm run typecheck.");
-check(exportIndex !== -1, "Deploy workflow should run npm run export:web.");
+const deployValidateIndex = deployWorkflow.indexOf("npm run validate");
+const deployExportIndex = deployWorkflow.indexOf("npm run export:web");
+check(deployValidateIndex !== -1, "Web deployment should validate the project.");
+check(deployExportIndex !== -1, "Web deployment should export the app.");
+check(deployValidateIndex < deployExportIndex, "Web deployment should validate before export.");
 check(
-  typecheckIndex !== -1 && exportIndex !== -1 && typecheckIndex < exportIndex,
-  "Deploy workflow should typecheck before export.",
+  deployWorkflow.includes("secrets.EXPO_PUBLIC_SUPABASE_URL") &&
+    deployWorkflow.includes("secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+  "Web deployment should read optional Supabase configuration from repository secrets.",
 );
-check(workflow.includes("npm run test:core"), "Deploy workflow should run core smoke tests.");
-check(workflow.includes("npm run test:data"), "Deploy workflow should run data stress tests.");
-check(workflow.includes("npm run verify:project"), "Deploy workflow should run project release checks.");
 
-check(androidWorkflow.includes("workflow_dispatch"), "Android build workflow should be manually dispatchable.");
-check(androidWorkflow.includes("preview-apk"), "Android build workflow should support preview-apk.");
-check(androidWorkflow.includes("production"), "Android build workflow should support production.");
-check(androidWorkflow.includes("EXPO_TOKEN"), "Android build workflow should require EXPO_TOKEN.");
-check(androidWorkflow.includes("npm run verify:project"), "Android build workflow should run project release checks.");
-check(androidWorkflow.includes("npm run typecheck"), "Android build workflow should run typecheck.");
-check(androidWorkflow.includes("npm run test:core"), "Android build workflow should run core smoke tests.");
-check(androidWorkflow.includes("npm run test:data"), "Android build workflow should run data stress tests.");
-check(androidWorkflow.includes("npx eas-cli@latest build"), "Android build workflow should run EAS build.");
-
-check(backupModule.includes("normalizeBackupPayload"), "Backup restore should call the backup payload validator.");
+check(androidWorkflow.includes("workflow_dispatch"), "Android workflow should be manually dispatchable.");
+check(androidWorkflow.includes("preview-apk"), "Android workflow should support preview APKs.");
+check(androidWorkflow.includes("production"), "Android workflow should support production bundles.");
+check(androidWorkflow.includes("npm run validate"), "Android workflow should validate the project.");
+check(androidWorkflow.includes("expo prebuild"), "Android preview should generate the native project.");
+check(androidWorkflow.includes("app:assembleRelease"), "Android preview should build a release APK.");
 check(
-  backupValidationModule.includes("function normalizeEntry"),
-  "Backup restore should validate entries before importing.",
+  androidWorkflow.includes("gh release create latest-apk"),
+  "Android preview should publish the stable APK release.",
 );
+check(
+  androidWorkflow.includes("npx eas-cli@latest build --platform android --profile production"),
+  "Android production should use the EAS production profile.",
+);
+check(androidWorkflow.includes("EXPO_TOKEN"), "Android production should require an Expo token.");
+check(
+  androidWorkflow.includes("secrets.EXPO_PUBLIC_SUPABASE_URL") &&
+    androidWorkflow.includes("secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+  "Android preview should read optional Supabase configuration from repository secrets.",
+);
+check(!exists(".github/workflows/android-direct-apk.yml"), "Duplicate Android workflow should be removed.");
+
+check(backupModule.includes("normalizeBackupPayload"), "Backup restore should validate imported data.");
+check(backupValidationModule.includes("function normalizeEntry"), "Backup entries should be normalized.");
 check(backupValidationModule.includes("isValidMood"), "Backup restore should validate mood values.");
-check(backupValidationModule.includes("isWeatherSnapshot"), "Backup restore should validate weather snapshots.");
-check(storageModule.includes("isStoredEntry"), "Local stored entries should be validated before loading.");
-check(storageModule.includes("isWeatherSnapshot"), "Local stored entries should validate weather snapshots.");
-check(diagnosticsModule.includes("recordDiagnosticEvent"), "Diagnostics module should record local support events.");
-check(diagnosticsModule.includes("summarizeHealth"), "Diagnostics module should summarize app health.");
-check(
-  weatherModule.includes("https://api.open-meteo.com/v1/forecast"),
-  "Live weather should use the Open-Meteo forecast endpoint.",
-);
-check(!/api[_-]?key|apikey|token/i.test(weatherModule), "Live weather should not require a weather API key or token.");
-check(weatherModule.includes("WEATHER_REQUEST_TIMEOUT_MS"), "Live weather should have a request timeout.");
-check(weatherModule.includes("WEATHER_REQUEST_RETRIES"), "Live weather should retry transient provider failures.");
-check(settingsScreen.includes("App health"), "Settings should expose app health status.");
-check(settingsScreen.includes("Support:"), "Settings should include a support/debug context prompt.");
-check(settingsScreen.includes("Open support page"), "Settings should include a visible support action.");
-check(readme.includes("github.com/aneeshk-ds/Weathered/issues"), "README should link the support page.");
+check(backupValidationModule.includes("isWeatherSnapshot"), "Backup restore should validate weather.");
+check(storageModule.includes("isStoredEntry"), "Stored entries should be validated.");
+check(storageModule.includes("isWeatherSnapshot"), "Stored weather should be validated.");
+check(diagnosticsModule.includes("recordDiagnosticEvent"), "Diagnostics should record local events.");
+check(diagnosticsModule.includes("summarizeHealth"), "Diagnostics should summarize app health.");
+check(weatherModule.includes("https://api.open-meteo.com/v1/forecast"), "Live weather should use Open-Meteo.");
+check(!/api[_-]?key|apikey|token/i.test(weatherModule), "Weather should not require a key or token.");
+check(weatherModule.includes("WEATHER_REQUEST_TIMEOUT_MS"), "Weather should have a timeout.");
+check(weatherModule.includes("WEATHER_REQUEST_RETRIES"), "Weather should retry transient failures.");
+check(settingsScreen.includes("App health"), "Settings should expose app health.");
+check(settingsScreen.includes("Open support page"), "Settings should expose support.");
 
-check(exists("docs/privacy-policy.md"), "Privacy policy document is missing.");
+check(exists("README.md"), "README is missing.");
+check(exists("SECURITY.md"), "Security policy is missing.");
+check(exists("docs/privacy-policy.md"), "Privacy policy is missing.");
+check(exists("docs/release.md"), "Release guide is missing.");
 check(readme.includes("docs/privacy-policy.md"), "README should link the privacy policy.");
-check(exists("docs/release-checklist.md"), "Release checklist document is missing.");
-check(readme.includes("docs/release-checklist.md"), "README should link the release checklist.");
-check(exists("docs/system-design.md"), "System design document is missing.");
-check(readme.includes("docs/system-design.md"), "README should link the system design document.");
-check(exists("docs/user-validation.md"), "User validation plan is missing.");
-check(readme.includes("docs/user-validation.md"), "README should link the user validation plan.");
-check(exists("docs/build-results.md"), "Build results document is missing.");
-check(readme.includes("docs/build-results.md"), "README should link the build results document.");
-check(exists("docs/android-smoke-test.md"), "Android smoke test record is missing.");
-check(readme.includes("docs/android-smoke-test.md"), "README should link the Android smoke test record.");
+check(readme.includes("docs/release.md"), "README should link the release guide.");
+check(readme.includes("SECURITY.md"), "README should link the security policy.");
+check(readme.includes("github.com/aneeshk-ds/Weathered/issues"), "README should link support.");
+check(securityPolicy.includes("private vulnerability reporting"), "Security policy should provide private reporting.");
+check(releaseGuide.includes("npm run validate"), "Release guide should require full validation.");
+
+check(exists(".env.example"), "Environment template is missing.");
+check(gitignore.includes(".env.*"), "Local environment files should be ignored.");
+check(gitignore.includes("!.env.example"), "Environment template should remain trackable.");
+check(gitignore.includes("apps/mobile/android/"), "Generated Android projects should be ignored.");
+check(gitignore.includes("apps/mobile/ios/"), "Generated iOS projects should be ignored.");
+check(!exists("apps/mobile/android"), "Generated Android project should not remain in the checkout.");
+check(
+  supabaseModule.includes("process.env.EXPO_PUBLIC_SUPABASE_URL") &&
+    supabaseModule.includes("process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+  "Supabase client configuration should come from Expo environment variables.",
+);
+check(supabaseModule.includes("isSupabaseConfigured"), "Missing Supabase configuration should disable sync.");
 
 check(appConfig.expo?.name === "Weathered", "Expo app name should be Weathered.");
 check(appConfig.expo?.slug === "weathered", "Expo app slug should be weathered.");
-check(appConfig.expo?.icon === "./assets/icon.png", "Expo icon should point to assets/icon.png.");
-check(exists("apps/mobile/assets/icon.png"), "App icon asset is missing.");
-check(
-  appConfig.expo?.splash?.image === "./assets/splash-icon.png",
-  "Expo splash should point to assets/splash-icon.png.",
-);
-check(exists("apps/mobile/assets/splash-icon.png"), "Splash icon asset is missing.");
+check(appConfig.expo?.icon === "./assets/icon.png", "Expo icon path is incorrect.");
+check(exists("apps/mobile/assets/icon.png"), "App icon is missing.");
+check(appConfig.expo?.splash?.image === "./assets/splash-icon.png", "Splash image path is incorrect.");
+check(exists("apps/mobile/assets/splash-icon.png"), "Splash image is missing.");
 check(Boolean(appConfig.expo?.android?.package), "Android package name is missing.");
 check(Number.isInteger(appConfig.expo?.android?.versionCode), "Android versionCode should be an integer.");
 check(
   appConfig.expo?.android?.adaptiveIcon?.foregroundImage === "./assets/adaptive-icon.png",
-  "Android adaptive icon foreground is missing.",
+  "Android adaptive icon path is incorrect.",
 );
-check(exists("apps/mobile/assets/adaptive-icon.png"), "Android adaptive icon asset is missing.");
+check(exists("apps/mobile/assets/adaptive-icon.png"), "Android adaptive icon is missing.");
 check(
   appConfig.expo?.android?.permissions?.includes("ACCESS_FINE_LOCATION"),
   "Android fine location permission is missing.",
 );
 check(
   appConfig.expo?.plugins?.some((plugin) => Array.isArray(plugin) && plugin[0] === "expo-location"),
-  "expo-location plugin configuration is missing.",
+  "Expo location plugin configuration is missing.",
 );
-check(Boolean(appConfig.expo?.extra?.eas?.projectId), "EAS projectId is missing.");
-
-check(easConfig.build?.["preview-apk"]?.android?.buildType === "apk", "preview-apk profile should build an APK.");
+check(Boolean(appConfig.expo?.extra?.eas?.projectId), "EAS project ID is missing.");
+check(easConfig.build?.["preview-apk"]?.android?.buildType === "apk", "Preview profile should build an APK.");
 check(
   easConfig.build?.production?.android?.buildType === "app-bundle",
-  "production profile should build an Android app bundle.",
+  "Production profile should build an app bundle.",
 );
 
-const textFiles = [
-  "README.md",
-  ...walkFiles("docs"),
-  ...walkFiles("apps/mobile/src"),
-  ...walkFiles("packages/shared/src"),
-].filter((file) => [".html", ".js", ".json", ".md", ".mjs", ".ts", ".tsx", ".yml"].includes(path.extname(file)));
+const projectFiles = walkFiles(".");
+const textExtensions = new Set([".html", ".js", ".json", ".md", ".mjs", ".ts", ".tsx", ".yml", ".yaml"]);
+const textFiles = projectFiles.filter(
+  (file) =>
+    file === ".env.example" ||
+    (textExtensions.has(path.extname(file)) && file.replaceAll("\\", "/") !== "scripts/verify-project.mjs"),
+);
+const forbiddenSecretPatterns = [
+  ["Supabase API key", /\bsb_(?:publishable|secret)_[A-Za-z0-9_-]{16,}\b/i],
+  ["Supabase project URL", /https:\/\/[a-z0-9]{20}\.supabase\.co\b/i],
+  ["GitHub token", /\b(?:gh[pousr]_|github_pat_)[A-Za-z0-9_]{30,}\b/i],
+  ["OpenAI API key", /\bsk-[A-Za-z0-9_-]{20,}\b/i],
+  ["AWS access key", /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/],
+  ["Google API key", /\bAIza[0-9A-Za-z_-]{30,}\b/],
+  ["Slack token", /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/i],
+  ["private key", /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/],
+  ["JWT", /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/],
+];
 
 for (const file of textFiles) {
   const text = readText(file);
-  check(!/[âÂ�]/.test(text), `${file} contains likely text encoding artifacts.`);
+  check(!/[\u00c2\u00c3\ufffd]/.test(text), `${file} contains likely encoding artifacts.`);
+  for (const [label, pattern] of forbiddenSecretPatterns) {
+    check(!pattern.test(text), `${file} contains a possible ${label}.`);
+  }
 }
+
+const prohibitedFiles = projectFiles.filter((file) => {
+  const normalized = file.replaceAll("\\", "/");
+  if (normalized === ".env.example") return false;
+  return (
+    /(^|\/)\.env($|\.)/i.test(normalized) ||
+    /\.(?:apk|aab|jks|keystore|pem|p12|pfx)$/i.test(normalized) ||
+    /(^|\/)(?:credentials|service-account)[^/]*\.json$/i.test(normalized)
+  );
+});
+check(
+  prohibitedFiles.length === 0,
+  `Repository contains prohibited generated or credential files: ${prohibitedFiles.join(", ")}`,
+);
 
 if (failures.length) {
   console.error("Project verification failed:");
-  for (const failure of failures) {
-    console.error(`- ${failure}`);
-  }
+  for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 

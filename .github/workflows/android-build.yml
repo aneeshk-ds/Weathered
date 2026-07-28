@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       profile:
-        description: EAS build profile to run
+        description: Android artifact to build
         required: true
         default: preview-apk
         type: choice
@@ -33,47 +33,67 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Setup Java
+        if: ${{ inputs.profile == 'preview-apk' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        if: ${{ inputs.profile == 'preview-apk' }}
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        if: ${{ inputs.profile == 'preview-apk' }}
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Project release checks
-        run: npm run verify:project
+      - name: Validate project
+        run: npm run validate
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Generate native Android project
+        if: ${{ inputs.profile == 'preview-apk' }}
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: "1"
 
-      - name: Core smoke tests
-        run: npm run test:core
+      - name: Build preview APK
+        if: ${{ inputs.profile == 'preview-apk' }}
+        working-directory: apps/mobile/android
+        run: ./gradlew app:assembleRelease --no-daemon
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
 
-      - name: Data stress tests
-        run: npm run test:data
+      - name: Publish latest APK to GitHub Releases
+        if: ${{ inputs.profile == 'preview-apk' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk weathered-latest.apk
+          gh release delete latest-apk --cleanup-tag --yes || true
+          gh release create latest-apk weathered-latest.apk \
+            --title "Weathered latest Android APK" \
+            --notes "GitHub runner APK built from ${{ github.sha }}." \
+            --latest
 
-      - name: Verify Expo token
+      - name: Verify Expo token for production
+        if: ${{ inputs.profile == 'production' }}
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "Missing EXPO_TOKEN. Add it as a repository secret before running Android builds."
+            echo "Missing EXPO_TOKEN. Add it as a repository secret before running a production build."
             exit 1
           fi
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Run EAS Android build
-        id: eas
+      - name: Build production app bundle with EAS
+        if: ${{ inputs.profile == 'production' }}
         working-directory: apps/mobile
-        run: |
-          npx eas-cli@latest build --platform android --profile "${{ inputs.profile }}" --non-interactive --json > "$RUNNER_TEMP/eas-build.json"
-          node -e "const b=require(process.env.RUNNER_TEMP+'/eas-build.json');const a=Array.isArray(b)?b[0]:b;const u=(a.artifacts&&(a.artifacts.applicationArchiveUrl||a.artifacts.buildUrl))||'';require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'artifact_url='+u+'\n')"
+        run: npx eas-cli@latest build --platform android --profile production --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Publish latest APK to GitHub Releases
-        if: ${{ inputs.profile == 'preview-apk' && steps.eas.outputs.artifact_url != '' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          curl -fL -o weathered-latest.apk "${{ steps.eas.outputs.artifact_url }}"
-          gh release delete latest-apk --cleanup-tag --yes || true
-          gh release create latest-apk weathered-latest.apk \
-            --title "Weathered latest Android APK" \
-            --notes "Automated preview APK built from ${{ github.sha }}." \
-            --latest

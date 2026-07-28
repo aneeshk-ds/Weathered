@@ -15,6 +15,7 @@ export function SettingsScreen({
   themeMode,
   onThemeChange,
   syncEnabled,
+  syncAvailable,
   onSyncChange,
   syncStatus,
   remindersEnabled,
@@ -36,6 +37,7 @@ export function SettingsScreen({
   themeMode: ThemeMode;
   onThemeChange: (mode: ThemeMode) => void;
   syncEnabled: boolean;
+  syncAvailable: boolean;
   onSyncChange: (enabled: boolean) => void;
   syncStatus: string;
   remindersEnabled: boolean;
@@ -131,13 +133,16 @@ export function SettingsScreen({
       <Card>
         <Text style={styles.cardTitle}>Cloud sync (beta)</Text>
         <Text style={styles.cardBody}>
-          Off by default. When on, your check-ins sync to a private cloud space scoped to this device so you can move
-          between devices. Turn it off to keep everything on this device only.
+          {syncAvailable
+            ? "Off by default. When on, check-ins sync to a private cloud space protected by your anonymous app identity."
+            : "Not configured in this build. All check-ins remain on this device."}
         </Text>
-        <View style={styles.sourceRow}>
-          <Chip label="Off" selected={!syncEnabled} onPress={() => onSyncChange(false)} />
-          <Chip label="On" selected={syncEnabled} onPress={() => onSyncChange(true)} />
-        </View>
+        {syncAvailable ? (
+          <View style={styles.sourceRow}>
+            <Chip label="Off" selected={!syncEnabled} onPress={() => onSyncChange(false)} />
+            <Chip label="On" selected={syncEnabled} onPress={() => onSyncChange(true)} />
+          </View>
+        ) : null}
         {syncStatus ? <Text style={styles.cardBody}>{syncStatus}</Text> : null}
       </Card>
 
@@ -221,7 +226,7 @@ export function SettingsScreen({
         <Text style={styles.cardTitle}>About</Text>
         <Text style={styles.cardBody}>Weathered {version}</Text>
         <Text style={styles.cardBody}>
-          Local-first: no accounts, no cloud sync. Live weather uses your device location via Open-Meteo.
+          Local-first with optional, opt-in anonymous cloud sync. Live weather uses your device location via Open-Meteo.
         </Text>
         <Text style={styles.cardBody}>
           Support: include the app version, check-in count, and App health details when reporting an issue.

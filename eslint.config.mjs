@@ -9,7 +9,19 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["**/node_modules/**", "dist-web/**", "**/.expo/**", "**/*.json", "**/*.md"],
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/dist-web/**",
+      "**/build/**",
+      "**/coverage/**",
+      "**/.expo/**",
+      ".codex-web-check/**",
+      "apps/mobile/android/**",
+      "apps/mobile/ios/**",
+      "**/*.json",
+      "**/*.md",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
