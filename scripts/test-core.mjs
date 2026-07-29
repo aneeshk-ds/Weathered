@@ -15,6 +15,15 @@ import {
   toRemoteCheckIn,
   toRemoteFeedback,
 } from "../apps/mobile/src/lib/syncMappers.ts";
+import {
+  clampMoodFraction,
+  isMoodScaleTap,
+  moodFractionForValue,
+  moodValueFromFraction,
+  moodValueFromPageX,
+  shouldMoodScaleHandleMove,
+  shouldMoodScaleYieldToVerticalScroll,
+} from "../apps/mobile/src/components/moodScaleMath.ts";
 import { buildSummary } from "../apps/mobile/src/lib/summary.ts";
 import {
   buildOpenMeteoCurrentUrl,
@@ -258,6 +267,32 @@ assert.equal(monsoonEstimate.locationLabel, "Local estimate");
 assert.equal(formatWeatherSource("live_ready"), "live");
 assert.equal(describeWeatherSource("live_ready").provider, "Open-Meteo");
 assert.equal(describeWeatherSource("daily_mock").readiness, "Prototype mode");
+
+assert.equal(clampMoodFraction(-0.3), 0, "mood slider fractions clamp at the start of the rail");
+assert.equal(clampMoodFraction(1.4), 1, "mood slider fractions clamp at the end of the rail");
+assert.equal(moodFractionForValue(1), 0, "mood 1 sits at the start of the rail");
+assert.equal(moodFractionForValue(10), 1, "mood 10 sits at the end of the rail");
+assert.equal(moodValueFromFraction(0), 1, "the slider maps the rail start to mood 1");
+assert.equal(moodValueFromFraction(1), 10, "the slider maps the rail end to mood 10");
+assert.equal(moodValueFromPageX(180, 40, 280), 6, "absolute page coordinates should map to the measured rail");
+assert.equal(moodValueFromPageX(18, 40, 280), 1, "dragging before the measured rail should clamp to mood 1");
+assert.equal(moodValueFromPageX(340, 40, 280), 10, "dragging after the measured rail should clamp to mood 10");
+assert.equal(shouldMoodScaleHandleMove(14, 3), true, "horizontal drags should start slider control");
+assert.equal(shouldMoodScaleHandleMove(7, 0), false, "tiny movements should not steal the parent scroll view");
+assert.equal(shouldMoodScaleHandleMove(12, 12), false, "diagonal scroll-like movement should not start the slider");
+assert.equal(shouldMoodScaleHandleMove(3, 20), false, "vertical movement should remain a scroll");
+assert.equal(shouldMoodScaleYieldToVerticalScroll(5, 18), true, "vertical movement should be yielded back to scroll");
+assert.equal(shouldMoodScaleYieldToVerticalScroll(24, 8), false, "active horizontal drags should stay smooth");
+assert.equal(
+  isMoodScaleTap({ pageX: 100, pageY: 200, timestamp: 0 }, { pageX: 106, pageY: 204, timestamp: 180 }),
+  true,
+  "a short tap should still set the mood",
+);
+assert.equal(
+  isMoodScaleTap({ pageX: 100, pageY: 200, timestamp: 0 }, { pageX: 104, pageY: 230, timestamp: 180 }),
+  false,
+  "a vertical scroll passing over the slider should not be treated as a tap",
+);
 
 const openMeteoUrl = new URL(
   buildOpenMeteoCurrentUrl({
