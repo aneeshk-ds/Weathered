@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 import type { WeekDay } from "../lib/weekMood";
 
 export function WeekBars({ days }: { days: WeekDay[] }) {
@@ -44,6 +44,6 @@ const makeStyles = (colors: Palette) =>
     missing: { height: 3, borderRadius: 2, width: "100%", backgroundColor: colors.line, opacity: 0.45 },
     missingToday: { backgroundColor: colors.accent, opacity: 0.65 },
     labels: { flexDirection: "row", gap: 6, marginTop: 6 },
-    label: { flex: 1, textAlign: "center", fontSize: 10, color: colors.dim },
+    label: { ...appText, flex: 1, textAlign: "center", fontSize: 10, color: colors.dim },
     labelToday: { color: colors.accent, fontWeight: "700" },
   });

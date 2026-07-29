@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 
 export type TabId = "home" | "history" | "insights" | "settings";
 
@@ -48,6 +48,6 @@ const makeStyles = (colors: Palette) =>
     },
     tab: { flex: 1, alignItems: "center" },
     icon: { fontSize: 20 },
-    label: { fontSize: 11, marginTop: 3, color: colors.dim },
+    label: { ...appText, fontSize: 11, marginTop: 3, color: colors.dim },
     labelOn: { color: colors.accent },
   });

@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Text as SvgText } from "react-native-svg";
-import { useColors } from "../theme";
+import { appFontFamily, appText, useColors } from "../theme";
 import { weatherEmoji } from "../format";
 import type { WeatherCondition } from "@weathered/shared";
 
@@ -39,10 +39,18 @@ export function ProgressRing({
         strokeDashoffset={offset}
         transform={`rotate(-90 ${cx} ${cx})`}
       />
-      <SvgText x={cx} y={cx + 4} fontSize={18} fontWeight="600" fill={colors.text} textAnchor="middle">
+      <SvgText
+        x={cx}
+        y={cx + 4}
+        fontFamily={appFontFamily}
+        fontSize={18}
+        fontWeight="600"
+        fill={colors.text}
+        textAnchor="middle"
+      >
         {value}
       </SvgText>
-      <SvgText x={cx} y={cx + 18} fontSize={9} fill={colors.muted} textAnchor="middle">
+      <SvgText x={cx} y={cx + 18} fontFamily={appFontFamily} fontSize={9} fill={colors.muted} textAnchor="middle">
         {unit}
       </SvgText>
     </Svg>
@@ -98,8 +106,8 @@ export function WeatherMoodRing({
 const ringStyles = StyleSheet.create({
   center: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
   weather: { fontSize: 14, lineHeight: 16, marginBottom: -1 },
-  mood: { fontSize: 17, lineHeight: 19, fontWeight: "700" },
-  unit: { fontSize: 8, lineHeight: 10, textTransform: "uppercase", letterSpacing: 0.7 },
+  mood: { ...appText, fontSize: 17, lineHeight: 19, fontWeight: "700" },
+  unit: { ...appText, fontSize: 8, lineHeight: 10, textTransform: "uppercase" },
 });
 
 export function DonutRing({
@@ -145,10 +153,18 @@ export function DonutRing({
           acc += len;
           return element;
         })}
-      <SvgText x={cx} y={cx + 4} fontSize={18} fontWeight="600" fill={colors.text} textAnchor="middle">
+      <SvgText
+        x={cx}
+        y={cx + 4}
+        fontFamily={appFontFamily}
+        fontSize={18}
+        fontWeight="600"
+        fill={colors.text}
+        textAnchor="middle"
+      >
         {centerValue}
       </SvgText>
-      <SvgText x={cx} y={cx + 18} fontSize={9} fill={colors.muted} textAnchor="middle">
+      <SvgText x={cx} y={cx + 18} fontFamily={appFontFamily} fontSize={9} fill={colors.muted} textAnchor="middle">
         {centerUnit}
       </SvgText>
     </Svg>

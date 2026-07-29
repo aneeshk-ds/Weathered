@@ -1,4 +1,5 @@
 import React, { createContext, useContext } from "react";
+import { Platform, type TextStyle } from "react-native";
 import type { ThemeMode } from "@weathered/shared";
 
 export const darkColors = {
@@ -51,6 +52,20 @@ export const categoryColors: Record<string, string> = {
 
 export type Palette = typeof darkColors;
 export type { ThemeMode };
+
+export const appFontFamily =
+  Platform.select({
+    ios: "System",
+    android: "sans-serif",
+    web: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif',
+    default: "System",
+  }) ?? "System";
+
+export const appText: TextStyle = {
+  fontFamily: appFontFamily,
+  includeFontPadding: false,
+  letterSpacing: 0,
+};
 
 export function paletteFor(mode: ThemeMode): Palette {
   return mode === "light" ? lightColors : darkColors;

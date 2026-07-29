@@ -3,7 +3,7 @@ import { Alert, Linking, StyleSheet, Text, View } from "react-native";
 import type { ThemeMode, WeatherSourceMode } from "@weathered/shared";
 import type { AppDiagnostics } from "../lib/diagnostics";
 import { summarizeHealth } from "../lib/diagnostics";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 import { WEATHER_SOURCE_OPTIONS, describeWeatherSource } from "../lib/weather";
 import { Card, Chip, PrimaryButton, ScreenHeader } from "../components/ui";
 
@@ -240,13 +240,13 @@ export function SettingsScreen({
 
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
-    cardTitle: { fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 },
+    cardTitle: { ...appText, fontSize: 15, fontWeight: "600", color: colors.text, marginBottom: 4 },
     sourceRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 10 },
-    cardBody: { fontSize: 13, color: colors.muted, lineHeight: 19, marginBottom: 2 },
-    status: { fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
-    healthLabel: { fontSize: 18, fontWeight: "700", color: colors.accent, marginBottom: 4 },
+    cardBody: { ...appText, fontSize: 13, color: colors.muted, lineHeight: 19, marginBottom: 2 },
+    status: { ...appText, fontSize: 13, color: colors.accent, marginBottom: 14, lineHeight: 19 },
+    healthLabel: { ...appText, fontSize: 18, fontWeight: "700", color: colors.accent, marginBottom: 4 },
     healthGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 10 },
     healthCell: { backgroundColor: colors.card2, borderRadius: 8, minWidth: 92, flex: 1, padding: 10 },
-    healthValue: { fontSize: 20, fontWeight: "700", color: colors.text, marginBottom: 2 },
-    healthCaption: { fontSize: 11, color: colors.muted },
+    healthValue: { ...appText, fontSize: 20, fontWeight: "700", color: colors.text, marginBottom: 2 },
+    healthCaption: { ...appText, fontSize: 11, color: colors.muted },
   });

@@ -9,7 +9,7 @@ import {
   type DecisionOption,
   type EnergyLevel,
 } from "@weathered/shared";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, relativeTime } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
 import { filterHistoryEntries, groupEntriesByDay, type HistoryCategoryFilter } from "../lib/history";
@@ -202,12 +202,13 @@ export function HistoryScreen({
 
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
-    empty: { color: colors.dim, fontSize: 13, textAlign: "center" },
+    empty: { ...appText, color: colors.dim, fontSize: 13, textAlign: "center" },
     filters: { marginBottom: 6 },
     search: {
       backgroundColor: colors.card2,
       borderRadius: 10,
       color: colors.text,
+      ...appText,
       fontSize: 13,
       paddingHorizontal: 12,
       paddingVertical: 9,
@@ -217,7 +218,7 @@ const makeStyles = (colors: Palette) =>
       fontSize: 12,
       color: colors.dim,
       textTransform: "uppercase",
-      letterSpacing: 0.5,
+      ...appText,
       marginBottom: 6,
       marginTop: 2,
     },
@@ -227,6 +228,7 @@ const makeStyles = (colors: Palette) =>
       backgroundColor: colors.card2,
       borderRadius: 10,
       color: colors.text,
+      ...appText,
       fontSize: 13,
       padding: 10,
       minHeight: 48,
@@ -234,11 +236,11 @@ const makeStyles = (colors: Palette) =>
     },
     entry: {},
     entryTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-    entryTags: { fontSize: 13, color: colors.text, fontWeight: "600" },
-    entryWhen: { fontSize: 12, color: colors.dim },
-    entryMeta: { fontSize: 12, color: colors.muted, lineHeight: 18 },
+    entryTags: { ...appText, fontSize: 13, color: colors.text, fontWeight: "600" },
+    entryWhen: { ...appText, fontSize: 12, color: colors.dim },
+    entryMeta: { ...appText, fontSize: 12, color: colors.muted, lineHeight: 18 },
     entryActions: { flexDirection: "row", gap: 8, marginTop: 10 },
     actionBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
-    actionText: { fontSize: 12, color: colors.muted },
+    actionText: { ...appText, fontSize: 12, color: colors.muted },
     deleteText: { color: colors.danger },
   });

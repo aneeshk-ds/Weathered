@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 import { Card, PrimaryButton } from "./ui";
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
@@ -29,9 +29,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
     card: { borderWidth: 1, borderColor: colors.accent },
-    eyebrow: { fontSize: 11, letterSpacing: 1, color: colors.accent, textTransform: "uppercase", marginBottom: 4 },
-    title: { fontSize: 19, fontWeight: "600", color: colors.text, marginBottom: 8 },
-    body: { fontSize: 13, color: colors.muted, lineHeight: 20, marginBottom: 8 },
+    eyebrow: { ...appText, fontSize: 11, color: colors.accent, textTransform: "uppercase", marginBottom: 4 },
+    title: { ...appText, fontSize: 19, fontWeight: "600", color: colors.text, marginBottom: 8 },
+    body: { ...appText, fontSize: 13, color: colors.muted, lineHeight: 20, marginBottom: 8 },
     points: { marginVertical: 4, gap: 4 },
-    pointText: { fontSize: 13, color: colors.text, lineHeight: 20 },
+    pointText: { ...appText, fontSize: 13, color: colors.text, lineHeight: 20 },
   });

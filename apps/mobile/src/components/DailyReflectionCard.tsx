@@ -4,7 +4,7 @@ import type { DayFactor, DayRating } from "@weathered/shared";
 import { Card, Chip, Label, PrimaryButton } from "./ui";
 import { DayPartVisual } from "./DayPartVisual";
 import { DAY_FACTORS, DAY_FACTOR_LABELS, DAY_RATINGS, DAY_RATING_LABELS, dayRatingScore } from "../lib/reflections";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 
 export const REFLECTION_NOTE_LIMIT = 240;
 
@@ -92,25 +92,26 @@ const makeStyles = (colors: Palette) =>
     headingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
     headingCopy: { flex: 1 },
     eyebrow: {
+      ...appText,
       fontSize: 10,
       color: colors.accent,
       textTransform: "uppercase",
-      letterSpacing: 0.8,
       marginBottom: 3,
     },
-    title: { fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 4 },
-    body: { fontSize: 12, lineHeight: 17, color: colors.muted },
+    title: { ...appText, fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 4 },
+    body: { ...appText, fontSize: 12, lineHeight: 17, color: colors.muted },
     chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 2 },
-    scoreNote: { fontSize: 11, color: colors.accent, lineHeight: 16, marginBottom: 12 },
+    scoreNote: { ...appText, fontSize: 11, color: colors.accent, lineHeight: 16, marginBottom: 12 },
     note: {
       backgroundColor: colors.card2,
       borderRadius: 10,
       color: colors.text,
+      ...appText,
       fontSize: 13,
       padding: 10,
       minHeight: 72,
       textAlignVertical: "top",
     },
-    privacyNote: { fontSize: 10, color: colors.dim, lineHeight: 15, marginTop: 6, marginBottom: 10 },
-    status: { fontSize: 12, color: colors.accent, lineHeight: 17, marginTop: 10 },
+    privacyNote: { ...appText, fontSize: 10, color: colors.dim, lineHeight: 15, marginTop: 6, marginBottom: 10 },
+    status: { ...appText, fontSize: 12, color: colors.accent, lineHeight: 17, marginTop: 10 },
   });

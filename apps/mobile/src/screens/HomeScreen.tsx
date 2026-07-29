@@ -12,7 +12,7 @@ import {
   type EnergyLevel,
   type WeatherSnapshot,
 } from "@weathered/shared";
-import { useColors, type Palette } from "../theme";
+import { appText, useColors, type Palette } from "../theme";
 import { CATEGORY_LABEL, ENERGY_LABEL, outcomeLabel, weatherEmoji } from "../format";
 import { Card, Chip, Label, MoodScale, PrimaryButton, ScreenHeader } from "../components/ui";
 import { WeatherMoodRing } from "../components/Rings";
@@ -189,19 +189,20 @@ const makeStyles = (colors: Palette) =>
     weatherCard: { flexDirection: "row", alignItems: "center", gap: 12 },
     weekCard: { flexDirection: "row", alignItems: "center", gap: 12 },
     weekMid: { flex: 1 },
-    weekLabel: { fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: colors.muted, marginBottom: 3 },
-    weekStreak: { fontSize: 14, fontWeight: "600", color: colors.text },
-    weekWeather: { fontSize: 11, color: colors.accent, marginTop: 2, textTransform: "capitalize" },
-    weekCaption: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 17 },
+    weekLabel: { ...appText, fontSize: 10, textTransform: "uppercase", color: colors.muted, marginBottom: 3 },
+    weekStreak: { ...appText, fontSize: 14, fontWeight: "600", color: colors.text },
+    weekWeather: { ...appText, fontSize: 11, color: colors.accent, marginTop: 2, textTransform: "capitalize" },
+    weekCaption: { ...appText, fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 17 },
     weatherIcon: { fontSize: 30, width: 42, textAlign: "center" },
-    weatherMain: { fontSize: 15, fontWeight: "600", color: colors.text },
-    weatherSub: { fontSize: 12, color: colors.muted, marginTop: 2 },
-    read: { fontSize: 13, color: colors.accent, marginBottom: 14 },
+    weatherMain: { ...appText, fontSize: 15, fontWeight: "600", color: colors.text },
+    weatherSub: { ...appText, fontSize: 12, color: colors.muted, marginTop: 2 },
+    read: { ...appText, fontSize: 13, color: colors.accent, marginBottom: 14 },
     chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
     note: {
       backgroundColor: colors.card2,
       borderRadius: 10,
       color: colors.text,
+      ...appText,
       fontSize: 13,
       padding: 10,
       minHeight: 56,
