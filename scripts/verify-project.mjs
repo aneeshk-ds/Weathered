@@ -57,6 +57,8 @@ const backupValidationModule = readText("apps/mobile/src/lib/backupValidation.ts
 const diagnosticsModule = readText("apps/mobile/src/lib/diagnostics.ts");
 const weatherModule = readText("apps/mobile/src/lib/weather.ts");
 const storageModule = readText("apps/mobile/src/lib/storage.ts");
+const appModule = readText("apps/mobile/App.tsx");
+const historyScreen = readText("apps/mobile/src/screens/HistoryScreen.tsx");
 const supabaseModule = readText("apps/mobile/src/lib/supabase.ts");
 const settingsScreen = readText("apps/mobile/src/screens/SettingsScreen.tsx");
 
@@ -134,6 +136,10 @@ check(backupValidationModule.includes("isValidMood"), "Backup restore should val
 check(backupValidationModule.includes("isWeatherSnapshot"), "Backup restore should validate weather.");
 check(storageModule.includes("isStoredEntry"), "Stored entries should be validated.");
 check(storageModule.includes("isWeatherSnapshot"), "Stored weather should be validated.");
+check(storageModule.includes('AsyncStorage.setItem(STORAGE_KEY, "[]")'), "New installs should start with no entries.");
+check(!exists("apps/mobile/src/seed.ts"), "Bundled sample entries should not ship.");
+check(!appModule.includes("seedEntries"), "The app should not initialize sample entries.");
+check(!historyScreen.includes("Load sample data"), "History should not expose sample-data loading.");
 check(diagnosticsModule.includes("recordDiagnosticEvent"), "Diagnostics should record local events.");
 check(diagnosticsModule.includes("summarizeHealth"), "Diagnostics should summarize app health.");
 check(weatherModule.includes("https://api.open-meteo.com/v1/forecast"), "Live weather should use Open-Meteo.");

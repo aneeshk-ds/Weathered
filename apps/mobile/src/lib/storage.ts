@@ -9,6 +9,7 @@ import {
   type WeatherSourceMode,
 } from "@weathered/shared";
 import { DAY_FACTORS, DAY_RATINGS } from "./reflections.ts";
+import { removeLegacySampleEntries } from "./legacyData.ts";
 
 const STORAGE_KEY = "weathered.local.entries.v1";
 const PREFERENCES_KEY = "weathered.local.preferences.v1";
@@ -84,15 +85,15 @@ async function getAsyncStorage(): Promise<AsyncStorageApi> {
   return module.default;
 }
 
-export function normalizeStoredEntries(value: unknown, seedEntries: DecisionLogInput[]): DecisionLogInput[] {
+export function normalizeStoredEntries(value: unknown): DecisionLogInput[] {
   if (!Array.isArray(value) || value.length > MAX_STORED_ENTRIES) {
-    return seedEntries;
+    return [];
   }
 
   const normalized = withLocalDefaults(value);
   const entries = normalized.filter(isStoredEntry);
 
-  return entries.length === normalized.length ? entries : seedEntries;
+  return entries.length === normalized.length ? removeLegacySampleEntries(entries) : [];
 }
 
 export function normalizeStoredFeedback(value: unknown): RecommendationFeedback[] {
@@ -134,26 +135,31 @@ export function normalizeStoredPreferences(value: unknown): LocalPreferences {
   };
 }
 
-export async function loadEntries(seedEntries: DecisionLogInput[]): Promise<DecisionLogInput[]> {
+export async function loadEntries(): Promise<DecisionLogInput[]> {
   try {
     const AsyncStorage = await getAsyncStorage();
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
 
     if (!raw) {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(seedEntries));
-      return seedEntries;
+      await AsyncStorage.setItem(STORAGE_KEY, "[]");
+      return [];
     }
 
-    return normalizeStoredEntries(JSON.parse(raw), seedEntries);
+    const entries = normalizeStoredEntries(JSON.parse(raw));
+    const serialized = JSON.stringify(entries);
+    if (serialized !== raw) {
+      await AsyncStorage.setItem(STORAGE_KEY, serialized);
+    }
+    return entries;
   } catch {
-    return seedEntries;
+    return [];
   }
 }
 
 export async function saveEntries(entries: DecisionLogInput[]): Promise<boolean> {
   try {
     const AsyncStorage = await getAsyncStorage();
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(removeLegacySampleEntries(entries)));
     return true;
   } catch {
     return false;

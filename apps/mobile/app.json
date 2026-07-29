@@ -2,7 +2,7 @@
   "expo": {
     "name": "Weathered",
     "slug": "weathered",
-    "version": "2.1.4",
+    "version": "2.1.5",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.aneeshkds.weathered",
-      "versionCode": 206,
+      "versionCode": 207,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0e1718"

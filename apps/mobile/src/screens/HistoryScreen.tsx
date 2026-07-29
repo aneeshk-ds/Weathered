@@ -31,7 +31,6 @@ export function HistoryScreen({
   onSaveEdit,
   onCancelEdit,
   onDelete,
-  onLoadSample,
   onClear,
 }: {
   entries: DecisionLogInput[];
@@ -41,7 +40,6 @@ export function HistoryScreen({
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onDelete: (id: string) => void;
-  onLoadSample: () => void;
   onClear: () => void;
 }) {
   const colors = useColors();
@@ -153,8 +151,6 @@ export function HistoryScreen({
       {entries.length === 0 ? (
         <Card>
           <Text style={styles.empty}>No check-ins yet. Log one from the Home tab.</Text>
-          <View style={{ height: 10 }} />
-          <PrimaryButton label="Load sample data" onPress={onLoadSample} tone="ghost" />
         </Card>
       ) : null}
 
@@ -197,8 +193,6 @@ export function HistoryScreen({
 
       {entries.length > 0 ? (
         <View style={{ marginTop: 4 }}>
-          <PrimaryButton label="Load sample data" onPress={onLoadSample} tone="ghost" />
-          <View style={{ height: 8 }} />
           <PrimaryButton label="Clear all entries" onPress={onClear} tone="ghost" />
         </View>
       ) : null}

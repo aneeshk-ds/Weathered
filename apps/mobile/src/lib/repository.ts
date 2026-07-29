@@ -20,7 +20,7 @@ import {
  */
 export interface WeatheredRepository {
   ensureSchemaVersion(): Promise<number>;
-  loadEntries(seedEntries: DecisionLogInput[]): Promise<DecisionLogInput[]>;
+  loadEntries(): Promise<DecisionLogInput[]>;
   saveEntries(entries: DecisionLogInput[]): Promise<boolean>;
   loadPreferences(): Promise<LocalPreferences>;
   savePreferences(preferences: LocalPreferences): Promise<boolean>;

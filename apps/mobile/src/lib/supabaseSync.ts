@@ -9,6 +9,7 @@ import {
   type RemoteCheckIn,
   type RemoteFeedback,
 } from "./syncMappers";
+import { isLegacySampleEntry, removeLegacySampleEntries } from "./legacyData";
 
 /**
  * Resolve the current user id, creating an anonymous session on first use.
@@ -70,8 +71,13 @@ export const supabaseSync: SyncBackend = {
     if (checkIns.error || feedback.error) {
       return null;
     }
+    const entries = (checkIns.data as RemoteCheckIn[]).map(fromRemoteCheckIn);
+    const legacyIds = entries.filter(isLegacySampleEntry).map((entry) => entry.id);
+    if (legacyIds.length > 0) {
+      await client.from("check_ins").delete().eq("user_id", userId).in("id", legacyIds);
+    }
     return {
-      entries: (checkIns.data as RemoteCheckIn[]).map(fromRemoteCheckIn),
+      entries: removeLegacySampleEntries(entries),
       feedback: (feedback.data as RemoteFeedback[]).map(fromRemoteFeedback),
     };
   },

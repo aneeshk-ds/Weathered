@@ -7,6 +7,7 @@ import {
   type RecommendationFeedback,
 } from "@weathered/shared";
 import { DAY_FACTORS, DAY_RATINGS } from "./reflections.ts";
+import { removeLegacySampleEntries } from "./legacyData.ts";
 
 const ENERGY_LEVELS = ["low", "medium", "high"] as const;
 const MAX_BACKUP_ENTRIES = 5000;
@@ -48,7 +49,7 @@ export function normalizeBackupPayload(value: unknown): NormalizedBackup | null 
   }
 
   return {
-    entries,
+    entries: removeLegacySampleEntries(entries),
     feedback: Array.isArray(value.feedback)
       ? value.feedback.map(normalizeFeedback).filter((item): item is RecommendationFeedback => item !== null)
       : [],

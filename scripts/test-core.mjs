@@ -330,9 +330,12 @@ assert.equal(retriedWeather.temperatureC, 29);
 assert.equal(retriedWeather.humidity, 58);
 assert.equal(retriedWeather.locationLabel, "Bengaluru");
 
-const migratedEntries = normalizeStoredEntries([{ ...validEntry, id: "" }], []);
+const migratedEntries = normalizeStoredEntries([{ ...validEntry, id: "" }]);
 assert.match(migratedEntries[0].id, /^migrated-/);
-assert.deepEqual(normalizeStoredEntries("not-an-array", [validEntry]), [validEntry]);
+assert.deepEqual(normalizeStoredEntries("not-an-array"), []);
+assert.deepEqual(normalizeStoredEntries([]), []);
+assert.deepEqual(normalizeStoredEntries([{ ...validEntry, id: "seed-1" }]), []);
+assert.deepEqual(normalizeStoredEntries([{ ...validEntry, id: "seed-1" }, validEntry]), [validEntry]);
 assert.equal(normalizeStoredPreferences({ weatherSourceMode: "daily_mock" }).weatherSourceMode, "daily_mock");
 assert.equal(normalizeStoredPreferences({ weatherSourceMode: "bad-mode" }).weatherSourceMode, "live_ready");
 assert.equal(normalizeStoredPreferences(null).weatherSourceMode, "live_ready");

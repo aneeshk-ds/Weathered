@@ -170,23 +170,18 @@ results.push(nudgeResult);
 assert.ok(nudgeResult.value.length >= 1 && nudgeResult.value.length <= 3);
 
 const storedResult = measure("normalize local stored entries from 5000 entries", () =>
-  normalizeStoredEntries(normalizedResult.value.entries, []),
+  normalizeStoredEntries(normalizedResult.value.entries),
 );
 results.push(storedResult);
 assert.equal(storedResult.value.length, ENTRY_LIMIT);
 const seedEntry = makeEntry(999);
-assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), mood: 99 }], [seedEntry]), [seedEntry]);
-assert.deepEqual(normalizeStoredEntries([null], [seedEntry]), [seedEntry]);
-assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), note: 7 }], [seedEntry]), [seedEntry]);
-assert.deepEqual(
-  normalizeStoredEntries(
-    Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => makeEntry(index)),
-    [seedEntry],
-  ),
-  [seedEntry],
-);
+assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), mood: 99 }]), []);
+assert.deepEqual(normalizeStoredEntries([null]), []);
+assert.deepEqual(normalizeStoredEntries([{ ...makeEntry(1), note: 7 }]), []);
+assert.deepEqual(normalizeStoredEntries(Array.from({ length: ENTRY_LIMIT + 1 }, (_, index) => makeEntry(index))), []);
+assert.deepEqual(normalizeStoredEntries([{ ...seedEntry, id: "seed-2" }, makeEntry(1)]), [makeEntry(1)]);
 
-const migratedStoredEntry = normalizeStoredEntries([{ ...makeEntry(2), id: "", userId: "", note: "" }], []);
+const migratedStoredEntry = normalizeStoredEntries([{ ...makeEntry(2), id: "", userId: "", note: "" }]);
 assert.equal(migratedStoredEntry.length, 1);
 assert.ok(migratedStoredEntry[0].id.startsWith("migrated-"));
 assert.equal(migratedStoredEntry[0].userId, "local");

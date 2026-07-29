@@ -39,7 +39,6 @@ import {
 } from "./src/lib/diagnostics";
 import { paletteFor, ThemeProvider, type Palette } from "./src/theme";
 import type { ThemeMode } from "@weathered/shared";
-import { seedEntries } from "./src/seed";
 import { TabBar, type TabId } from "./src/components/TabBar";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { Onboarding } from "./src/components/Onboarding";
@@ -49,7 +48,7 @@ import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { LocationPermissionError } from "./src/lib/location";
 import { dayRatingScore, localDayKey, reflectionForDay, upsertDailyReflection } from "./src/lib/reflections";
 
-const APP_VERSION = "2.1.4";
+const APP_VERSION = "2.1.5";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -91,7 +90,7 @@ export default function App() {
     async function hydrate() {
       await repository.ensureSchemaVersion();
       const [nextEntries, nextPreferences, nextFeedback, nextReflections, nextDiagnostics] = await Promise.all([
-        repository.loadEntries(seedEntries),
+        repository.loadEntries(),
         repository.loadPreferences(),
         repository.loadFeedback(),
         repository.loadReflections(),
@@ -536,7 +535,6 @@ export default function App() {
                     setEntries((current) => current.filter((entry) => entry.id !== id));
                     if (syncEnabled) void deleteRemoteCheckIn(id);
                   }}
-                  onLoadSample={() => setEntries(seedEntries)}
                   onClear={handleClearAll}
                 />
               ) : null}
