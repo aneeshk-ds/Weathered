@@ -209,6 +209,10 @@ check(
   "iOS location permission text is missing.",
 );
 check(
+  appConfig.expo?.ios?.infoPlist?.ITSAppUsesNonExemptEncryption === false,
+  "iOS export compliance flag should be explicit.",
+);
+check(
   appConfig.expo?.android?.adaptiveIcon?.foregroundImage === "./assets/adaptive-icon.png",
   "Android adaptive icon path is incorrect.",
 );
@@ -222,6 +226,7 @@ check(
   "Expo location plugin configuration is missing.",
 );
 check(Boolean(appConfig.expo?.extra?.eas?.projectId), "EAS project ID is missing.");
+check(easConfig.cli?.appVersionSource === "local", "EAS app version source should be explicit.");
 check(easConfig.build?.["preview-apk"]?.android?.buildType === "apk", "Preview profile should build an APK.");
 check(
   easConfig.build?.["preview-ios"]?.distribution === "internal" &&
