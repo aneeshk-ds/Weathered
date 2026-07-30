@@ -169,8 +169,8 @@ const nudgeResult = measure("build nudges from 5000 entries", () =>
 results.push(nudgeResult);
 assert.ok(nudgeResult.value.length >= 1 && nudgeResult.value.length <= 3);
 assert.ok(
-  nudgeResult.value.every((nudge) => nudge.actionLabel && nudge.purposeLabel),
-  "nudges should remain actionable and purpose-backed under large histories",
+  nudgeResult.value.every((nudge) => nudge.actionLabel && nudge.purposeLabel && nudge.source && nudge.confidence),
+  "nudges should remain actionable, sourced, and purpose-backed under large histories",
 );
 
 const storedResult = measure("normalize local stored entries from 5000 entries", () =>

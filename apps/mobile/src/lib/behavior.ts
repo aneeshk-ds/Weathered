@@ -62,6 +62,8 @@ export function buildRecommendationNudges({
         message: "This is a better moment for gathering one more data point than locking in a high-stakes choice.",
         actionLabel: "Decide the next small step only",
         tone: "caution" as const,
+        source: "live" as const,
+        confidence: "medium" as const,
         evidenceLabel: liveEvidenceLabel,
         purposeLabel: "Protects tomorrow's options while the pause signal is high.",
       },
@@ -78,6 +80,8 @@ export function buildRecommendationNudges({
         message: "Your current read supports structured work. Put the hardest part first while attention is available.",
         actionLabel: "Start with a 25-minute focused block",
         tone: "encourage" as const,
+        source: "live" as const,
+        confidence: "medium" as const,
         evidenceLabel: liveEvidenceLabel,
         purposeLabel: "Turns available attention into one finished, visible output.",
       },
@@ -94,6 +98,8 @@ export function buildRecommendationNudges({
         message: "This looks like a good window for connection, especially if the plan stays simple.",
         actionLabel: "Confirm the plan or send the message",
         tone: "encourage" as const,
+        source: "live" as const,
+        confidence: "medium" as const,
         evidenceLabel: liveEvidenceLabel,
         purposeLabel: "Uses the easier social window before coordination becomes heavier.",
       },
@@ -111,6 +117,8 @@ export function buildRecommendationNudges({
           "Good momentum can make purchases feel more obvious than they are. Give the choice a quick second look.",
         actionLabel: "Wait 20 minutes before buying",
         tone: "reframe" as const,
+        source: "live" as const,
+        confidence: "medium" as const,
         evidenceLabel: liveEvidenceLabel,
         purposeLabel: "Separates real value from a mood-driven timing impulse.",
       },
@@ -127,6 +135,8 @@ export function buildRecommendationNudges({
         message: "The useful decision may be the one that preserves capacity, not the one that proves discipline.",
         actionLabel: "Reduce the scope before deciding",
         tone: "reframe" as const,
+        source: "live" as const,
+        confidence: "medium" as const,
         evidenceLabel: liveEvidenceLabel,
         purposeLabel: "Keeps the habit alive without spending energy you do not have.",
       },
@@ -143,6 +153,8 @@ export function buildRecommendationNudges({
       message: "No major caution signal is showing. A normal decision pace looks reasonable if the next step is clear.",
       actionLabel: "Proceed with one clear check",
       tone: "encourage" as const,
+      source: "live" as const,
+      confidence: "medium" as const,
       evidenceLabel: liveEvidenceLabel,
       purposeLabel: "Keeps momentum while making the next check explicit.",
     },
@@ -275,6 +287,7 @@ function buildPatternNudge({
     exactMatches.length >= 2
       ? `${exactMatches.length} similar ${weather.condition}/${category} logs`
       : `${sample.length} historical ${category} logs`;
+  const confidence = getPatternConfidence(sample.length);
 
   if (
     averageMood <= 5 ||
@@ -287,6 +300,8 @@ function buildPatternNudge({
       message: "Similar past decisions leaned lower-energy or more avoidant, so protect the option to revise.",
       actionLabel: "Add one checkpoint before committing",
       tone: "caution",
+      source: "history",
+      confidence,
       evidenceLabel: `${evidenceLabel} • avg mood ${averageMood.toFixed(1)}`,
       purposeLabel: "Turns a lower-energy pattern into a checkpoint, not a full stop.",
     };
@@ -299,6 +314,8 @@ function buildPatternNudge({
       message: "Matching decisions in your history tended to land in a steadier mood range.",
       actionLabel: "Proceed, but keep it reversible",
       tone: "encourage",
+      source: "history",
+      confidence,
       evidenceLabel: `${evidenceLabel} • avg mood ${averageMood.toFixed(1)}`,
       purposeLabel: "Uses your stronger matching history without overcommitting.",
     };
@@ -310,6 +327,8 @@ function buildPatternNudge({
     message: "Past similar choices do not point clearly yes or no, so make the decision smaller.",
     actionLabel: "Choose the reversible version",
     tone: "reframe",
+    source: "history",
+    confidence,
     evidenceLabel: `${evidenceLabel} • avg mood ${averageMood.toFixed(1)}`,
     purposeLabel: "Makes mixed history useful by shrinking the decision size.",
   };
@@ -323,6 +342,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       message: "Favor a plan that keeps trust intact, even if the plan needs to become smaller.",
       actionLabel: "Offer a clear yes, no, or backup",
       tone,
+      source: "category",
+      confidence: "low",
       evidenceLabel: "Category lens: social",
       purposeLabel: "Keeps the relationship outcome bigger than the immediate preference.",
     };
@@ -335,6 +356,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       message: "A smaller completed step beats a large intention that collapses under the day.",
       actionLabel: "Define the smallest useful output",
       tone,
+      source: "category",
+      confidence: "low",
       evidenceLabel: "Category lens: work",
       purposeLabel: "Makes progress measurable even when the full task is too large.",
     };
@@ -347,6 +370,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       message: "The purchase may still be right; the nudge is to make timing part of the decision.",
       actionLabel: "Check need, budget, and timing",
       tone,
+      source: "category",
+      confidence: "low",
       evidenceLabel: "Category lens: spending",
       purposeLabel: "Protects the budget while leaving room for a real yes later.",
     };
@@ -359,6 +384,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       message: "Screen time feels better when the stopping point is part of the decision.",
       actionLabel: "Pick now, less, later, or stop",
       tone,
+      source: "category",
+      confidence: "low",
       evidenceLabel: `Category lens: ${formatCategoryLabel(category)}`,
       purposeLabel: "Turns the session from default drift into a chosen amount.",
     };
@@ -371,6 +398,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
       message: "Energy and mood can help you choose a full version, a lighter version, or rest.",
       actionLabel: "Choose the kindest useful option",
       tone,
+      source: "category",
+      confidence: "low",
       evidenceLabel: `Category lens: ${formatCategoryLabel(category)}`,
       purposeLabel: "Keeps care useful instead of turning it into pressure.",
     };
@@ -382,6 +411,8 @@ function buildCategoryNudge(category: DecisionCategory, tone: RecommendationNudg
     message: "When the category is broad, clarity matters more than speed.",
     actionLabel: "Write the actual choice in one line",
     tone,
+    source: "category",
+    confidence: "low",
     evidenceLabel: "Category lens: other",
     purposeLabel: "Creates enough shape for the next step to be honest.",
   };
@@ -401,6 +432,12 @@ function buildLiveEvidenceLabel({
 
 function formatCategoryLabel(category: DecisionCategory) {
   return category.replaceAll("_", " ");
+}
+
+function getPatternConfidence(sampleCount: number): RecommendationNudge["confidence"] {
+  if (sampleCount >= 8) return "high";
+  if (sampleCount >= 4) return "medium";
+  return "low";
 }
 
 function buildFocusSignal(mood: number, energy: EnergyLevel, weather: WeatherSnapshot): BehaviorSignal {

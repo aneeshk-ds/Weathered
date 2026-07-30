@@ -23,8 +23,14 @@ import { filterEntriesWithinLast7Days } from "../lib/summary";
 import { buildDayPartInsights } from "../lib/dayParts";
 import { DayPartVisual } from "../components/DayPartVisual";
 import { buildReflectionSummary, DAY_FACTOR_LABELS, DAY_RATING_LABELS } from "../lib/reflections";
+import { activeNudgeFeedback } from "../lib/personalize";
 
 const ACTED: string[] = ["go_out", "work", "buy"];
+const NUDGE_SOURCE_LABEL: Record<RecommendationNudge["source"], string> = {
+  live: "Current conditions",
+  history: "Your history",
+  category: "Decision lens",
+};
 
 export function InsightsScreen({
   insight,
@@ -73,7 +79,20 @@ export function InsightsScreen({
   const legend = DECISION_CATEGORIES.filter((category) => (summary.decisionCounts[category] || 0) > 0);
 
   function feedbackFor(id: string) {
-    return nudgeFeedback.find((item) => item.nudgeId === id)?.value;
+    return activeNudgeFeedback(nudgeFeedback, id);
+  }
+
+  function signalLabel(nudge: RecommendationNudge) {
+    if (nudge.source === "category") return "General guidance";
+    if (nudge.confidence === "high") return "Strong signal";
+    if (nudge.confidence === "medium") return "Useful signal";
+    return "Early signal";
+  }
+
+  function toneColor(nudge: RecommendationNudge) {
+    if (nudge.tone === "caution") return colors.danger;
+    if (nudge.tone === "reframe") return colors.insightText;
+    return colors.accent;
   }
 
   return (
@@ -225,12 +244,29 @@ export function InsightsScreen({
       {nudges.map((nudge) => {
         const chosen = feedbackFor(nudge.id);
         return (
-          <Card key={nudge.id}>
-            {nudge.evidenceLabel ? <Text style={styles.nudgeEvidence}>{nudge.evidenceLabel}</Text> : null}
+          <Card key={nudge.id} style={[styles.nudgeCard, { borderLeftColor: toneColor(nudge) }]}>
+            <View style={styles.nudgeMetaRow}>
+              <Text style={[styles.nudgeSource, { color: toneColor(nudge) }]}>{NUDGE_SOURCE_LABEL[nudge.source]}</Text>
+              <Text style={styles.nudgeSignal}>• {signalLabel(nudge)}</Text>
+            </View>
             <Text style={styles.nudgeTitle}>{nudge.title}</Text>
             <Text style={styles.nudgeMsg}>{nudge.message}</Text>
-            {nudge.purposeLabel ? <Text style={styles.nudgePurpose}>{nudge.purposeLabel}</Text> : null}
-            <Text style={styles.nudgeAction}>→ {nudge.actionLabel}</Text>
+            {nudge.evidenceLabel ? (
+              <Text style={styles.nudgeEvidence}>
+                <Text style={styles.nudgeDetailLabel}>Based on: </Text>
+                {nudge.evidenceLabel}
+              </Text>
+            ) : null}
+            {nudge.purposeLabel ? (
+              <Text style={styles.nudgePurpose}>
+                <Text style={styles.nudgeDetailLabel}>Why it helps: </Text>
+                {nudge.purposeLabel}
+              </Text>
+            ) : null}
+            <View style={styles.nudgeActionBlock}>
+              <Text style={styles.nudgeActionLabel}>Try this</Text>
+              <Text style={styles.nudgeAction}>{nudge.actionLabel}</Text>
+            </View>
             <View style={styles.feedbackRow}>
               <Pressable
                 style={[styles.feedbackBtn, chosen === "helpful" && styles.feedbackOn]}
@@ -326,11 +362,18 @@ const makeStyles = (colors: Palette) =>
     fill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
     readinessMsg: { ...appText, fontSize: 13, color: colors.muted, marginTop: 8, lineHeight: 19 },
     sectionLabel: { ...appText, fontSize: 13, color: colors.muted, marginBottom: 8, marginTop: 2 },
-    nudgeEvidence: { ...appText, fontSize: 10, color: colors.dim, lineHeight: 14, marginBottom: 7 },
+    nudgeCard: { borderLeftWidth: 3 },
+    nudgeMetaRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 5, marginBottom: 8 },
+    nudgeSource: { ...appText, fontSize: 10, fontWeight: "700", textTransform: "uppercase" },
+    nudgeSignal: { ...appText, fontSize: 10, color: colors.dim },
     nudgeTitle: { ...appText, fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 4 },
     nudgeMsg: { ...appText, fontSize: 13, color: colors.muted, lineHeight: 19 },
-    nudgePurpose: { ...appText, fontSize: 12, color: colors.text, lineHeight: 17, marginTop: 8 },
-    nudgeAction: { ...appText, fontSize: 12, color: colors.accent, marginTop: 8 },
+    nudgeEvidence: { ...appText, fontSize: 11, color: colors.dim, lineHeight: 16, marginTop: 9 },
+    nudgePurpose: { ...appText, fontSize: 11, color: colors.muted, lineHeight: 16, marginTop: 5 },
+    nudgeDetailLabel: { ...appText, fontWeight: "600", color: colors.text },
+    nudgeActionBlock: { backgroundColor: colors.card2, borderRadius: 8, padding: 10, marginTop: 10 },
+    nudgeActionLabel: { ...appText, fontSize: 10, color: colors.dim, textTransform: "uppercase", marginBottom: 3 },
+    nudgeAction: { ...appText, fontSize: 13, fontWeight: "600", color: colors.accent, lineHeight: 18 },
     feedbackRow: { flexDirection: "row", gap: 8, marginTop: 10 },
     feedbackBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },
     feedbackOn: { backgroundColor: colors.accent },

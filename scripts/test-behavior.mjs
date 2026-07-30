@@ -6,7 +6,7 @@ import {
 } from "../apps/mobile/src/lib/behavior.ts";
 import { buildInsight } from "../apps/mobile/src/lib/insights.ts";
 import { buildWeekDays, buildWeekMood, sameDay } from "../apps/mobile/src/lib/weekMood.ts";
-import { personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
+import { activeNudgeFeedback, personalizeNudges } from "../apps/mobile/src/lib/personalize.ts";
 import { filterHistoryEntries, groupEntriesByDay } from "../apps/mobile/src/lib/history.ts";
 import {
   computeStreak,
@@ -73,6 +73,8 @@ function makeEntry(overrides = {}) {
   assert.equal(nudges[0].id, "nudge-delay-irrevocable", "strong risk should lead with the slow-down nudge");
   assert.match(nudges[0].evidenceLabel, /Current read: mood 5\/10/, "primary nudges should explain the live context");
   assert.ok(nudges[0].purposeLabel, "primary nudges should explain why the suggestion matters");
+  assert.equal(nudges[0].source, "live", "primary nudges should identify live conditions as their source");
+  assert.equal(nudges[0].confidence, "medium", "heuristic live conditions should not overstate confidence");
   assert.ok(nudges.length <= 3, "nudges are capped at three");
 }
 
@@ -173,6 +175,8 @@ function makeEntry(overrides = {}) {
   assert.ok(patternNudge, "recommendations should use sparse old matching patterns");
   assert.match(patternNudge.evidenceLabel, /2 similar cloudy\/work logs/);
   assert.match(patternNudge.purposeLabel, /matching history/, "pattern nudges should describe how history is useful");
+  assert.equal(patternNudge.source, "history");
+  assert.equal(patternNudge.confidence, "low", "two historical matches should remain an early signal");
 }
 
 // --- insights.ts: rainy social cancel pattern surfaces ---
@@ -230,18 +234,32 @@ function makeEntry(overrides = {}) {
   );
 }
 
-// --- personalize.ts: helpful first, not_now last, stable in between ---
+// --- personalize.ts: feedback is useful, stable, and time-bounded ---
 {
+  const now = new Date("2026-07-01T12:00:00.000Z");
   const nudges = [{ id: "a" }, { id: "b" }, { id: "c" }];
   const feedback = [
-    { nudgeId: "b", value: "helpful", timestamp: "2026-07-01T00:00:00.000Z" },
-    { nudgeId: "a", value: "not_now", timestamp: "2026-07-01T00:00:00.000Z" },
+    { nudgeId: "b", value: "helpful", timestamp: "2026-07-01T11:00:00.000Z" },
+    { nudgeId: "a", value: "not_now", timestamp: "2026-07-01T11:00:00.000Z" },
   ];
-  const ordered = personalizeNudges(nudges, feedback).map((n) => n.id);
+  const ordered = personalizeNudges(nudges, feedback, now).map((n) => n.id);
   assert.deepEqual(ordered, ["b", "c", "a"], "helpful ranks first, not_now last, unrated stays in the middle");
 
-  const untouched = personalizeNudges(nudges, []).map((n) => n.id);
+  const untouched = personalizeNudges(nudges, [], now).map((n) => n.id);
   assert.deepEqual(untouched, ["a", "b", "c"], "no feedback should preserve original order");
+
+  const staleNotNow = [{ nudgeId: "a", value: "not_now", timestamp: "2026-06-29T11:00:00.000Z" }];
+  assert.deepEqual(
+    personalizeNudges(nudges, staleNotNow, now).map((n) => n.id),
+    ["a", "b", "c"],
+    "not_now should stop influencing suggestions after one day",
+  );
+  assert.equal(activeNudgeFeedback(staleNotNow, "a", now), undefined, "stale feedback should not stay selected");
+
+  const recentHelpful = [{ nudgeId: "b", value: "helpful", timestamp: "2026-06-10T12:00:00.000Z" }];
+  assert.equal(activeNudgeFeedback(recentHelpful, "b", now), "helpful");
+  const staleHelpful = [{ nudgeId: "b", value: "helpful", timestamp: "2026-05-01T12:00:00.000Z" }];
+  assert.equal(activeNudgeFeedback(staleHelpful, "b", now), undefined, "helpful feedback should decay after 30 days");
 }
 
 // --- history.ts: category and query filtering ---

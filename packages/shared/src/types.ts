@@ -32,6 +32,7 @@ export type ThemeMode = "dark" | "light";
 export type InsightConfidence = "low" | "medium" | "high";
 export type BehaviorSignalLevel = "low" | "moderate" | "strong";
 export type RecommendationTone = "encourage" | "caution" | "reframe";
+export type RecommendationSource = "live" | "history" | "category";
 export type RecommendationFeedbackValue = "helpful" | "not_now";
 export type DayRating = "rough" | "mixed" | "good" | "great";
 export type DayFactor = "weather" | "work" | "people" | "screen_time" | "movement" | "food" | "rest";
@@ -105,6 +106,8 @@ export interface RecommendationNudge {
   message: string;
   actionLabel: string;
   tone: RecommendationTone;
+  source: RecommendationSource;
+  confidence: InsightConfidence;
   evidenceLabel?: string;
   purposeLabel?: string;
 }
