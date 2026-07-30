@@ -4,6 +4,7 @@ Weathered is a local-first Expo app for noticing how weather, mood, energy, and 
 
 - [Live web app](https://aneeshk-ds.github.io/Weathered/)
 - [Latest Android APK](https://github.com/aneeshk-ds/Weathered/releases/latest/download/weathered-latest.apk)
+- [iPhone build (App Store/TestFlight IPA)](https://github.com/aneeshk-ds/Weathered/releases/download/ios-v2.1.5-207/weathered-ios-2.1.5-207.ipa)
 - [Privacy policy](docs/privacy-policy.md)
 - [Release guide](docs/release.md)
 - [Security policy](SECURITY.md)
