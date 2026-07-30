@@ -11,7 +11,9 @@
     "web": "expo start --web",
     "export:web": "expo export --platform web --output-dir ../../dist-web",
     "typecheck": "tsc --noEmit",
-    "build:android:apk": "npx eas-cli build --platform android --profile preview-apk"
+    "build:android:apk": "npx eas-cli build --platform android --profile preview-apk",
+    "build:ios:preview": "npx eas-cli build --platform ios --profile preview-ios",
+    "build:ios:production": "npx eas-cli build --platform ios --profile production"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.12",

@@ -71,6 +71,8 @@ function makeEntry(overrides = {}) {
 
   const nudges = buildRecommendationNudges({ read, category: "work", mood: 5, energy: "medium", weather, entries: [] });
   assert.equal(nudges[0].id, "nudge-delay-irrevocable", "strong risk should lead with the slow-down nudge");
+  assert.match(nudges[0].evidenceLabel, /Current read: mood 5\/10/, "primary nudges should explain the live context");
+  assert.ok(nudges[0].purposeLabel, "primary nudges should explain why the suggestion matters");
   assert.ok(nudges.length <= 3, "nudges are capped at three");
 }
 
@@ -86,6 +88,11 @@ function makeEntry(overrides = {}) {
 
   const nudges = buildRecommendationNudges({ read, category: "work", mood: 7, energy: "high", weather, entries: [] });
   assert.equal(nudges[0].id, "nudge-use-focus-window", "work focus window should lead with the focus nudge");
+  assert.match(nudges[1].evidenceLabel, /Category lens: work/, "category nudges should name the decision lens");
+  assert.ok(
+    nudges.every((nudge) => nudge.purposeLabel),
+    "all work nudges should carry a purpose",
+  );
 }
 
 // --- behavior.ts: sunny social window leads with social nudge ---
@@ -165,6 +172,7 @@ function makeEntry(overrides = {}) {
   const patternNudge = nudges.find((nudge) => nudge.id === "nudge-pattern-encourage");
   assert.ok(patternNudge, "recommendations should use sparse old matching patterns");
   assert.match(patternNudge.evidenceLabel, /2 similar cloudy\/work logs/);
+  assert.match(patternNudge.purposeLabel, /matching history/, "pattern nudges should describe how history is useful");
 }
 
 // --- insights.ts: rainy social cancel pattern surfaces ---

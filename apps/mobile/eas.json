@@ -9,9 +9,18 @@
       },
       "distribution": "internal"
     },
+    "preview-ios": {
+      "ios": {
+        "simulator": false
+      },
+      "distribution": "internal"
+    },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
       }
     }
   }

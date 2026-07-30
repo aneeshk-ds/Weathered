@@ -23,7 +23,9 @@
     "validate": "npm run verify:project && npm run lint && npm run format:check && npm run typecheck && npm run test:core && npm run test:data && npm run test:behavior",
     "dev:mobile:tunnel": "npm --workspace apps/mobile run start -- --tunnel --port 8081",
     "build:android:apk": "cd apps/mobile && npx eas-cli build --platform android --profile preview-apk",
-    "build:android:production": "cd apps/mobile && npx eas-cli build --platform android --profile production"
+    "build:android:production": "cd apps/mobile && npx eas-cli build --platform android --profile production",
+    "build:ios:preview": "cd apps/mobile && npx eas-cli build --platform ios --profile preview-ios",
+    "build:ios:production": "cd apps/mobile && npx eas-cli build --platform ios --profile production"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

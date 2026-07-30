@@ -1,0 +1,55 @@
+name: iOS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: iOS artifact to build
+        required: true
+        default: preview-ios
+        type: choice
+        options:
+          - preview-ios
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}-${{ inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    name: iOS ${{ inputs.profile }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate project
+        run: npm run validate
+
+      - name: Verify Expo token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "Missing EXPO_TOKEN. Add it as a repository secret before running an iOS build."
+            exit 1
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS with EAS
+        working-directory: apps/mobile
+        run: npx eas-cli@latest build --platform ios --profile ${{ inputs.profile }} --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

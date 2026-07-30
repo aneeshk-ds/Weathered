@@ -39,6 +39,8 @@
       "expo-notifications"
     ],
     "ios": {
+      "bundleIdentifier": "com.aneeshkds.weathered",
+      "buildNumber": "207",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Weathered uses your location to show current weather and refresh conditions when you travel.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Weathered uses background location to detect meaningful travel and notify you when destination weather changes."

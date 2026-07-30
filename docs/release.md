@@ -63,3 +63,27 @@ Before store submission:
 - run an internal Play Store test on physical devices
 
 Never commit signing material or an Expo access token.
+
+## iOS Preview
+
+Run **iOS Build** with `preview-ios`. This uses EAS internal distribution for physical iPhones and requires:
+
+- `EXPO_TOKEN` as a GitHub Actions secret
+- an Apple account and signing credentials stored in EAS
+- registered test devices for ad hoc installation
+
+Install the EAS build on a physical iPhone and verify the same flows listed for Android, with special attention to location permission prompts, notification permission, travel-weather alerts, and backup export.
+
+## Production iOS
+
+Run **iOS Build** with `production`. This uses the EAS `production` profile for App Store or TestFlight delivery.
+
+Before App Store submission:
+
+- increment the app version and iOS `buildNumber`
+- configure production signing outside the repository
+- complete App Store privacy details
+- provide the privacy-policy URL
+- run TestFlight on physical devices
+
+Never commit Apple credentials, provisioning profiles, signing certificates, or an Expo access token.

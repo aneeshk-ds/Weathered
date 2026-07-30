@@ -106,6 +106,7 @@ export interface RecommendationNudge {
   actionLabel: string;
   tone: RecommendationTone;
   evidenceLabel?: string;
+  purposeLabel?: string;
 }
 
 export interface RecommendationFeedback {

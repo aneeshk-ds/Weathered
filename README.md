@@ -53,6 +53,8 @@ npm run export:web
 npm run validate
 npm run build:android:apk
 npm run build:android:production
+npm run build:ios:preview
+npm run build:ios:production
 ```
 
 ## Optional Cloud Sync
@@ -74,6 +76,11 @@ Pushing to `main` validates and deploys the web app through GitHub Pages. The ma
 
 - `preview-apk`: a GitHub-runner APK published at the stable download link above
 - `production`: an EAS Android App Bundle, requiring the `EXPO_TOKEN` repository secret
+
+The manual **iOS Build** workflow creates either:
+
+- `preview-ios`: an EAS internal iPhone build, requiring stored Apple credentials and the `EXPO_TOKEN` repository secret
+- `production`: an EAS App Store build, requiring stored Apple credentials and the `EXPO_TOKEN` repository secret
 
 See [docs/release.md](docs/release.md) before publishing or installing a release.
 

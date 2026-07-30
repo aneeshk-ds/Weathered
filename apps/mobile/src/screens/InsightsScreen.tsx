@@ -226,8 +226,10 @@ export function InsightsScreen({
         const chosen = feedbackFor(nudge.id);
         return (
           <Card key={nudge.id}>
+            {nudge.evidenceLabel ? <Text style={styles.nudgeEvidence}>{nudge.evidenceLabel}</Text> : null}
             <Text style={styles.nudgeTitle}>{nudge.title}</Text>
             <Text style={styles.nudgeMsg}>{nudge.message}</Text>
+            {nudge.purposeLabel ? <Text style={styles.nudgePurpose}>{nudge.purposeLabel}</Text> : null}
             <Text style={styles.nudgeAction}>→ {nudge.actionLabel}</Text>
             <View style={styles.feedbackRow}>
               <Pressable
@@ -324,8 +326,10 @@ const makeStyles = (colors: Palette) =>
     fill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
     readinessMsg: { ...appText, fontSize: 13, color: colors.muted, marginTop: 8, lineHeight: 19 },
     sectionLabel: { ...appText, fontSize: 13, color: colors.muted, marginBottom: 8, marginTop: 2 },
+    nudgeEvidence: { ...appText, fontSize: 10, color: colors.dim, lineHeight: 14, marginBottom: 7 },
     nudgeTitle: { ...appText, fontSize: 14, fontWeight: "600", color: colors.text, marginBottom: 4 },
     nudgeMsg: { ...appText, fontSize: 13, color: colors.muted, lineHeight: 19 },
+    nudgePurpose: { ...appText, fontSize: 12, color: colors.text, lineHeight: 17, marginTop: 8 },
     nudgeAction: { ...appText, fontSize: 12, color: colors.accent, marginTop: 8 },
     feedbackRow: { flexDirection: "row", gap: 8, marginTop: 10 },
     feedbackBtn: { flex: 1, backgroundColor: colors.card2, borderRadius: 8, paddingVertical: 7, alignItems: "center" },

@@ -48,6 +48,7 @@ const appConfig = readJson("apps/mobile/app.json");
 const easConfig = readJson("apps/mobile/eas.json");
 const deployWorkflow = readText(".github/workflows/deploy-web.yml");
 const androidWorkflow = readText(".github/workflows/android-build.yml");
+const iosWorkflow = readText(".github/workflows/ios-build.yml");
 const readme = readText("README.md");
 const securityPolicy = readText("SECURITY.md");
 const releaseGuide = readText("docs/release.md");
@@ -90,6 +91,16 @@ check(
   rootPackage.scripts?.["build:android:production"]?.includes("--profile production"),
   "Root production Android script is missing.",
 );
+check(
+  rootPackage.scripts?.["build:ios:preview"]?.includes("--platform ios") &&
+    rootPackage.scripts?.["build:ios:preview"]?.includes("--profile preview-ios"),
+  "Root preview iOS script is missing.",
+);
+check(
+  rootPackage.scripts?.["build:ios:production"]?.includes("--platform ios") &&
+    rootPackage.scripts?.["build:ios:production"]?.includes("--profile production"),
+  "Root production iOS script is missing.",
+);
 check(workspacePackages.includes("apps/mobile"), "Lockfile should include apps/mobile.");
 check(workspacePackages.includes("packages/shared"), "Lockfile should include packages/shared.");
 check(
@@ -129,6 +140,16 @@ check(
   "Android preview should read optional Supabase configuration from repository secrets.",
 );
 check(!exists(".github/workflows/android-direct-apk.yml"), "Duplicate Android workflow should be removed.");
+
+check(iosWorkflow.includes("workflow_dispatch"), "iOS workflow should be manually dispatchable.");
+check(iosWorkflow.includes("preview-ios"), "iOS workflow should support internal preview builds.");
+check(iosWorkflow.includes("production"), "iOS workflow should support production builds.");
+check(iosWorkflow.includes("npm run validate"), "iOS workflow should validate the project.");
+check(
+  iosWorkflow.includes("npx eas-cli@latest build --platform ios --profile ${{ inputs.profile }} --non-interactive"),
+  "iOS workflow should use EAS for iOS builds.",
+);
+check(iosWorkflow.includes("EXPO_TOKEN"), "iOS workflow should require an Expo token.");
 
 check(backupModule.includes("normalizeBackupPayload"), "Backup restore should validate imported data.");
 check(backupValidationModule.includes("function normalizeEntry"), "Backup entries should be normalized.");
@@ -181,6 +202,12 @@ check(appConfig.expo?.splash?.image === "./assets/splash-icon.png", "Splash imag
 check(exists("apps/mobile/assets/splash-icon.png"), "Splash image is missing.");
 check(Boolean(appConfig.expo?.android?.package), "Android package name is missing.");
 check(Number.isInteger(appConfig.expo?.android?.versionCode), "Android versionCode should be an integer.");
+check(Boolean(appConfig.expo?.ios?.bundleIdentifier), "iOS bundle identifier is missing.");
+check(typeof appConfig.expo?.ios?.buildNumber === "string", "iOS buildNumber should be a string.");
+check(
+  Boolean(appConfig.expo?.ios?.infoPlist?.NSLocationWhenInUseUsageDescription),
+  "iOS location permission text is missing.",
+);
 check(
   appConfig.expo?.android?.adaptiveIcon?.foregroundImage === "./assets/adaptive-icon.png",
   "Android adaptive icon path is incorrect.",
@@ -197,9 +224,15 @@ check(
 check(Boolean(appConfig.expo?.extra?.eas?.projectId), "EAS project ID is missing.");
 check(easConfig.build?.["preview-apk"]?.android?.buildType === "apk", "Preview profile should build an APK.");
 check(
+  easConfig.build?.["preview-ios"]?.distribution === "internal" &&
+    easConfig.build?.["preview-ios"]?.ios?.simulator === false,
+  "Preview iOS profile should build an internal device build.",
+);
+check(
   easConfig.build?.production?.android?.buildType === "app-bundle",
   "Production profile should build an app bundle.",
 );
+check(easConfig.build?.production?.ios?.simulator === false, "Production profile should support iOS devices.");
 
 const projectFiles = walkFiles(".");
 const textExtensions = new Set([".html", ".js", ".json", ".md", ".mjs", ".ts", ".tsx", ".yml", ".yaml"]);
