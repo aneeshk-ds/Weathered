@@ -1,0 +1,50 @@
+name: Upload iOS Build to TestFlight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    name: Upload iOS 2.1.5 (207)
+    runs-on: macos-latest
+    steps:
+      - name: Verify upload credentials
+        env:
+          APPLE_ID: ${{ secrets.APP_STORE_CONNECT_APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APP_STORE_CONNECT_APP_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_ID" ] || [ -z "$APPLE_APP_PASSWORD" ]; then
+            echo "Add APP_STORE_CONNECT_APPLE_ID and APP_STORE_CONNECT_APP_PASSWORD as repository secrets."
+            exit 1
+          fi
+
+      - name: Download existing signed iOS build
+        run: |
+          curl --fail --location --retry 3 \
+            --output Weathered-2.1.5-207.ipa \
+            "https://github.com/aneeshk-ds/Weathered/releases/download/ios-v2.1.5-207/weathered-ios-2.1.5-207.ipa"
+
+      - name: Verify iOS build checksum
+        run: |
+          echo "6c54410ca8a386c406ef0841919f8cb966e8f2f41783cad87d0a9da694ed4ebc  Weathered-2.1.5-207.ipa" \
+            | shasum --algorithm 256 --check
+
+      - name: Upload to App Store Connect
+        env:
+          APPLE_ID: ${{ secrets.APP_STORE_CONNECT_APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APP_STORE_CONNECT_APP_PASSWORD }}
+        run: |
+          xcrun altool \
+            --upload-app \
+            --file Weathered-2.1.5-207.ipa \
+            --type ios \
+            --username "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --output-format json
